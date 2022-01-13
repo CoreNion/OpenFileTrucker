@@ -115,9 +115,8 @@ jobs:
         run: flutter build windows --debug 
 
       - name: Compress to zip
-        run: |
-          xcopy build\windows\runner\Debug\ app-debug\ /E
-          7z a app-debug.zip app-debug
+        shell: pwsh
+        run: Compress-Archive -Path ".\build\windows\runner\Debug" -DestinationPath app-debug.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
