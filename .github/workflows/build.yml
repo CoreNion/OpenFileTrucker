@@ -104,27 +104,27 @@ jobs:
           name: windows
           path: app-debug.zip
 
-    build_linux:
+  build_linux:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+     - uses: actions/checkout@v2
 
-      - uses: dart-lang/setup-dart@v1
+     - uses: dart-lang/setup-dart@v1
 
-      - name: Install dependencies
-        run: flutter pub get
+     - name: Install dependencies
+       run: flutter pub get
 
-      - name: build
-        run: flutter build linux --debug 
+     - name: build
+       run: flutter build linux --debug 
 
-      - name: Compress to zip
-        run: |
-          cp -r build/linux/x64/debug/bundle bundle
-          zip -r app-debug.zip bundle
+     - name: Compress to zip
+       run: |
+         cp -r build/linux/x64/debug/bundle bundle
+         zip -r app-debug.zip bundle
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux-x64
-          path: app-debug.zip
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: linux-x64
+         path: app-debug.zip
