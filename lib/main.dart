@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/ReceivePage.dart';
-import 'package:open_file_trucker/sendPage.dart';
+import 'package:open_file_trucker/SendPage.dart';
 
 void main() {
   runApp(const MyApp());
