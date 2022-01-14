@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/ReceivePage.dart';
+import 'package:open_file_trucker/sendPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,8 +30,8 @@ class MyApp extends StatelessWidget {
           ),
           body: const TabBarView(
             children: [
-              Icon(Icons.send),
-              Icon(Icons.download),
+              SendPage(),
+              ReceivePage(),
             ],
           ),
         ),
