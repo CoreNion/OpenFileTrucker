@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/send.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -9,7 +10,9 @@ class SendPage extends StatefulWidget {
 }
 
 class _SendPageState extends State<SendPage> {
-  var fileDataText = "<Result>";
+  late FilePickerResult selectedFile;
+  String fileDataText = "";
+  Widget qrCode = Container();
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +34,17 @@ class _SendPageState extends State<SendPage> {
                 ),
                 child: const Text("Select file..."),
                 onPressed: () async {
-                  var file = await FilePicker.platform.pickFiles();
-                  setState(() {
-                    fileDataText = file.toString();
-                  });
+                  var _selectedFile = await FilePicker.platform.pickFiles();
+                  if (!(_selectedFile == null)) {
+                    selectedFile = _selectedFile;
+                    setState(() {
+                      fileDataText = selectedFile.toString();
+                    });
+                  } else {
+                    setState(() {
+                      fileDataText = "File not selected.";
+                    });
+                  }
                 },
               ),
             ),
@@ -42,6 +52,26 @@ class _SendPageState extends State<SendPage> {
               fileDataText,
               style: const TextStyle(),
             ),
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blueGrey,
+                  onPrimary: Colors.white,
+                ),
+                child: const Text("Send"),
+                onPressed: () {
+                  setState(() {
+                    if (!(fileDataText == "File not selected." ||
+                        fileDataText == "")) {
+                      qrCode = SendFiles.serverStart();
+                    }
+                  });
+                },
+              ),
+            ),
+            qrCode
           ],
         ),
       ),
