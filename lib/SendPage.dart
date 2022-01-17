@@ -65,7 +65,8 @@ class _SendPageState extends State<SendPage> {
                   setState(() {
                     if (!(fileDataText == "File not selected." ||
                         fileDataText == "")) {
-                      qrCode = SendFiles.serverStart();
+                      SendFiles.serverStart()
+                          .then((generatedCode) => qrCode = generatedCode);
                     }
                   });
                 },
