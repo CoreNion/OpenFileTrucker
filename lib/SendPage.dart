@@ -62,13 +62,44 @@ class _SendPageState extends State<SendPage> {
                 ),
                 child: const Text("Send"),
                 onPressed: () {
-                  setState(() {
-                    if (!(fileDataText == "File not selected." ||
-                        fileDataText == "")) {
-                      SendFiles.serverStart()
-                          .then((generatedCode) => qrCode = generatedCode);
-                    }
-                  });
+                  // ファイル選択時のみ実行
+                  if (!(fileDataText == "File not selected." ||
+                      fileDataText == "")) {
+                    SendFiles.selectNetwork(context).then((ip) {
+                      if (!(ip == null)) {
+                        SendFiles.serverStart(ip, "no")
+                            .then((qr) => setState(() => {qrCode = qr}));
+                      } else {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text("ネットワークに接続してください。"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text("OK"),
+                                    onPressed: () => Navigator.pop(context),
+                                  )
+                                ],
+                              );
+                            });
+                      }
+                    });
+                  } else {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text("ファイルを選択してください。"),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text("OK"),
+                                onPressed: () => Navigator.pop(context),
+                              )
+                            ],
+                          );
+                        });
+                  }
                 },
               ),
             ),
