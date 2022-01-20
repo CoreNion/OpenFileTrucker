@@ -5,13 +5,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:open_file_trucker/qr_data.dart';
 
 class SendFiles {
-  static Future<QrImage> serverStart(String ip, String key) async {
-    return QrImage(
-      data: json.encode(QRCodeData(ip: ip, key: key).toJson()),
-      size: 300,
-    );
-  }
-
   static Future<String?> selectNetwork(BuildContext context) async {
     // ネットワーク一覧のDialogOptionのList
     List<SimpleDialogOption> dialogOptions = [];
@@ -53,5 +46,26 @@ class SendFiles {
         },
       );
     }
+  }
+
+  static ServerSocket? _server;
+
+  static Future<QrImage> serverStart(String ip, String key) async {
+    _server = await ServerSocket.bind(ip, 4782);
+    _server?.listen(_serverListen);
+
+    return QrImage(
+      data: json.encode(QRCodeData(ip: ip, key: key).toJson()),
+      size: 300,
+    );
+  }
+
+  static void _serverListen(Socket socket) {
+    socket.add(utf8.encode("hello"));
+    socket.close();
+  }
+
+  static void serverClose() {
+    _server?.close();
   }
 }

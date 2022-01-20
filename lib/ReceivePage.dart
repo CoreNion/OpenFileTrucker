@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 class ReceivePage extends StatefulWidget {
@@ -10,10 +11,16 @@ class ReceivePage extends StatefulWidget {
 class _ReceivePageState extends State<ReceivePage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Text(
-          "Receive Page",
+        child: ElevatedButton(
+          child: const Text("Print socket Message"),
+          onPressed: () async {
+            Socket socket = await Socket.connect("192.168.0.40", 4782);
+            socket.listen((event) {
+              print(String.fromCharCodes(event));
+            });
+          },
         ),
       ),
     );
