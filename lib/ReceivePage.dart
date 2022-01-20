@@ -8,9 +8,15 @@ class ReceivePage extends StatefulWidget {
   _ReceivePageState createState() => _ReceivePageState();
 }
 
-class _ReceivePageState extends State<ReceivePage> {
+class _ReceivePageState extends State<ReceivePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Scaffold(
       body: Center(
         child: ElevatedButton(

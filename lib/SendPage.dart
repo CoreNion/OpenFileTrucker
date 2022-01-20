@@ -9,7 +9,11 @@ class SendPage extends StatefulWidget {
   _SendPageState createState() => _SendPageState();
 }
 
-class _SendPageState extends State<SendPage> {
+class _SendPageState extends State<SendPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late FilePickerResult selectedFile;
   String fileDataText = "";
   String serverStatus = "";
@@ -18,6 +22,8 @@ class _SendPageState extends State<SendPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Scaffold(
         body: Container(
           margin: const EdgeInsets.all(10),
