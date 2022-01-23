@@ -17,6 +17,8 @@ class _SendPageState extends State<SendPage>
   late FilePickerResult selectedFile;
   String fileDataText = "";
   String serverStatus = "";
+  String ipText = "";
+  String keyText = "";
   Widget qrCode = Container();
   Widget stopServerButton = Container();
 
@@ -79,12 +81,14 @@ class _SendPageState extends State<SendPage>
                               .then((qr) => setState(() {
                                     qrCode = qr;
                                     serverStatus = "受信待機中です。";
+                                    ipText = "ip: " + ip;
                                     stopServerButton = FloatingActionButton(
                                       onPressed: () {
                                         SendFiles.serverClose();
                                         setState(() {
                                           qrCode = Container();
                                           serverStatus = "";
+                                          ipText = "";
                                           stopServerButton = Container();
                                         });
                                       },
@@ -127,6 +131,18 @@ class _SendPageState extends State<SendPage>
                 ),
               ),
               qrCode,
+              Text(
+                ipText,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    fontSize: 30),
+              ),
+              Text(
+                keyText,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.blue),
+              ),
               Text(
                 serverStatus,
                 style: const TextStyle(
