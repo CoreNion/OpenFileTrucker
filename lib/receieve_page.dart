@@ -16,17 +16,78 @@ class _ReceivePageState extends State<ReceivePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final formKey = GlobalKey<FormState>();
+    String ip = "";
+    String key = "";
+    TextEditingController logController = TextEditingController();
 
     return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          child: const Text("Print socket Message"),
-          onPressed: () async {
-            Socket socket = await Socket.connect("192.168.0.40", 4782);
-            socket.listen((event) {
-              print(String.fromCharCodes(event));
-            });
-          },
+      body: Container(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'IP Address',
+                      hintText: 'IPアドレスを入力',
+                      icon: Icon(Icons.connect_without_contact),
+                    ),
+                    onSaved: (newValue) => ip = newValue!,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: 'Key (任意)',
+                        hintText: 'Keyを入力(設定している場合のみ)',
+                        icon: Icon(Icons.vpn_key)),
+                    obscureText: true,
+                    onSaved: (newValue) => key = newValue!,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    height: 40,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.blueGrey,
+                          onPrimary: Colors.white,
+                        ),
+                        child: const Text("ファイルを受信"),
+                        onPressed: () async {
+                          if (formKey.currentState != null) {
+                            if (formKey.currentState!.validate()) {
+                              formKey.currentState!.save();
+                              logController.text = "Connecting...\n";
+                              try {
+                                Socket socket = await Socket.connect(ip, 4782);
+                                socket.listen((event) {
+                                  logController.text += "Received!: " +
+                                      String.fromCharCodes(event);
+                                });
+                              } catch (err) {
+                                logController.text +=
+                                    "Error: " + err.toString();
+                              }
+                            }
+                          }
+                        }),
+                  ),
+                ],
+              ),
+            ),
+            // ログ出力
+            TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true,
+                maxLines: null,
+                controller: logController),
+          ],
         ),
       ),
     );
