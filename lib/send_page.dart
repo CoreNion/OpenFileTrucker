@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/send.dart';
@@ -14,7 +16,7 @@ class _SendPageState extends State<SendPage>
   @override
   bool get wantKeepAlive => true;
 
-  late FilePickerResult selectedFile;
+  late FilePickerResult? selectedFile;
   String fileDataText = "";
   String serverStatus = "";
   String ipText = "";
@@ -53,6 +55,7 @@ class _SendPageState extends State<SendPage>
                     } else {
                       setState(() {
                         fileDataText = "File not selected.";
+                        selectedFile = null;
                       });
                     }
                   },
@@ -73,11 +76,11 @@ class _SendPageState extends State<SendPage>
                   child: const Text("Send"),
                   onPressed: () {
                     // ファイル選択時のみ実行
-                    if (!(fileDataText == "File not selected." ||
-                        fileDataText == "")) {
+                    if (selectedFile != null) {
                       SendFiles.selectNetwork(context).then((ip) {
                         if (!(ip == null)) {
-                          SendFiles.serverStart(ip, "no")
+                          var file = File(selectedFile!.files.single.path!);
+                          SendFiles.serverStart(ip, "no", file)
                               .then((qr) => setState(() {
                                     qrCode = qr;
                                     serverStatus = "受信待機中です。";

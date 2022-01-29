@@ -50,9 +50,9 @@ class SendFiles {
 
   static ServerSocket? _server;
 
-  static Future<QrImage> serverStart(String ip, String key) async {
+  static Future<QrImage> serverStart(String ip, String key, File file) async {
     _server = await ServerSocket.bind(ip, 4782);
-    _server?.listen(_serverListen);
+    _server?.listen((event) => _serverListen(event, file));
 
     return QrImage(
       data: json.encode(QRCodeData(ip: ip, key: key).toJson()),
@@ -60,8 +60,8 @@ class SendFiles {
     );
   }
 
-  static void _serverListen(Socket socket) {
-    socket.add(utf8.encode("hello"));
+  static void _serverListen(Socket socket, File file) {
+    socket.add(file.readAsBytesSync());
     socket.close();
   }
 
