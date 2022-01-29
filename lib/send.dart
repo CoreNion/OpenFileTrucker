@@ -61,8 +61,9 @@ class SendFiles {
   }
 
   static void _serverListen(Socket socket, File file) {
-    socket.add(file.readAsBytesSync());
-    socket.close();
+    file.openRead().listen((event) {
+      socket.add(event);
+    }).onDone(() => socket.close());
   }
 
   static void serverClose() {
