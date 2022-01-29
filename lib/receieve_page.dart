@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/receieve.dart';
 
 class ReceivePage extends StatefulWidget {
   const ReceivePage({Key? key}) : super(key: key);
@@ -61,17 +62,7 @@ class _ReceivePageState extends State<ReceivePage>
                           if (formKey.currentState != null) {
                             if (formKey.currentState!.validate()) {
                               formKey.currentState!.save();
-                              logController.text = "Connecting...\n";
-                              try {
-                                Socket socket = await Socket.connect(ip, 4782);
-                                socket.listen((event) {
-                                  logController.text += "Received!: " +
-                                      String.fromCharCodes(event);
-                                });
-                              } catch (err) {
-                                logController.text +=
-                                    "Error: " + err.toString();
-                              }
+                              ReceiveFile.receiveFile(ip, logController);
                             }
                           }
                         }),
