@@ -61,9 +61,16 @@ class SendFiles {
   }
 
   static void _serverListen(Socket socket, File file) {
-    file.openRead().listen((event) {
-      socket.add(event);
-    }).onDone(() => socket.close());
+    // 最初にファイル名を送信
+    socket.add(utf8.encode("name:" + file.uri.pathSegments.last));
+    socket.listen((event) {
+      // 準備が完了したら送信
+      if (String.fromCharCodes(event) == "ready") {
+        file.openRead().listen((event) {
+          socket.add(event);
+        }).onDone(() => socket.close());
+      }
+    });
   }
 
   static void serverClose() {
