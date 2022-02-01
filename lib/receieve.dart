@@ -6,36 +6,44 @@ import 'dart:io';
 
 class ReceiveFile {
   static void receiveFile(String ip, TextEditingController log) async {
-    String fileName;
-    bool ready = false;
+    late String fileName;
+    // ローカルの保存するファイル
     late File receivedFile;
 
     Socket socket = await Socket.connect(ip, 4782);
+
+    // 最初の通信であることを送信
+    socket.add(utf8.encode("first"));
     socket.listen((event) {
-      if (!ready && String.fromCharCodes(event).startsWith("name")) {
-        // "name:"部を消去
-        fileName = String.fromCharCodes(event).substring(5);
-        // 保存場所を取得
-        _getSavePath(fileName).then((path) {
+      // ファイルの情報が送られてくる
+      fileName = String.fromCharCodes(event).substring(5);
+    })
+      // ファイルの情報を取得したら一旦通信終了される
+      ..onDone(() {
+        // ファイルの保存場所を取得(聞く)
+        _getSavePath(fileName).then((path) async {
           if (path != null) {
             receivedFile = File(path);
-            // 準備が完了したことを送信
-            ready = true;
+
+            // 2回目の通信でファイルを受信
+            socket = await Socket.connect(ip, 4782);
+            // サーバーに準備が出来たことを伝える
             socket.add(utf8.encode("ready"));
+            // "ready"を送信するとデータが送られてくるので、そのStreamをIOSinkで書き込み
+            // Listen上ではSocketのStreamを扱えないので二回通信する必要がある
+            IOSink receieveSink =
+                receivedFile.openWrite(mode: FileMode.writeOnly);
+            receieveSink.addStream(socket).whenComplete(() async {
+              await receieveSink.flush();
+              await receieveSink.close();
+              log.text += "Done.\n";
+            });
           } else {
-            socket.close();
-            log.text = "filePath is null. exit....\n";
+            log.text += "filePath is null. exit....\n";
           }
         });
-      } else {
-        // 準備完了後にファイルが送られてくる
-        /* TO DO: openWrite方式への変更 */
-        receivedFile.writeAsBytesSync(event, mode: FileMode.writeOnlyAppend);
-      }
-    })
-      ..onError((e) => log.text += "Err: " + e.toString())
-      ..onDone(() => log.text += "Done.");
-    /* TO DO: 受信中のUI作成 */
+      })
+      ..onError((e) => log.text += "Err: " + e.toString());
   }
 
   /// ファイルの保存場所をユーザーなどから取得

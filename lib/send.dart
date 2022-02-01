@@ -61,14 +61,16 @@ class SendFiles {
   }
 
   static void _serverListen(Socket socket, File file) {
-    // 最初にファイル名を送信
-    socket.add(utf8.encode("name:" + file.uri.pathSegments.last));
     socket.listen((event) {
-      // 準備が完了したら送信
-      if (String.fromCharCodes(event) == "ready") {
-        file.openRead().listen((event) {
-          socket.add(event);
-        }).onDone(() => socket.close());
+      String mesg = String.fromCharCodes(event);
+      if (mesg == "first") {
+        // 1回目の場合、ファイルの各情報を送って一旦close(受信の処理の都合で1回の通信では送らない)
+        socket.add(utf8.encode("name:" + file.uri.pathSegments.last));
+        socket.close();
+      }
+      if (mesg == "ready") {
+        // 受信側の準備が出来たら2回目の通信でファイルを送信
+        socket.addStream(file.openRead()).then((e) => socket.close());
       }
     });
   }
