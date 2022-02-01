@@ -62,7 +62,8 @@ class _ReceivePageState extends State<ReceivePage>
                           if (formKey.currentState != null) {
                             if (formKey.currentState!.validate()) {
                               formKey.currentState!.save();
-                              ReceiveFile.receiveFile(ip, logController);
+                              ReceiveFile.receiveFile(
+                                  ip, logController, context);
                             }
                           }
                         }),

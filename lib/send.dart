@@ -65,7 +65,11 @@ class SendFiles {
       String mesg = String.fromCharCodes(event);
       if (mesg == "first") {
         // 1回目の場合、ファイルの各情報を送って一旦close(受信の処理の都合で1回の通信では送らない)
-        socket.add(utf8.encode("name:" + file.uri.pathSegments.last));
+        Map<String, dynamic> fileInfo = {
+          "name": file.uri.pathSegments.last,
+          "length": file.lengthSync()
+        };
+        socket.add(utf8.encode(json.encode(fileInfo)));
         socket.close();
       }
       if (mesg == "ready") {
