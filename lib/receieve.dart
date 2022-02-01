@@ -102,13 +102,12 @@ class ReceiveFile {
     } else if (Platform.isAndroid) {
       // 仮
       /* TO DO: ACTION_CREATE_DOCUMENT経由でユーザーが選択した場所に保存する */
-      getExternalStorageDirectory().then((directory) {
-        if (directory != null) {
-          return directory.path + "/" + fileName;
-        } else {
-          return null;
-        }
-      });
+      Directory? directory = await getExternalStorageDirectory();
+      if (directory != null) {
+        return directory.path + "/" + fileName;
+      } else {
+        return null;
+      }
     } else if (Platform.isIOS) {
       // iOSはgetApplicationDocumentsDirectoryでもファイルアプリに表示可
       final directory = await getApplicationDocumentsDirectory();
