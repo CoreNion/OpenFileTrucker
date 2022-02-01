@@ -3,11 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:open_file_trucker/qr_data.dart';
+import 'package:wakelock/wakelock.dart';
 
 class SendFiles {
   static Future<String?> selectNetwork(BuildContext context) async {
     // ネットワーク一覧のDialogOptionのList
     List<SimpleDialogOption> dialogOptions = [];
+
+    // スリープ無効化
+    Wakelock.enable();
 
     // NetworkInterfaceからIPアドレスを取得
     for (NetworkInterface interface in await NetworkInterface.list()) {
@@ -81,5 +85,7 @@ class SendFiles {
 
   static void serverClose() {
     _server?.close();
+    // スリープ有効化
+    Wakelock.disable();
   }
 }

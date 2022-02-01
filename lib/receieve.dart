@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wakelock/wakelock.dart';
 import 'dart:io';
 
 class ReceiveFile {
@@ -12,6 +13,8 @@ class ReceiveFile {
     late double fileSize;
     late File receivedFile;
 
+    //スリープ無効化
+    Wakelock.enable();
     Socket socket = await Socket.connect(ip, 4782);
 
     // 最初の通信であることを送信
@@ -48,6 +51,7 @@ class ReceiveFile {
             receieveSink.addStream(socket).whenComplete(() async {
               await receieveSink.flush();
               await receieveSink.close();
+              Wakelock.disable();
               Navigator.of(context).pop();
               timer.cancel();
               log.text += "Done.\n";
