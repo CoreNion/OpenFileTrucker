@@ -38,6 +38,8 @@ dependencies:
   qr_flutter: ^4.0.0
   path_provider: ^2.0.8
   wakelock: ^0.6.1+1
+  qr_code_scanner: ^0.6.1
+  permission_handler: ^8.3.0
 
 dev_dependencies:
   flutter_test:
