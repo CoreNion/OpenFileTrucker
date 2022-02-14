@@ -83,6 +83,16 @@ class _ReceivePageState extends State<ReceivePage>
                         hintText: 'IPアドレスを入力',
                         icon: Icon(Icons.connect_without_contact),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '値を入力してください';
+                        } else if (!RegExp(
+                                r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+                            .hasMatch(value)) {
+                          return "IPアドレスを入力してください。";
+                        }
+                        return null;
+                      },
                       onSaved: (newValue) => ip = newValue!,
                     ),
                     TextFormField(
