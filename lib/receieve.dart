@@ -22,7 +22,8 @@ class ReceiveFile {
       socket = await Socket.connect(ip, 4782);
       socket.add(utf8.encode("first"));
     } on SocketException catch (e) {
-      return _showConnectionErrorDialog(e, context);
+      Wakelock.disable();
+      return _showErrorDialog(e, context);
     }
 
     socket.listen((event) {
@@ -45,7 +46,8 @@ class ReceiveFile {
               // サーバーに準備が出来たことを伝える
               socket.add(utf8.encode("ready"));
             } on SocketException catch (e) {
-              return _showConnectionErrorDialog(e, context);
+              Wakelock.disable();
+              return _showErrorDialog(e, context);
             }
 
             // 進行を定期的に更新する
@@ -58,15 +60,31 @@ class ReceiveFile {
             // Listen上ではSocketのStreamを扱えないので二回通信する必要がある
             IOSink receieveSink =
                 receivedFile.openWrite(mode: FileMode.writeOnly);
-
-            receieveSink.addStream(socket).whenComplete(() async {
-              await receieveSink.flush();
-              await receieveSink.close();
+            // 終了時の処理(異常終了関係なし)
+            void endProcess() {
               Wakelock.disable();
+              socket.destroy();
               Navigator.of(context).pop();
               timer.cancel();
-              log.text += "Done.\n";
-            });
+            }
+
+            // 流れてきたデータをファイルに書き込む
+            receieveSink.addStream(socket)
+              ..then((_) async {
+                try {
+                  await receieveSink.flush();
+                  await receieveSink.close();
+                } on Exception catch (e) {
+                  endProcess();
+                  return _showErrorDialog(e, context);
+                }
+                endProcess();
+                log.text += "Done.\n";
+              })
+              ..catchError((e) {
+                endProcess();
+                return _showErrorDialog(e, context);
+              });
 
             // ファイル受信の進行状況を表示するダイアログを表示
             showDialog(
@@ -104,20 +122,33 @@ class ReceiveFile {
           }
         });
       })
-      ..onError((e) => log.text += "Err: " + e.toString());
+      ..onError((e) {
+        return _showErrorDialog(e, context);
+      });
   }
 
   /// エラーのダイアログを表示する
-  static Future<void> _showConnectionErrorDialog(
-      Exception e, BuildContext context) {
+  static Future<void> _showErrorDialog(Exception e, BuildContext context) {
+    late String errorTitle;
+    late String errorMessage;
+
+    if (e is SocketException) {
+      errorTitle = "通信エラー";
+      errorMessage = "通信エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。";
+    } else if (e is IOException) {
+      errorTitle = "I/Oエラー";
+      errorMessage = "ファイルの読み書き中にエラーが発生しました。";
+    } else {
+      errorTitle = "不明なエラー";
+      errorMessage = "エラーが発生しました。";
+    }
+
     return showDialog(
         context: context,
         builder: (builder) {
           return AlertDialog(
-            title: const Text("通信エラー"),
-            content: Text(
-                "エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。\n詳細:\n" +
-                    e.toString()),
+            title: Text(errorTitle),
+            content: Text(errorMessage + "\n詳細:\n" + e.toString()),
             actions: <Widget>[
               TextButton(
                 child: const Text("閉じる"),
