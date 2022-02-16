@@ -12,13 +12,19 @@ class ReceiveFile {
     late String fileName;
     late double fileSize;
     late File receivedFile;
+    late Socket socket;
 
     //スリープ無効化
     Wakelock.enable();
-    Socket socket = await Socket.connect(ip, 4782);
 
-    // 最初の通信であることを送信
-    socket.add(utf8.encode("first"));
+    // 最初の接続
+    try {
+      socket = await Socket.connect(ip, 4782);
+      socket.add(utf8.encode("first"));
+    } on SocketException catch (e) {
+      return _showConnectionErrorDialog(e, context);
+    }
+
     socket.listen((event) {
       Map<String, dynamic> fileInfo = json.decode(String.fromCharCodes(event));
       fileName = fileInfo["name"];
@@ -34,9 +40,14 @@ class ReceiveFile {
             late Function dialogSetState;
 
             // 2回目の通信でファイルを受信
-            socket = await Socket.connect(ip, 4782);
-            // サーバーに準備が出来たことを伝える
-            socket.add(utf8.encode("ready"));
+            try {
+              socket = await Socket.connect(ip, 4782);
+              // サーバーに準備が出来たことを伝える
+              socket.add(utf8.encode("ready"));
+            } on SocketException catch (e) {
+              return _showConnectionErrorDialog(e, context);
+            }
+
             // 進行を定期的に更新する
             Timer timer =
                 Timer.periodic(const Duration(milliseconds: 300), (timer) {
@@ -94,6 +105,27 @@ class ReceiveFile {
         });
       })
       ..onError((e) => log.text += "Err: " + e.toString());
+  }
+
+  /// エラーのダイアログを表示する
+  static Future<void> _showConnectionErrorDialog(
+      Exception e, BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (builder) {
+          return AlertDialog(
+            title: const Text("通信エラー"),
+            content: Text(
+                "エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。\n詳細:\n" +
+                    e.toString()),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("閉じる"),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          );
+        });
   }
 
   /// ファイルの保存場所をユーザーなどから取得
