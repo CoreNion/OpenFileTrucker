@@ -43,20 +43,24 @@ class _ReceivePageState extends State<ReceivePage>
               }
             });
           } else {
-            AlertDialog(
-              title: const Text("カメラへのアクセスの権限が必要です"),
-              content: const Text("QRコードを読み取るためには、カメラへのアクセスの許可が必要です。"),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text("設定を開く"),
-                  onPressed: () => openAppSettings(),
-                ),
-                TextButton(
-                  child: const Text("閉じる"),
-                  onPressed: () => Navigator.pop(context),
-                )
-              ],
-            );
+            showDialog(
+                context: context,
+                builder: (_) {
+                  return AlertDialog(
+                    title: const Text("カメラへのアクセスの権限が必要です"),
+                    content: const Text("QRコードを読み取るためには、カメラへのアクセスの許可が必要です。"),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text("設定を開く"),
+                        onPressed: () => openAppSettings(),
+                      ),
+                      TextButton(
+                        child: const Text("閉じる"),
+                        onPressed: () => Navigator.pop(context),
+                      )
+                    ],
+                  );
+                });
           }
         },
         tooltip: "QRコードを利用する",
