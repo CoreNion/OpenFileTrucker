@@ -92,13 +92,18 @@ jobs:
           flutter pub get
 
       - name: build app
-        run: flutter build macos --debug 
+        run: |
+          flutter build macos --debug 
+          mkdir output
+          cd build/macos/Build/Products/Debug/
+          cp -r FileTrucker.app ../../../../../output/
+          cd ../../../../../
         
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: macos
-          path: build/macos/Build/Products/Debug
+          path: output
   
   build_windows:
     runs-on: windows-latest
