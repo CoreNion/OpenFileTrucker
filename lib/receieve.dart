@@ -12,17 +12,35 @@ class ReceiveFile {
     late String fileName;
     late double fileSize;
     late File receivedFile;
+    late ConnectionTask<Socket> connectionTask;
     late Socket socket;
+
+    // ダイアログ表示
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text("接続しています..."),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () => connectionTask.cancel(),
+                  child: const Text("キャンセル")),
+            ],
+          );
+        });
 
     //スリープ無効化
     Wakelock.enable();
 
     // 最初の接続
     try {
-      socket = await Socket.connect(ip, 4782);
+      connectionTask = await Socket.startConnect(ip, 4782);
+      socket = await connectionTask.socket;
       socket.add(utf8.encode("first"));
     } on SocketException catch (e) {
       Wakelock.disable();
+      // 「接続しています」のダイアログを消す
+      Navigator.pop(context);
       return _showErrorDialog(e, context);
     }
 
@@ -33,6 +51,8 @@ class ReceiveFile {
     })
       // ファイルの情報を取得したら一旦通信終了される
       ..onDone(() {
+        // 「接続しています」のダイアログを消す
+        Navigator.pop(context);
         // ファイルの保存場所を取得(聞く)
         _getSavePath(fileName).then((path) async {
           if (path != null) {
@@ -42,7 +62,8 @@ class ReceiveFile {
 
             // 2回目の通信でファイルを受信
             try {
-              socket = await Socket.connect(ip, 4782);
+              connectionTask = await Socket.startConnect(ip, 4782);
+              socket = await connectionTask.socket;
               // サーバーに準備が出来たことを伝える
               socket.add(utf8.encode("ready"));
             } on SocketException catch (e) {
@@ -113,7 +134,7 @@ class ReceiveFile {
                     ),
                     actions: <Widget>[
                       // TO DO キャンセルボタンの実装
-                      TextButton(child: const Text("中止"), onPressed: () => null)
+                      TextButton(child: const Text("中止"), onPressed: null)
                     ],
                   );
                 });
@@ -131,16 +152,25 @@ class ReceiveFile {
   static Future<void> _showErrorDialog(Exception e, BuildContext context) {
     late String errorTitle;
     late String errorMessage;
+    String exceptionMessage = "";
 
     if (e is SocketException) {
-      errorTitle = "通信エラー";
-      errorMessage = "通信エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。";
+      if (e.message.contains("cancel")) {
+        errorTitle = "情報";
+        errorMessage = "操作はキャンセルされました。";
+      } else {
+        errorTitle = "通信エラー";
+        errorMessage = "通信エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。\n";
+        exceptionMessage = "詳細:\n" + e.toString();
+      }
     } else if (e is IOException) {
       errorTitle = "I/Oエラー";
-      errorMessage = "ファイルの読み書き中にエラーが発生しました。";
+      errorMessage = "ファイルの読み書き中にエラーが発生しました。\n";
+      exceptionMessage = "詳細:\n" + e.toString();
     } else {
       errorTitle = "不明なエラー";
-      errorMessage = "エラーが発生しました。";
+      errorMessage = "エラーが発生しました。\n";
+      exceptionMessage = "詳細:\n" + e.toString();
     }
 
     return showDialog(
@@ -148,7 +178,7 @@ class ReceiveFile {
         builder: (builder) {
           return AlertDialog(
             title: Text(errorTitle),
-            content: Text(errorMessage + "\n詳細:\n" + e.toString()),
+            content: Text(errorMessage + exceptionMessage),
             actions: <Widget>[
               TextButton(
                 child: const Text("閉じる"),
