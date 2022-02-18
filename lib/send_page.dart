@@ -28,133 +28,180 @@ class _SendPageState extends State<SendPage>
   Widget build(BuildContext context) {
     super.build(context);
 
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // サイズごとにUIを変える
+        final pageWidth = constraints.maxWidth;
+        if (pageWidth >= 800) {
+          return largeUI();
+        } else {
+          return smallUI();
+          // TO DO: 小さな画面ではQRコード等の表示を別の画面で行うようにする
+        }
+      },
+    );
+  }
+
+  /// 大きな画面やウィンドウに最適化された送信ページのUI
+  Scaffold largeUI() {
     return Scaffold(
-        body: Container(
-          margin: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              // ファイル選択ボタン
-              SizedBox(
-                // width最大化
-                width: double.infinity,
-                height: 40,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blue,
-                    onPrimary: Colors.white,
+        body: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Expanded(flex: 5, child: selectFileArea()),
+            Expanded(
+                flex: 5,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                        left: BorderSide(
+                      color: Colors.grey,
+                    )),
                   ),
-                  child: const Text("Select file..."),
-                  onPressed: () async {
-                    var _selectedFile = await FilePicker.platform.pickFiles();
-                    if (!(_selectedFile == null)) {
-                      selectedFile = _selectedFile;
-                      setState(() {
-                        fileDataText = selectedFile.toString();
-                      });
-                    } else {
-                      setState(() {
-                        fileDataText = "File not selected.";
-                        selectedFile = null;
-                      });
-                    }
-                  },
-                ),
-              ),
-              Text(
-                fileDataText,
-                style: const TextStyle(),
-              ),
-              SizedBox(
-                width: double.infinity,
-                height: 40,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blueGrey,
-                    onPrimary: Colors.white,
-                  ),
-                  child: const Text("Send"),
-                  onPressed: () {
-                    // ファイル選択時のみ実行
-                    if (selectedFile != null) {
-                      SendFiles.selectNetwork(context).then((ip) {
-                        if (!(ip == null)) {
-                          var file = File(selectedFile!.files.single.path!);
-                          SendFiles.serverStart(ip, "no", file)
-                              .then((qr) => setState(() {
-                                    qrCode = qr;
-                                    serverStatus = "受信待機中です。";
-                                    ipText = "ip: " + ip;
-                                    stopServerButton = FloatingActionButton(
-                                      onPressed: () {
-                                        SendFiles.serverClose();
-                                        setState(() {
-                                          qrCode = Container();
-                                          serverStatus = "";
-                                          ipText = "";
-                                          stopServerButton = Container();
-                                        });
-                                      },
-                                      tooltip: '共有を停止する',
-                                      child: const Icon(Icons.stop),
-                                    );
-                                  }));
-                        } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("ネットワークに接続してください。"),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: const Text("OK"),
-                                      onPressed: () => Navigator.pop(context),
-                                    )
-                                  ],
-                                );
-                              });
-                        }
-                      });
-                    } else {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("ファイルを選択してください。"),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text("OK"),
-                                  onPressed: () => Navigator.pop(context),
-                                )
-                              ],
-                            );
-                          });
-                    }
-                  },
-                ),
-              ),
-              qrCode,
-              Text(
-                ipText,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                    fontSize: 30),
-              ),
-              Text(
-                keyText,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.blue),
-              ),
-              Text(
-                serverStatus,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.red),
-              ),
-            ],
+                  child: senderInfoArea(),
+                ))
+          ],
+        ),
+        floatingActionButton: stopServerButton);
+  }
+
+  /// 小さな画面やウィンドウに最適化された送信ページのUI
+  Scaffold smallUI() {
+    return Scaffold(
+        body: Column(children: <Widget>[
+          selectFileArea(),
+          senderInfoArea(),
+        ]),
+        floatingActionButton: stopServerButton);
+  }
+
+  /// ファイルを選択する部分のUI
+  Container selectFileArea() {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      child: Column(children: <Widget>[
+        SizedBox(
+          width: double.infinity,
+          height: 40,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              onPrimary: Colors.white,
+            ),
+            child: const Text("Select file..."),
+            onPressed: () async {
+              var _selectedFile = await FilePicker.platform.pickFiles();
+              if (!(_selectedFile == null)) {
+                selectedFile = _selectedFile;
+                setState(() {
+                  fileDataText = selectedFile.toString();
+                });
+              } else {
+                setState(() {
+                  fileDataText = "File not selected.";
+                  selectedFile = null;
+                });
+              }
+            },
           ),
         ),
-        // 共有停止ボタン
-        floatingActionButton: stopServerButton);
+        Text(
+          fileDataText,
+          style: const TextStyle(),
+        ),
+        SizedBox(
+          width: double.infinity,
+          height: 40,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blueGrey,
+              onPrimary: Colors.white,
+            ),
+            child: const Text("Send"),
+            onPressed: () {
+              // ファイル選択時のみ実行
+              if (selectedFile != null) {
+                SendFiles.selectNetwork(context).then((ip) {
+                  if (!(ip == null)) {
+                    var file = File(selectedFile!.files.single.path!);
+                    SendFiles.serverStart(ip, "no", file)
+                        .then((qr) => setState(() {
+                              qrCode = qr;
+                              serverStatus = "受信待機中です。";
+                              ipText = "ip: " + ip;
+                              stopServerButton = FloatingActionButton(
+                                onPressed: () {
+                                  SendFiles.serverClose();
+                                  setState(() {
+                                    qrCode = Container();
+                                    serverStatus = "";
+                                    ipText = "";
+                                    stopServerButton = Container();
+                                  });
+                                },
+                                tooltip: '共有を停止する',
+                                child: const Icon(Icons.stop),
+                              );
+                            }));
+                  } else {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text("ネットワークに接続してください。"),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text("OK"),
+                                onPressed: () => Navigator.pop(context),
+                              )
+                            ],
+                          );
+                        });
+                  }
+                });
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("ファイルを選択してください。"),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text("OK"),
+                            onPressed: () => Navigator.pop(context),
+                          )
+                        ],
+                      );
+                    });
+              }
+            },
+          ),
+        ),
+      ]),
+    );
+  }
+
+  /// QRコードやIPアドレスが書かれる部分のUI
+  Column senderInfoArea() {
+    return Column(
+      children: <Widget>[
+        qrCode,
+        Text(
+          ipText,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 30),
+        ),
+        Text(
+          keyText,
+          style:
+              const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+        ),
+        Text(
+          serverStatus,
+          style:
+              const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+        ),
+      ],
+    );
   }
 }
