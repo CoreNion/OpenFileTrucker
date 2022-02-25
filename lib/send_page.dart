@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/send.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class _SendPageState extends State<SendPage>
   @override
   bool get wantKeepAlive => true;
 
+  late bool isSmallUI;
   late FilePickerResult? selectedFile;
   String fileDataText = "";
   String serverStatus = "";
@@ -33,10 +35,15 @@ class _SendPageState extends State<SendPage>
         // サイズごとにUIを変える
         final pageWidth = constraints.maxWidth;
         if (pageWidth >= 800) {
+          isSmallUI = false;
           return largeUI();
         } else {
+          isSmallUI = true;
+          /* if (qrCode is QrImage) {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (builder) => _pushQRPageForSmallScreen(context)));
+          } */
           return smallUI();
-          // TO DO: 小さな画面ではQRコード等の表示を別の画面で行うようにする
         }
       },
     );
@@ -124,55 +131,36 @@ class _SendPageState extends State<SendPage>
                 SendFiles.selectNetwork(context).then((ip) {
                   if (!(ip == null)) {
                     var file = File(selectedFile!.files.single.path!);
-                    SendFiles.serverStart(ip, "no", file)
-                        .then((qr) => setState(() {
-                              qrCode = qr;
-                              serverStatus = "受信待機中です。";
-                              ipText = "ip: " + ip;
-                              stopServerButton = FloatingActionButton(
-                                onPressed: () {
-                                  SendFiles.serverClose();
-                                  setState(() {
-                                    qrCode = Container();
-                                    serverStatus = "";
-                                    ipText = "";
-                                    stopServerButton = Container();
-                                  });
-                                },
-                                tooltip: '共有を停止する',
-                                child: const Icon(Icons.stop),
-                              );
-                            }));
+                    SendFiles.serverStart(ip, "no", file).then((qr) {
+                      qrCode = qr;
+                      serverStatus = "受信待機中です。";
+                      ipText = "ip: " + ip;
+                      stopServerButton = FloatingActionButton(
+                        onPressed: _stopShareProcess,
+                        tooltip: '共有を停止する',
+                        child: const Icon(Icons.stop),
+                      );
+                      if (isSmallUI) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              _pushQRPageForSmallScreen(context),
+                        ));
+                      } else {
+                        setState(() {});
+                      }
+                    });
                   } else {
                     showDialog(
                         context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text("ネットワークに接続してください。"),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text("OK"),
-                                onPressed: () => Navigator.pop(context),
-                              )
-                            ],
-                          );
-                        });
+                        builder: (context) =>
+                            _showSmallInfo(context, "ネットワークに接続してください。"));
                   }
                 });
               } else {
                 showDialog(
                     context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text("ファイルを選択してください。"),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text("OK"),
-                            onPressed: () => Navigator.pop(context),
-                          )
-                        ],
-                      );
-                    });
+                    builder: (context) =>
+                        _showSmallInfo(context, "ファイルを選択してください。"));
               }
             },
           ),
@@ -182,26 +170,103 @@ class _SendPageState extends State<SendPage>
   }
 
   /// QRコードやIPアドレスが書かれる部分のUI
-  Column senderInfoArea() {
-    return Column(
-      children: <Widget>[
-        qrCode,
-        Text(
-          ipText,
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 30),
-        ),
-        Text(
-          keyText,
-          style:
-              const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-        ),
-        Text(
-          serverStatus,
-          style:
-              const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-        ),
+  Widget senderInfoArea() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            serverStatus,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.red, fontSize: 20),
+          ),
+          qrCode,
+          Text(
+            ipText,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 30),
+          ),
+          Text(
+            keyText,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.blue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _stopShareProcess() {
+    SendFiles.serverClose();
+    setState(() {
+      qrCode = Container();
+      serverStatus = "";
+      ipText = "";
+      stopServerButton = Container();
+    });
+  }
+
+  Widget _showSmallInfo(BuildContext context, String text) {
+    return AlertDialog(
+      title: Text(text),
+      actions: <Widget>[
+        TextButton(
+          child: const Text("OK"),
+          onPressed: () => Navigator.pop(context),
+        )
       ],
+    );
+  }
+
+  LayoutBuilder _pushQRPageForSmallScreen(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+            appBar: AppBar(
+              title: RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                    text: "受信待機中です",
+                    style: TextStyle(fontSize: 22),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '\n' + "ファイル名(仮)",
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                    ]),
+              ),
+              leading: IconButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            title: const Text("確認"),
+                            content: const Text("共有を停止してもよろしいですか？"),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text("はい"),
+                                onPressed: () {
+                                  _stopShareProcess();
+                                  // AlertDialogの分のcontextもあるので二回前の階層に戻る
+                                  Navigator.of(context)
+                                    ..pop()
+                                    ..pop();
+                                },
+                              ),
+                              TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("いいえ"))
+                            ],
+                          );
+                        });
+                  },
+                  icon: const Icon(Icons.stop)),
+            ),
+            body: senderInfoArea());
+      },
     );
   }
 }
