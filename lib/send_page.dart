@@ -35,6 +35,7 @@ class _SendPageState extends State<SendPage>
   String keyText = "";
   Widget qrCode = Container();
   Widget stopServerButton = Container();
+  bool serverListen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -183,24 +184,33 @@ class _SendPageState extends State<SendPage>
                 if (selectedFile != null) {
                   SendFiles.selectNetwork(context).then((ip) {
                     if (!(ip == null)) {
-                      SendFiles.serverStart(ip, "no", selectedFile!).then((qr) {
-                        qrCode = qr;
-                        serverStatus = "受信待機中です。";
-                        ipText = "ip: " + ip;
-                        stopServerButton = FloatingActionButton(
-                          onPressed: _stopShareProcess,
-                          tooltip: '共有を停止する',
-                          child: const Icon(Icons.stop),
-                        );
-                        if (isSmallUI) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                _pushQRPageForSmallScreen(context),
-                          ));
-                        } else {
-                          setState(() {});
-                        }
-                      });
+                      if (!serverListen) {
+                        SendFiles.serverStart(ip, "no", selectedFile!)
+                            .then((qr) {
+                          serverListen = true;
+                          qrCode = qr;
+                          serverStatus = "受信待機中です。";
+                          ipText = "ip: " + ip;
+                          stopServerButton = FloatingActionButton(
+                            onPressed: _stopShareProcess,
+                            tooltip: '共有を停止する',
+                            child: const Icon(Icons.stop),
+                          );
+                          if (isSmallUI) {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  _pushQRPageForSmallScreen(context),
+                            ));
+                          } else {
+                            setState(() {});
+                          }
+                        });
+                      } else {
+                        showDialog(
+                            context: context,
+                            builder: (context) => EasyDialog.showSmallInfo(
+                                context, "エラー", "他のファイルの共有を停止してください。"));
+                      }
                     } else {
                       showDialog(
                           context: context,
@@ -251,6 +261,7 @@ class _SendPageState extends State<SendPage>
 
   void _stopShareProcess() {
     SendFiles.serverClose();
+    serverListen = false;
     setState(() {
       qrCode = Container();
       serverStatus = "";
