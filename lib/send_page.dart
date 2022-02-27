@@ -270,8 +270,11 @@ class _SendPageState extends State<SendPage>
     });
   }
 
-  LayoutBuilder _pushQRPageForSmallScreen(BuildContext context) {
-    return LayoutBuilder(
+  Widget _pushQRPageForSmallScreen(BuildContext context) {
+    return WillPopScope(onWillPop: (() async {
+      await showDialog(context: context, builder: (_) => _stopServerDialog());
+      return false;
+    }), child: LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
             appBar: AppBar(
@@ -292,33 +295,33 @@ class _SendPageState extends State<SendPage>
               leading: IconButton(
                   onPressed: () {
                     showDialog(
-                        context: context,
-                        builder: (_) {
-                          return AlertDialog(
-                            title: const Text("確認"),
-                            content: const Text("共有を停止してもよろしいですか？"),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text("はい"),
-                                onPressed: () {
-                                  _stopShareProcess();
-                                  // AlertDialogの分のcontextもあるので二回前の階層に戻る
-                                  Navigator.of(context)
-                                    ..pop()
-                                    ..pop();
-                                },
-                              ),
-                              TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("いいえ"))
-                            ],
-                          );
-                        });
+                        context: context, builder: (_) => _stopServerDialog());
                   },
                   icon: const Icon(Icons.stop)),
             ),
             body: senderInfoArea());
       },
+    ));
+  }
+
+  Widget _stopServerDialog() {
+    return AlertDialog(
+      title: const Text("確認"),
+      content: const Text("共有を停止してもよろしいですか？"),
+      actions: <Widget>[
+        TextButton(
+          child: const Text("はい"),
+          onPressed: () {
+            _stopShareProcess();
+            // AlertDialogの分のcontextもあるので二回前の階層に戻る
+            Navigator.of(context)
+              ..pop()
+              ..pop();
+          },
+        ),
+        TextButton(
+            onPressed: () => Navigator.pop(context), child: const Text("いいえ"))
+      ],
     );
   }
 }

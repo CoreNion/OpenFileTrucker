@@ -20,13 +20,17 @@ class ReceiveFile {
     showDialog(
         context: context,
         builder: (_) {
-          return AlertDialog(
-            title: const Text("接続しています..."),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: () => connectionTask.cancel(),
-                  child: const Text("キャンセル")),
-            ],
+          return WillPopScope(
+            // 戻る無効化
+            onWillPop: () => Future.value(false),
+            child: AlertDialog(
+              title: const Text("接続しています..."),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => connectionTask.cancel(),
+                    child: const Text("キャンセル")),
+              ],
+            ),
           );
         });
 
@@ -112,31 +116,35 @@ class ReceiveFile {
             showDialog(
                 context: context,
                 builder: (context) {
-                  return AlertDialog(
-                    title: const Text("ファイルを受信しています..."),
-                    content: StatefulBuilder(
-                      builder: (context, setState) {
-                        // Progressの更新にはStateの更新が必要
-                        dialogSetState = setState;
-                        return SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                              Column(
-                                children: [
-                                  LinearProgressIndicator(
-                                    value: progress,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                  return WillPopScope(
+                    // 戻る無効化
+                    onWillPop: (() => Future.value(false)),
+                    child: AlertDialog(
+                      title: const Text("ファイルを受信しています..."),
+                      content: StatefulBuilder(
+                        builder: (context, setState) {
+                          // Progressの更新にはStateの更新が必要
+                          dialogSetState = setState;
+                          return SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Column(
+                                  children: [
+                                    LinearProgressIndicator(
+                                      value: progress,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      actions: <Widget>[
+                        // TO DO キャンセルボタンの実装
+                        TextButton(child: const Text("中止"), onPressed: null)
+                      ],
                     ),
-                    actions: <Widget>[
-                      // TO DO キャンセルボタンの実装
-                      TextButton(child: const Text("中止"), onPressed: null)
-                    ],
                   );
                 });
           } else {
