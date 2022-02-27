@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
@@ -20,10 +21,11 @@ class _SendPageState extends State<SendPage>
   bool get wantKeepAlive => true;
 
   late bool isSmallUI;
-  late FilePickerResult? selectedFile;
+  File? selectedFile;
   static Text firstFileButtonText = const Text(
     "ファイルを選択\nまたはドラック&ドロップ",
     style: TextStyle(fontSize: 30, color: Colors.blue),
+    textAlign: TextAlign.center,
   );
   Text selectFileButtonText = firstFileButtonText;
   late String fileName;
@@ -89,108 +91,133 @@ class _SendPageState extends State<SendPage>
   Container selectFileArea() {
     return Container(
       margin: const EdgeInsets.all(10),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              // TO DO ドラック&ドロップの実装
-              flex: 7,
-              child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: DottedBorder(
-                    color: Colors.blueAccent,
-                    strokeWidth: 3,
-                    dashPattern: const [30, 5],
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            primary: Colors.transparent,
-                            elevation: 0,
-                            shadowColor: Colors.black38),
-                        child: selectFileButtonText,
-                        onPressed: () async {
-                          var _selectedFile =
-                              await FilePicker.platform.pickFiles();
-                          if (!(_selectedFile == null)) {
-                            selectedFile = _selectedFile;
-                            fileName = _selectedFile.names[0]!;
-                            setState(() {
-                              selectFileButtonText = Text(
-                                "選択されたファイル:\n" +
-                                    fileName +
-                                    " " +
-                                    FileSize.getSize(
-                                        _selectedFile.files[0].size),
-                                style: const TextStyle(
-                                    color: Colors.blue, fontSize: 20),
-                              );
-                            });
-                          } else {
-                            setState(() {
-                              selectFileButtonText = firstFileButtonText;
-                              selectedFile = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  )),
-            ),
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blueGrey,
-                    onPrimary: Colors.white,
-                  ),
-                  child: const Text("Send"),
-                  onPressed: () {
-                    // ファイル選択時のみ実行
-                    if (selectedFile != null) {
-                      SendFiles.selectNetwork(context).then((ip) {
-                        if (!(ip == null)) {
-                          var file = File(selectedFile!.files.single.path!);
-                          SendFiles.serverStart(ip, "no", file).then((qr) {
-                            qrCode = qr;
-                            serverStatus = "受信待機中です。";
-                            ipText = "ip: " + ip;
-                            stopServerButton = FloatingActionButton(
-                              onPressed: _stopShareProcess,
-                              tooltip: '共有を停止する',
-                              child: const Icon(Icons.stop),
+      child:
+          Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <
+              Widget>[
+        Expanded(
+          flex: 7,
+          child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 20),
+              child: DropTarget(
+                onDragDone: (detail) {
+                  if (detail.files.length != 1) {
+                    showDialog(
+                        context: context,
+                        builder: (_) =>
+                            _showSmallInfo(context, "選択できるファイルは一つまでです。"));
+                  } else {
+                    final _file = detail.files.single;
+                    selectedFile = File(_file.path);
+                    fileName = _file.name;
+                    setState(() {
+                      selectFileButtonText = Text(
+                        "選択されたファイル:\n" +
+                            fileName +
+                            " " +
+                            FileSize.getSize(selectedFile!.lengthSync()),
+                        style:
+                            const TextStyle(color: Colors.blue, fontSize: 20),
+                        textAlign: TextAlign.center,
+                      );
+                    });
+                  }
+                },
+                child: DottedBorder(
+                  color: Colors.blueAccent,
+                  strokeWidth: 3,
+                  dashPattern: const [30, 5],
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          primary: Colors.transparent,
+                          elevation: 0,
+                          shadowColor: Colors.black38),
+                      child: selectFileButtonText,
+                      onPressed: () async {
+                        var _selectedFile =
+                            await FilePicker.platform.pickFiles();
+                        if (!(_selectedFile == null)) {
+                          selectedFile = File(_selectedFile.files.single.path!);
+                          fileName = _selectedFile.names[0]!;
+                          setState(() {
+                            selectFileButtonText = Text(
+                              "選択されたファイル:\n" +
+                                  fileName +
+                                  " " +
+                                  FileSize.getSize(_selectedFile.files[0].size),
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontSize: 20,
+                              ),
+                              textAlign: TextAlign.center,
                             );
-                            if (isSmallUI) {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    _pushQRPageForSmallScreen(context),
-                              ));
-                            } else {
-                              setState(() {});
-                            }
                           });
                         } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) =>
-                                  _showSmallInfo(context, "ネットワークに接続してください。"));
+                          setState(() {
+                            selectFileButtonText = firstFileButtonText;
+                            selectedFile = null;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              )),
+        ),
+        Expanded(
+          flex: 1,
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueGrey,
+                onPrimary: Colors.white,
+              ),
+              child: const Text("Send"),
+              onPressed: () {
+                // ファイル選択時のみ実行
+                if (selectedFile != null) {
+                  SendFiles.selectNetwork(context).then((ip) {
+                    if (!(ip == null)) {
+                      SendFiles.serverStart(ip, "no", selectedFile!).then((qr) {
+                        qrCode = qr;
+                        serverStatus = "受信待機中です。";
+                        ipText = "ip: " + ip;
+                        stopServerButton = FloatingActionButton(
+                          onPressed: _stopShareProcess,
+                          tooltip: '共有を停止する',
+                          child: const Icon(Icons.stop),
+                        );
+                        if (isSmallUI) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                _pushQRPageForSmallScreen(context),
+                          ));
+                        } else {
+                          setState(() {});
                         }
                       });
                     } else {
                       showDialog(
                           context: context,
                           builder: (context) =>
-                              _showSmallInfo(context, "ファイルを選択してください。"));
+                              _showSmallInfo(context, "ネットワークに接続してください。"));
                     }
-                  },
-                ),
-              ),
+                  });
+                } else {
+                  showDialog(
+                      context: context,
+                      builder: (context) =>
+                          _showSmallInfo(context, "ファイルを選択してください。"));
+                }
+              },
             ),
-          ]),
+          ),
+        ),
+      ]),
     );
   }
 

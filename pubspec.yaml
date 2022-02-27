@@ -42,6 +42,7 @@ dependencies:
   permission_handler: ^8.3.0
   dotted_border: ^2.0.0+2
   file_sizes: ^1.0.6
+  desktop_drop: ^0.3.2
 
 dev_dependencies:
   flutter_test:
