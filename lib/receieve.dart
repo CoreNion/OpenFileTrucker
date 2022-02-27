@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:open_file_trucker/dialog.dart';
 import 'dart:io';
 
 class ReceiveFile {
@@ -41,7 +42,7 @@ class ReceiveFile {
       Wakelock.disable();
       // 「接続しています」のダイアログを消す
       Navigator.pop(context);
-      return _showErrorDialog(e, context);
+      return EasyDialog.showErrorDialog(e, context);
     }
 
     socket.listen((event) {
@@ -68,7 +69,7 @@ class ReceiveFile {
               socket.add(utf8.encode("ready"));
             } on SocketException catch (e) {
               Wakelock.disable();
-              return _showErrorDialog(e, context);
+              return EasyDialog.showErrorDialog(e, context);
             }
 
             // 進行を定期的に更新する
@@ -97,14 +98,14 @@ class ReceiveFile {
                   await receieveSink.close();
                 } on Exception catch (e) {
                   endProcess();
-                  return _showErrorDialog(e, context);
+                  return EasyDialog.showErrorDialog(e, context);
                 }
                 endProcess();
                 log.text += "Done.\n";
               })
               ..catchError((e) {
                 endProcess();
-                return _showErrorDialog(e, context);
+                return EasyDialog.showErrorDialog(e, context);
               });
 
             // ファイル受信の進行状況を表示するダイアログを表示
@@ -144,49 +145,8 @@ class ReceiveFile {
         });
       })
       ..onError((e) {
-        return _showErrorDialog(e, context);
+        return EasyDialog.showErrorDialog(e, context);
       });
-  }
-
-  /// エラーのダイアログを表示する
-  static Future<void> _showErrorDialog(Exception e, BuildContext context) {
-    late String errorTitle;
-    late String errorMessage;
-    String exceptionMessage = "";
-
-    if (e is SocketException) {
-      if (e.message.contains("cancel")) {
-        errorTitle = "情報";
-        errorMessage = "操作はキャンセルされました。";
-      } else {
-        errorTitle = "通信エラー";
-        errorMessage = "通信エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。\n";
-        exceptionMessage = "詳細:\n" + e.toString();
-      }
-    } else if (e is IOException) {
-      errorTitle = "I/Oエラー";
-      errorMessage = "ファイルの読み書き中にエラーが発生しました。\n";
-      exceptionMessage = "詳細:\n" + e.toString();
-    } else {
-      errorTitle = "不明なエラー";
-      errorMessage = "エラーが発生しました。\n";
-      exceptionMessage = "詳細:\n" + e.toString();
-    }
-
-    return showDialog(
-        context: context,
-        builder: (builder) {
-          return AlertDialog(
-            title: Text(errorTitle),
-            content: Text(errorMessage + exceptionMessage),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("閉じる"),
-                onPressed: () => Navigator.pop(context),
-              )
-            ],
-          );
-        });
   }
 
   /// ファイルの保存場所をユーザーなどから取得

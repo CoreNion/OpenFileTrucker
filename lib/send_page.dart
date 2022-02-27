@@ -4,6 +4,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -104,8 +105,8 @@ class _SendPageState extends State<SendPage>
                   if (detail.files.length != 1) {
                     showDialog(
                         context: context,
-                        builder: (_) =>
-                            _showSmallInfo(context, "選択できるファイルは一つまでです。"));
+                        builder: (_) => EasyDialog.showSmallInfo(
+                            context, "エラー", "選択できるファイルは一つまでです。"));
                   } else {
                     final _file = detail.files.single;
                     selectedFile = File(_file.path);
@@ -203,15 +204,15 @@ class _SendPageState extends State<SendPage>
                     } else {
                       showDialog(
                           context: context,
-                          builder: (context) =>
-                              _showSmallInfo(context, "ネットワークに接続してください。"));
+                          builder: (context) => EasyDialog.showSmallInfo(
+                              context, "エラー", "ネットワークに接続してください。"));
                     }
                   });
                 } else {
                   showDialog(
                       context: context,
-                      builder: (context) =>
-                          _showSmallInfo(context, "ファイルを選択してください。"));
+                      builder: (context) => EasyDialog.showSmallInfo(
+                          context, "エラー", "ファイルを選択してください。"));
                 }
               },
             ),
@@ -256,18 +257,6 @@ class _SendPageState extends State<SendPage>
       ipText = "";
       stopServerButton = Container();
     });
-  }
-
-  Widget _showSmallInfo(BuildContext context, String text) {
-    return AlertDialog(
-      title: Text(text),
-      actions: <Widget>[
-        TextButton(
-          child: const Text("OK"),
-          onPressed: () => Navigator.pop(context),
-        )
-      ],
-    );
   }
 
   LayoutBuilder _pushQRPageForSmallScreen(BuildContext context) {
