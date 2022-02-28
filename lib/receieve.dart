@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:open_file_trucker/dialog.dart';
 import 'dart:io';
@@ -167,9 +168,8 @@ class ReceiveFile {
     } else if (Platform.isAndroid) {
       // 仮
       /* TO DO: ACTION_CREATE_DOCUMENT経由でユーザーが選択した場所に保存する */
-      Directory? directory = await getExternalStorageDirectory();
-      if (directory != null) {
-        return directory.path + "/" + fileName;
+      if (await Permission.manageExternalStorage.request().isGranted) {
+        return "/storage/emulated/0/download/" + fileName;
       } else {
         return null;
       }
