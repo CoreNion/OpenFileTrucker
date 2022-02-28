@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: build ipa (iOS cant run debug app without pc, make release app.)
+      - name: build ipa
         run: flutter build ios --release --no-codesign
       
       - name: mkdir payload and copy .app to Payload/
@@ -64,7 +64,7 @@ jobs:
         run: flutter pub get
 
       - name: build apk
-        run: flutter build apk --debug 
+        run: flutter build apk --release
         
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -93,9 +93,9 @@ jobs:
 
       - name: build app
         run: |
-          flutter build macos --debug 
+          flutter build macos --release
           mkdir output
-          cd build/macos/Build/Products/Debug/
+          cd build/macos/Build/Products/Release/
           cp -r FileTrucker.app ../../../../../output/
           cd ../../../../../
         
@@ -125,13 +125,13 @@ jobs:
           flutter pub get
 
       - name: build
-        run: flutter build windows --debug 
+        run: flutter build windows --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: windows-x64
-          path: build\windows\runner\Debug
+          path: build\windows\runner\Release
 
   build_linux:
     runs-on: ubuntu-latest
@@ -155,10 +155,10 @@ jobs:
           flutter pub get
 
       - name: build bundle
-        run: flutter build linux --debug 
+        run: flutter build linux --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: linux-x64
-          path: build/linux/x64/debug/bundle
+          path: build/linux/x64/release/bundle
