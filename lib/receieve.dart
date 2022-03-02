@@ -51,7 +51,7 @@ class ReceiveFile {
     }
 
     socket.listen((event) {
-      Map<String, dynamic> fileInfo = json.decode(String.fromCharCodes(event));
+      Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
       fileName = fileInfo["name"];
       fileSize = fileInfo["length"].toDouble();
     })
