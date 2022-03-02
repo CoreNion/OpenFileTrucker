@@ -43,6 +43,7 @@ dependencies:
   dotted_border: ^2.0.0+2
   file_sizes: ^1.0.6
   desktop_drop: ^0.3.2
+  cool_alert: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - original_media/FileTrucker.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

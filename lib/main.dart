@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/receieve_page.dart';
 import 'package:open_file_trucker/send_page.dart';
+import 'package:cool_alert/cool_alert.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -24,11 +25,35 @@ class MyApp extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.info),
               onPressed: () => showAboutDialog(
-                context: context,
-                applicationName: 'Open FileTrucker',
-                applicationVersion: '0.0.0',
-                applicationLegalese: 'Copyright (c) 2022 CoreNion',
-              ),
+                  context: context,
+                  applicationIcon: Image.asset(
+                    'original_media/FileTrucker.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                  applicationName: 'Open FileTrucker',
+                  applicationVersion: 'Dev (Nightly Build)',
+                  applicationLegalese: 'Copyright (c) 2022 CoreNion',
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.error,
+                          animType: CoolAlertAnimType.rotate,
+                          title: "ﾊﾟｧｧｧｧ!!()",
+                          text: "このアプリはまだ公開されていません！\nまだまだ開発中です！",
+                        );
+                      },
+                      child: const Text('GitHub Repo'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.transparent,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        onPrimary: Colors.blue,
+                      ),
+                    ),
+                  ]),
             ),
           ],
           bottom: const TabBar(
