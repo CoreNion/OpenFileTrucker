@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
                   context: context,
                   applicationIcon: Image.asset(
                     'original_media/FileTrucker.png',
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                   ),
                   applicationName: 'Open FileTrucker',
                   applicationVersion: 'Dev (Nightly Build)',
