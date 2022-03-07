@@ -41,7 +41,7 @@ class _SendPageState extends State<SendPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return LayoutBuilder(
+    return SafeArea(child: LayoutBuilder(
       builder: (context, constraints) {
         // サイズごとにUIを変える
         final pageWidth = constraints.maxWidth;
@@ -57,7 +57,7 @@ class _SendPageState extends State<SendPage>
           return smallUI();
         }
       },
-    );
+    ));
   }
 
   /// 大きな画面やウィンドウに最適化された送信ページのUI
