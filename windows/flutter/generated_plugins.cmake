@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop
+  permission_handler_windows
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

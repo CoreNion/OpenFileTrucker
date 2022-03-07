@@ -38,8 +38,8 @@ dependencies:
   qr_flutter: ^4.0.0
   path_provider: ^2.0.8
   wakelock: ^0.6.1+1
-  qr_code_scanner: ^0.6.1
-  permission_handler: ^8.3.0
+  qr_code_scanner: ^0.7.0
+  permission_handler: ^9.2.0
   dotted_border: ^2.0.0+2
   file_sizes: ^1.0.6
   desktop_drop: ^0.3.2
