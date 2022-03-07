@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Open File Trucker</string>
+	<string>FileTrucker</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,6 +23,12 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to scan QR codes</string>
+	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -43,13 +49,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-  <true/>
-  <key>UIFileSharingEnabled</key>
-  <true/>
 	<key>io.flutter.embedded_views_preview</key>
-  <true/>
-  <key>NSCameraUsageDescription</key>
-  <string>This app needs camera access to scan QR codes</string>
+	<true/>
 </dict>
 </plist>
