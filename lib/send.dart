@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:open_file_trucker/qr_data.dart';
 import 'package:wakelock/wakelock.dart';
@@ -54,9 +55,10 @@ class SendFiles {
 
   static ServerSocket? _server;
 
-  static Future<QrImage> serverStart(String ip, String key, File file) async {
+  static Future<QrImage> serverStart(
+      String ip, String key, List<File> files) async {
     _server = await ServerSocket.bind(ip, 4782);
-    _server?.listen((event) => _serverListen(event, file));
+    _server?.listen((event) => _serverListen(event, files));
 
     return QrImage(
       data: json.encode(QRCodeData(ip: ip, key: key).toJson()),
@@ -64,21 +66,28 @@ class SendFiles {
     );
   }
 
-  static void _serverListen(Socket socket, File file) {
-    socket.listen((event) {
-      String mesg = String.fromCharCodes(event);
+  static void _serverListen(Socket socket, List<File> files) {
+    socket.listen((event) async {
+      String mesg = utf8.decode(event);
       if (mesg == "first") {
         // 1回目の場合、ファイルの各情報を送って一旦close(受信の処理の都合で1回の通信では送らない)
-        Map<String, dynamic> fileInfo = {
-          "name": file.uri.pathSegments.last,
-          "length": file.lengthSync()
-        };
-        socket.add(utf8.encode(json.encode(fileInfo)));
-        socket.close();
-      }
-      if (mesg == "ready") {
-        // 受信側の準備が出来たら2回目の通信でファイルを送信
-        socket.addStream(file.openRead()).then((e) => socket.close());
+        List<String> nameList = <String>[];
+        List<int> lengthList = <int>[];
+        for (var i = 0; i < files.length; i++) {
+          nameList.add(basename(files[i].path));
+          lengthList.add(files[i].lengthSync());
+        }
+        socket.add(utf8.encode(
+            json.encode({"nameList": nameList, "lengthList": lengthList})));
+        socket.destroy();
+      } else {
+        int? fileNumber = int.tryParse(mesg);
+        if (fileNumber != null) {
+          await socket.addStream(files[fileNumber].openRead());
+          socket.destroy();
+        } else {
+          socket.destroy();
+        }
       }
     });
   }

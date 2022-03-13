@@ -44,6 +44,7 @@ dependencies:
   file_sizes: ^1.0.6
   desktop_drop: ^0.3.2
   cool_alert: ^1.1.0
+  path: ^1.8.0
 
 dev_dependencies:
   flutter_test:
