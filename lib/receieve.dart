@@ -208,22 +208,18 @@ class ReceiveFile {
         return await FilePicker.platform
             .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
       }
-    } else if (Platform.isAndroid) {
-      // 仮
-      /* TO DO: ACTION_CREATE_DOCUMENT経由でユーザーが選択した場所に保存する */
-      if (await Permission.manageExternalStorage.request().isGranted) {
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      String? path = await FilePicker.platform
+          .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
+      if (path != null) {
         if (fileName.length < 2) {
-          return p.join("/storage/emulated/0/download/", fileName.first);
+          return p.join(path, fileName.first);
         } else {
-          return "/storage/emulated/0/download/";
+          return path;
         }
       } else {
         return null;
       }
-    } else if (Platform.isIOS) {
-      // iOSはgetApplicationDocumentsDirectoryでもファイルアプリに表示可
-      final directory = await getApplicationDocumentsDirectory();
-      return directory.path + "/" + fileName[0];
     } else {
       return null;
     }
