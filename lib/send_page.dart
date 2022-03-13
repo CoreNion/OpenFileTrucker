@@ -219,7 +219,7 @@ class _SendPageState extends State<SendPage>
                           stopServerButton = FloatingActionButton(
                             onPressed: _stopShareProcess,
                             tooltip: '共有を停止する',
-                            child: const Icon(Icons.stop),
+                            child: const Icon(Icons.pause),
                           );
                           if (isSmallUI) {
                             Navigator.of(context).push(MaterialPageRoute(
@@ -320,7 +320,7 @@ class _SendPageState extends State<SendPage>
                     showDialog(
                         context: context, builder: (_) => _stopServerDialog());
                   },
-                  icon: const Icon(Icons.stop)),
+                  icon: const Icon(Icons.pause)),
             ),
             body: senderInfoArea());
       },
