@@ -16,7 +16,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.10.1'
+          flutter-version: '2.x'
           channel: 'stable'
           cache: true
           cache-key: flutter_mac
@@ -54,7 +54,7 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.10.1'
+          flutter-version: '2.x'
           channel: 'stable'
           cache: true
           cache-key: flutter_linux
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: android
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           
   build_macos:
     runs-on: macos-latest
@@ -80,7 +80,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.10.1'
+          flutter-version: '2.x'
           channel: 'stable'
           cache: true
           cache-key: flutter_mac
@@ -113,7 +113,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.10.1'
+          flutter-version: '2.x'
           channel: 'stable'
           cache: true
           cache-key: flutter_win
@@ -141,7 +141,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '2.10.1'
+          flutter-version: '2.x'
           channel: 'stable'
           cache: true
           cache-key: flutter_linux
