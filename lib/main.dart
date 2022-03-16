@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:open_file_trucker/receieve_page.dart';
 import 'package:open_file_trucker/send_page.dart';
 import 'package:cool_alert/cool_alert.dart';
@@ -26,11 +27,13 @@ class MyApp extends StatelessWidget {
               icon: const Icon(Icons.info),
               onPressed: () => showAboutDialog(
                   context: context,
-                  applicationIcon: Image.asset(
-                    'original_media/FileTrucker.png',
-                    width: 80,
-                    height: 80,
-                  ),
+                  applicationIcon: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      child: SvgPicture.asset(
+                        'original_media/FileTrucker.svg',
+                        width: 80,
+                        height: 80,
+                      )),
                   applicationName: 'Open FileTrucker',
                   applicationVersion: 'Dev (Nightly Build)',
                   applicationLegalese: 'Copyright (c) 2022 CoreNion',
