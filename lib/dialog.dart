@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EasyDialog {
   /// 小規模なダイアログを表示する
@@ -50,6 +51,28 @@ class EasyDialog {
             title: Text(errorTitle),
             content: Text(errorMessage + exceptionMessage),
             actions: <Widget>[
+              TextButton(
+                child: const Text("閉じる"),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          );
+        });
+  }
+
+  /// 権限が必要であることを伝えるダイアログを表示する
+  static Future<void> showPermissionAlert(String reason, BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text("権限が必要です"),
+            content: Text(reason),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("設定を開く"),
+                onPressed: () => openAppSettings(),
+              ),
               TextButton(
                 child: const Text("閉じる"),
                 onPressed: () => Navigator.pop(context),

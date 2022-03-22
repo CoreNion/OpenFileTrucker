@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/dialog.dart';
 import 'package:open_file_trucker/qr_data.dart';
 import 'package:open_file_trucker/receieve.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -43,24 +44,8 @@ class _ReceivePageState extends State<ReceivePage>
               }
             });
           } else {
-            showDialog(
-                context: context,
-                builder: (_) {
-                  return AlertDialog(
-                    title: const Text("カメラへのアクセスの権限が必要です"),
-                    content: const Text("QRコードを読み取るためには、カメラへのアクセスの許可が必要です。"),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text("設定を開く"),
-                        onPressed: () => openAppSettings(),
-                      ),
-                      TextButton(
-                        child: const Text("閉じる"),
-                        onPressed: () => Navigator.pop(context),
-                      )
-                    ],
-                  );
-                });
+            EasyDialog.showPermissionAlert(
+                "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", context);
           }
         },
         tooltip: "QRコードを利用する",

@@ -60,7 +60,7 @@ class ReceiveFile {
         // 「接続しています」のダイアログを消す
         Navigator.pop(context);
         // ファイルの保存場所を取得(聞く)
-        String? path = await _getSavePath(fileName);
+        String? path = await _getSavePath(fileName, context);
         if (path != null) {
           late int currentNum;
           double singleFileProgress = 0;
@@ -197,7 +197,8 @@ class ReceiveFile {
   }
 
   /// ファイルの保存場所をユーザーなどから取得
-  static Future<String?> _getSavePath(List<String> fileName) async {
+  static Future<String?> _getSavePath(
+      List<String> fileName, BuildContext context) async {
     // Desktopはファイル保存のダイアログ経由
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       if (fileName.length < 2) {
@@ -209,15 +210,21 @@ class ReceiveFile {
             .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
       }
     } else if (Platform.isAndroid || Platform.isIOS) {
-      String? path = await FilePicker.platform
-          .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
-      if (path != null) {
-        if (fileName.length < 2) {
-          return p.join(path, fileName.first);
+      if (await Permission.storage.request().isGranted) {
+        String? path = await FilePicker.platform
+            .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
+        if (path != null) {
+          if (fileName.length < 2) {
+            return p.join(path, fileName.first);
+          } else {
+            return path;
+          }
         } else {
-          return path;
+          return null;
         }
       } else {
+        EasyDialog.showPermissionAlert(
+            "ファイルを保存するには、ストレージへのアクセス権限が必要です。", context);
         return null;
       }
     } else {
