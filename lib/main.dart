@@ -93,8 +93,8 @@ class _MyAppState extends State<MyApp> {
                   ],
                   bottom: const TabBar(
                     tabs: [
-                      Tab(text: "Send", icon: Icon(Icons.send)),
-                      Tab(text: "Receive", icon: Icon(Icons.download)),
+                      Tab(text: "送信", icon: Icon(Icons.send)),
+                      Tab(text: "受信", icon: Icon(Icons.download)),
                     ],
                   ),
                   title: const Text('Open FileTrucker'),

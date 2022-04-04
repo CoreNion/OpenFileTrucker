@@ -204,7 +204,7 @@ class _SendPageState extends State<SendPage>
                     primary: Colors.blueGrey,
                     onPrimary: Colors.white,
                   ),
-                  child: const Text("Send"),
+                  child: const Text("送信する"),
                   onPressed: () async {
                     // ファイル選択時のみ実行
                     if (selectedFiles.isNotEmpty) {
@@ -333,7 +333,7 @@ class _SendPageState extends State<SendPage>
               title: RichText(
                 textAlign: TextAlign.start,
                 text: TextSpan(
-                    text: "受信待機中です",
+                    text: "送信待機中です",
                     style: const TextStyle(fontSize: 22),
                     children: <TextSpan>[
                       TextSpan(
