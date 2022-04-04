@@ -24,7 +24,10 @@ class _SendPageState extends State<SendPage>
   List<File> selectedFiles = <File>[];
   static Text firstFileButtonText = const Text(
     "ファイルを選択\nまたはドラック&ドロップ",
-    style: TextStyle(fontSize: 30, color: Colors.blue),
+    style: TextStyle(
+      fontSize: 30,
+      color: Colors.green,
+    ),
     textAlign: TextAlign.center,
   );
   Text selectFileButtonText = firstFileButtonText;
@@ -138,14 +141,14 @@ class _SendPageState extends State<SendPage>
                       setState(() {
                         selectFileButtonText = Text(
                           "選択されたファイル:\n" + _setFileInfoStr(),
-                          style:
-                              const TextStyle(color: Colors.blue, fontSize: 20),
+                          style: const TextStyle(
+                              fontSize: 20, color: Colors.green),
                           textAlign: TextAlign.center,
                         );
                       });
                     },
                     child: DottedBorder(
-                      color: Colors.blueAccent,
+                      color: Colors.green,
                       strokeWidth: 3,
                       dashPattern: const [30, 5],
                       child: SizedBox(
@@ -155,7 +158,8 @@ class _SendPageState extends State<SendPage>
                           style: ElevatedButton.styleFrom(
                               primary: Colors.transparent,
                               elevation: 0,
-                              shadowColor: Colors.black38),
+                              shadowColor:
+                                  const Color.fromARGB(95, 185, 185, 185)),
                           child: selectFileButtonText,
                           onPressed: () async {
                             // 過去のファイル情報を消去
@@ -176,9 +180,7 @@ class _SendPageState extends State<SendPage>
                                 selectFileButtonText = Text(
                                   "選択されたファイル:\n" + _setFileInfoStr(),
                                   style: const TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 20,
-                                  ),
+                                      fontSize: 20, color: Colors.green),
                                   textAlign: TextAlign.center,
                                 );
                               });
@@ -211,7 +213,7 @@ class _SendPageState extends State<SendPage>
                       if (!(ip == null)) {
                         if (!serverListen) {
                           final qr = await SendFiles.serverStart(
-                              ip, "no", selectedFiles);
+                              ip, "no", selectedFiles, context);
                           serverListen = true;
                           qrCode = qr;
                           serverStatus = "受信待機中です。";
