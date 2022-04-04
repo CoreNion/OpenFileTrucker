@@ -61,6 +61,7 @@ class ReceiveFile {
         Navigator.pop(context);
         // ファイルの保存場所を取得(聞く)
         String? path = await _getSavePath(fileName, context);
+        print(path);
         if (path != null) {
           late int currentNum;
           double singleFileProgress = 0;
@@ -209,7 +210,8 @@ class ReceiveFile {
         return await FilePicker.platform
             .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
       }
-    } else if (Platform.isAndroid || Platform.isIOS) {
+    } else if (Platform.isAndroid) {
+      // なぜかiOSでは動作しない...
       if (await Permission.storage.request().isGranted) {
         String? path = await FilePicker.platform
             .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
@@ -226,6 +228,14 @@ class ReceiveFile {
         EasyDialog.showPermissionAlert(
             "ファイルを保存するには、ストレージへのアクセス権限が必要です。", context);
         return null;
+      }
+    } else if (Platform.isIOS) {
+      // iOSはgetApplicationDocumentsDirectoryでもファイルアプリに表示可
+      final directory = await getApplicationDocumentsDirectory();
+      if (fileName.length < 2) {
+        return p.join(directory.path, fileName.first);
+      } else {
+        return directory.path;
       }
     } else {
       return null;
