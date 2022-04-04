@@ -32,7 +32,6 @@ class _SendPageState extends State<SendPage>
   );
   Text selectFileButtonText = firstFileButtonText;
   List<String> fileName = <String>[];
-  String serverStatus = "";
   String ipText = "";
   String keyText = "";
   Widget qrCode = Container();
@@ -216,8 +215,7 @@ class _SendPageState extends State<SendPage>
                               ip, "no", selectedFiles, context);
                           serverListen = true;
                           qrCode = qr;
-                          serverStatus = "受信待機中です。";
-                          ipText = "ip: " + ip;
+                          ipText = "IP: " + ip;
                           stopServerButton = FloatingActionButton(
                             onPressed: _stopShareProcess,
                             tooltip: '共有を停止する',
@@ -259,29 +257,59 @@ class _SendPageState extends State<SendPage>
 
   /// QRコードやIPアドレスが書かれる部分のUI
   Widget senderInfoArea() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            serverStatus,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.red, fontSize: 20),
-          ),
-          qrCode,
-          Text(
-            ipText,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 30),
-          ),
-          Text(
-            keyText,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.blue),
-          ),
-        ],
-      ),
-    );
+    if (serverListen) {
+      return Container(
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Column(
+                children: const <Widget>[
+                  Text(
+                    "送信待機中です",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                        fontSize: 30),
+                  ),
+                  Text("ファイルを受信するには、QRコード読み取るか、IPアドレスを入力してください。"),
+                ],
+              ),
+              qrCode,
+              Column(
+                children: <Widget>[
+                  Text(
+                    ipText,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                        fontSize: 35),
+                  ),
+                  /*
+            Text(
+              keyText,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.blue),
+            ), */
+                ],
+              )
+            ],
+          ));
+    } else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            Text(
+              "現在、ファイルの送受信は行われていません。",
+              style: TextStyle(fontSize: 20),
+            ),
+            Text("ファイルの送受信が行われる際には、ここに情報が表示されます。")
+          ],
+        ),
+      );
+    }
   }
 
   void _stopShareProcess() {
@@ -289,7 +317,6 @@ class _SendPageState extends State<SendPage>
     serverListen = false;
     setState(() {
       qrCode = Container();
-      serverStatus = "";
       ipText = "";
       stopServerButton = Container();
     });
