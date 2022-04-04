@@ -44,10 +44,13 @@ class SendFiles {
       return showDialog<String>(
         context: context,
         builder: (BuildContext context) {
-          return SimpleDialog(
-            title: const Text("利用するネットワークを選択してください。"),
-            children: dialogOptions,
-          );
+          return WillPopScope(
+              // 戻る無効化
+              onWillPop: () => Future.value(false),
+              child: SimpleDialog(
+                title: const Text("利用するネットワークを選択してください。"),
+                children: dialogOptions,
+              ));
         },
       );
     }
