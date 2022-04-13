@@ -208,38 +208,42 @@ class _SendPageState extends State<SendPage>
                   onPressed: () async {
                     // ファイル選択時のみ実行
                     if (selectedFiles.isNotEmpty) {
-                      final ip = await SendFiles.selectNetwork(context);
-                      if (!(ip == null)) {
-                        if (!serverListen) {
-                          final qr = await SendFiles.serverStart(
-                              ip, "no", selectedFiles, context);
-                          serverListen = true;
-                          qrCode = qr;
-                          ipText = "IP: " + ip;
-                          stopServerButton = FloatingActionButton(
-                            onPressed: _stopShareProcess,
-                            tooltip: '共有を停止する',
-                            child: const Icon(Icons.pause),
-                          );
-                          if (isSmallUI) {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  _pushQRPageForSmallScreen(context),
-                            ));
+                      try {
+                        final ip = await SendFiles.selectNetwork(context);
+                        if (!(ip == null)) {
+                          if (!serverListen) {
+                            final qr = await SendFiles.serverStart(
+                                ip, "no", selectedFiles, context);
+                            serverListen = true;
+                            qrCode = qr;
+                            ipText = "IP: " + ip;
+                            stopServerButton = FloatingActionButton(
+                              onPressed: _stopShareProcess,
+                              tooltip: '共有を停止する',
+                              child: const Icon(Icons.pause),
+                            );
+                            if (isSmallUI) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    _pushQRPageForSmallScreen(context),
+                              ));
+                            } else {
+                              setState(() {});
+                            }
                           } else {
-                            setState(() {});
+                            showDialog(
+                                context: context,
+                                builder: (context) => EasyDialog.showSmallInfo(
+                                    context, "エラー", "他のファイルの共有を停止してください。"));
                           }
                         } else {
                           showDialog(
                               context: context,
                               builder: (context) => EasyDialog.showSmallInfo(
-                                  context, "エラー", "他のファイルの共有を停止してください。"));
+                                  context, "エラー", "ネットワークに接続してください。"));
                         }
-                      } else {
-                        showDialog(
-                            context: context,
-                            builder: (context) => EasyDialog.showSmallInfo(
-                                context, "エラー", "ネットワークに接続してください。"));
+                      } on Exception catch (e) {
+                        EasyDialog.showErrorDialog(e, context);
                       }
                     } else {
                       showDialog(
