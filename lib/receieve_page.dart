@@ -104,8 +104,8 @@ class _ReceivePageState extends State<ReceivePage>
                               ),
                               child: const Text("ファイルを受信"),
                               onPressed: () async {
+                                // 値のチェック
                                 if (formKey.currentState != null) {
-                                  // TO DO:値のチェック
                                   if (formKey.currentState!.validate()) {
                                     formKey.currentState!.save();
                                     ReceiveFile.receiveFile(

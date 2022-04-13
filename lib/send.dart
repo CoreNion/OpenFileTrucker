@@ -15,6 +15,7 @@ class SendFiles {
     Wakelock.enable();
 
     // NetworkInterfaceからIPアドレスを取得
+    List<String> addressList = [];
     for (NetworkInterface interface in await NetworkInterface.list()) {
       String strAddr = "";
       String interfaceName = interface.name;
@@ -27,19 +28,30 @@ class SendFiles {
       }
 
       // 条件に合う場合のみdialogOptionsに追加
-      // To Do: モバイル通信の検知
       if (strAddr.isNotEmpty) {
-        dialogOptions.add(SimpleDialogOption(
-          onPressed: () => Navigator.pop(context, strAddr),
-          child: Text(interfaceName + " " + strAddr),
-          // 表示例: "Wi-Fi 192.168.0.10"
-        ));
+        void addOption() {
+          addressList.add(strAddr);
+
+          dialogOptions.add(SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, strAddr),
+            child: Text(interfaceName + " " + strAddr),
+            // 表示例: "Wi-Fi 192.168.0.10"
+          ));
+        }
+
+        if (!Platform.isAndroid) {
+          addOption();
+        } else if (interfaceName.contains("wlan")) {
+          // Androidではwlanのみ表示
+          addOption();
+        }
       }
     }
 
-    // To Do ネットワークが一つの時はダイアログを出さないようにする
     if (dialogOptions.isEmpty) {
       return null;
+    } else if (addressList.length == 1) {
+      return addressList[0];
     } else {
       return showDialog<String>(
         context: context,
