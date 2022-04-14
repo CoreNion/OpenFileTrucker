@@ -19,13 +19,14 @@ class _ReceivePageState extends State<ReceivePage>
   @override
   bool get wantKeepAlive => true;
 
+  List<Widget> sucsessWidght = <Widget>[];
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final formKey = GlobalKey<FormState>();
     String ip = "";
     String key = "";
-    TextEditingController logController = TextEditingController();
 
     late Widget? qrButton;
     if (Platform.isIOS || Platform.isAndroid) {
@@ -38,7 +39,7 @@ class _ReceivePageState extends State<ReceivePage>
                     builder: (builder) => const ScanQRCodePage()))
                 .then((result) {
               if (result is QRCodeData) {
-                ReceiveFile.receiveFile(result.ip, logController, context);
+                ReceiveFile.receiveFile(result.ip, context);
               } else {
                 Wakelock.disable();
               }
@@ -60,72 +61,78 @@ class _ReceivePageState extends State<ReceivePage>
         child: Scaffold(
             body: Container(
               margin: const EdgeInsets.all(10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Form(
-                    key: formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            labelText: 'IP Address',
-                            hintText: 'IPアドレスを入力',
-                            icon: Icon(Icons.connect_without_contact),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return '値を入力してください';
-                            } else if (!RegExp(
-                                    r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
-                                .hasMatch(value)) {
-                              return "IPアドレスを入力してください。";
-                            }
-                            return null;
-                          },
-                          onSaved: (newValue) => ip = newValue!,
-                        ),
-                        TextFormField(
-                          decoration: const InputDecoration(
-                              labelText: 'Key (任意)',
-                              hintText: 'Keyを入力(設定している場合のみ)',
-                              icon: Icon(Icons.vpn_key)),
-                          obscureText: true,
-                          onSaved: (newValue) => key = newValue!,
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10),
-                          height: 40,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.blueGrey,
-                                onPrimary: Colors.white,
-                              ),
-                              child: const Text("ファイルを受信"),
-                              onPressed: () async {
-                                // 値のチェック
-                                if (formKey.currentState != null) {
-                                  if (formKey.currentState!.validate()) {
-                                    formKey.currentState!.save();
-                                    ReceiveFile.receiveFile(
-                                        ip, logController, context);
-                                  }
-                                }
-                              }),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // ログ出力
-                  TextField(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
                       decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                        labelText: 'IP Address',
+                        hintText: 'IPアドレスを入力',
+                        icon: Icon(Icons.connect_without_contact),
                       ),
-                      readOnly: true,
-                      maxLines: null,
-                      controller: logController),
-                ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '値を入力してください';
+                        } else if (!RegExp(
+                                r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+                            .hasMatch(value)) {
+                          return "IPアドレスを入力してください。";
+                        }
+                        return null;
+                      },
+                      onSaved: (newValue) => ip = newValue!,
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                          labelText: 'Key (任意)',
+                          hintText: 'Keyを入力(設定している場合のみ)',
+                          icon: Icon(Icons.vpn_key)),
+                      obscureText: true,
+                      onSaved: (newValue) => key = newValue!,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 30),
+                      height: 40,
+                      width: double.infinity,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.blueGrey,
+                            onPrimary: Colors.white,
+                          ),
+                          child: const Text("ファイルを受信"),
+                          onPressed: () async {
+                            // 値のチェック
+                            if (formKey.currentState != null) {
+                              if (formKey.currentState!.validate()) {
+                                formKey.currentState!.save();
+                                // 結果のメッセージを削除
+                                sucsessWidght.clear();
+
+                                final result =
+                                    await ReceiveFile.receiveFile(ip, context);
+                                // ファイルの受信に成功したらメッセージを表示
+                                if (result) {
+                                  sucsessWidght.add(const Text("ファイルの受信が完了しました",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 25,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold)));
+                                  if (Platform.isIOS) {
+                                    sucsessWidght.add(const Text(
+                                        '\niOSではファイルは、アプリ用の外から読み書きが可能なフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
+                                        textAlign: TextAlign.start));
+                                  }
+                                  setState(() {});
+                                }
+                              }
+                            }
+                          }),
+                    ),
+                    Column(children: sucsessWidght),
+                  ],
+                ),
               ),
             ),
             floatingActionButton: qrButton));

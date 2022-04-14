@@ -10,12 +10,11 @@ import 'package:open_file_trucker/dialog.dart';
 import 'dart:io';
 
 class ReceiveFile {
-  static void receiveFile(
-      String ip, TextEditingController log, BuildContext context) async {
-    late List<String> fileName;
-    late List<int> fileSize;
+  /// ファイルの受信の処理をする関数
+  static Future<bool> receiveFile(String ip, BuildContext context) async {
     late ConnectionTask<Socket> connectionTask;
     late Socket socket;
+    bool err = false;
 
     // ダイアログ表示
     showDialog(
@@ -38,7 +37,7 @@ class ReceiveFile {
     //スリープ無効化
     Wakelock.enable();
 
-    // 最初の接続
+    // 最初の接続を開始
     try {
       connectionTask = await Socket.startConnect(ip, 4782);
       socket = await connectionTask.socket;
@@ -47,154 +46,163 @@ class ReceiveFile {
       Wakelock.disable();
       // 「接続しています」のダイアログを消す
       Navigator.pop(context);
-      return EasyDialog.showErrorDialog(e, context);
+      EasyDialog.showErrorDialog(e, context);
+      return false;
     }
 
-    socket.listen((event) {
-      Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
-      fileName = fileInfo["nameList"].cast<String>();
-      fileSize = fileInfo["lengthList"].cast<int>();
-    })
-      // ファイルの情報を取得したら一旦通信終了される
-      ..onDone(() async {
-        // 「接続しています」のダイアログを消す
-        Navigator.pop(context);
-        // ファイルの保存場所を取得(聞く)
-        String? path = await _getSavePath(fileName, context);
-        print(path);
-        if (path != null) {
-          late int currentNum;
-          double singleFileProgress = 0;
-          double totalProgress = 0;
-          late Function dialogSetState;
-          final int totalFileLength = fileSize.reduce((a, b) => a + b);
-          int completedLength = 0;
-          late Timer timer;
+    // ファイルの情報を受信
+    late List<String> fileName;
+    late List<int> fileSize;
+    // ファイルの情報を取得したら一旦通信終了される
+    await socket
+        .listen((event) {
+          Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
+          fileName = fileInfo["nameList"].cast<String>();
+          fileSize = fileInfo["lengthList"].cast<int>();
+        })
+        .asFuture<void>()
+        .catchError((e) {
+          EasyDialog.showErrorDialog(e, context);
+          err = true;
+        });
+    if (err) {
+      return false;
+    }
 
-          // 全ファイルの受信の終了時の処理(異常終了関係なし)
-          void endProcess() {
-            Wakelock.disable();
-            socket.destroy();
-            Navigator.of(context).pop();
-          }
+    // 終了次第「接続しています」のダイアログを消す
+    Navigator.pop(context);
+    // ファイルの保存場所を取得(聞く)
+    String? path = await _getSavePath(fileName, context);
+    if (path != null) {
+      late int currentNum;
+      double singleFileProgress = 0;
+      double totalProgress = 0;
+      late Function dialogSetState;
+      final int totalFileLength = fileSize.reduce((a, b) => a + b);
+      int completedLength = 0;
+      late Timer timer;
 
-          // ファイル受信の進行状況を表示するダイアログを表示
-          showDialog(
-              context: context,
-              builder: (context) {
-                return WillPopScope(
-                  // 戻る無効化
-                  onWillPop: (() => Future.value(false)),
-                  child: AlertDialog(
-                    title: const Text("ファイルを受信しています..."),
-                    content: StatefulBuilder(
-                      builder: (context, setState) {
-                        // Progressの更新にはStateの更新が必要
-                        dialogSetState = setState;
-                        return SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                              Column(
-                                children: [
-                                  Text(
-                                    "${currentNum + 1}個目のファイルを受信中 ${(totalProgress * 100).toStringAsFixed(1)}%完了",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  LinearProgressIndicator(
-                                    value: totalProgress,
-                                  ),
-                                  Text(
-                                    "${fileName[currentNum]} ${(singleFileProgress * 100).toStringAsFixed(1)}%完了",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  LinearProgressIndicator(
-                                    value: singleFileProgress,
-                                  ),
-                                ],
+      // 全ファイルの受信の終了時の処理(異常終了関係なし)
+      void endProcess() {
+        Wakelock.disable();
+        socket.destroy();
+        Navigator.of(context).pop();
+      }
+
+      // ファイル受信の進行状況を表示するダイアログを表示
+      showDialog(
+          context: context,
+          builder: (context) {
+            return WillPopScope(
+              // 戻る無効化
+              onWillPop: (() => Future.value(false)),
+              child: AlertDialog(
+                title: const Text("ファイルを受信しています..."),
+                content: StatefulBuilder(
+                  builder: (context, setState) {
+                    // Progressの更新にはStateの更新が必要
+                    dialogSetState = setState;
+                    return SingleChildScrollView(
+                      child: ListBody(
+                        children: <Widget>[
+                          Column(
+                            children: [
+                              Text(
+                                "${currentNum + 1}個目のファイルを受信中 ${(totalProgress * 100).toStringAsFixed(1)}%完了",
+                                textAlign: TextAlign.center,
+                              ),
+                              LinearProgressIndicator(
+                                value: totalProgress,
+                              ),
+                              Text(
+                                "${fileName[currentNum]} ${(singleFileProgress * 100).toStringAsFixed(1)}%完了",
+                                textAlign: TextAlign.center,
+                              ),
+                              LinearProgressIndicator(
+                                value: singleFileProgress,
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-                    actions: <Widget>[
-                      // TO DO キャンセルボタンの実装
-                      TextButton(child: const Text("中止"), onPressed: null)
-                    ],
-                  ),
-                );
-              });
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                actions: <Widget>[
+                  // TO DO キャンセルボタンの実装
+                  TextButton(child: const Text("中止"), onPressed: null)
+                ],
+              ),
+            );
+          });
 
-          // "ready"を送信するとデータが送られてくるので、そのStreamをIOSinkで書き込み
-          // Listen上ではSocketのStreamを扱えないので二回通信する必要がある
-          for (currentNum = 0; currentNum < fileName.length; currentNum++) {
-            // 2回目以降の通信でファイルを受信
-            try {
-              connectionTask = await Socket.startConnect(ip, 4782);
-              socket = await connectionTask.socket;
-            } on SocketException catch (e) {
-              Wakelock.disable();
-              return EasyDialog.showErrorDialog(e, context);
-            }
-            // サーバーi個目のファイルをファイルを要求
-            socket.add(utf8.encode(currentNum.toString()));
-
-            // 受信ディレクトリにファイルを作成
-            late File receieveFile;
-            if (fileName.length < 2) {
-              receieveFile = File(path);
-            } else {
-              receieveFile = File(p.join(path, fileName[currentNum]));
-            }
-
-            // 進捗を定期的に更新する
-            int latestCompletedFileLen = 0;
-            timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-              final currentFileLength = receieveFile.lengthSync();
-              dialogSetState(() {
-                // 1つのファイルの進捗
-                singleFileProgress =
-                    (currentFileLength / fileSize[currentNum]).toDouble();
-                // 現在までに受信した容量 = (現在の容量 - 最後に取得した時の容量) + いままでの容量
-                completedLength = (currentFileLength - latestCompletedFileLen) +
-                    completedLength;
-                // トータルの進捗
-                totalProgress = (completedLength / totalFileLength).toDouble();
-              });
-              // 最後に取得した時の容量を更新
-              latestCompletedFileLen = currentFileLength;
-            });
-
-            // 流れてきたデータをファイルに書き込む
-            final IOSink receieveSink =
-                receieveFile.openWrite(mode: FileMode.writeOnly);
-            await receieveSink.addStream(socket).catchError((e) {
-              timer.cancel();
-              endProcess();
-              return EasyDialog.showErrorDialog(e, context);
-            });
-
-            // 進捗更新の停止
-            timer.cancel();
-            // ファイルの最終処理
-            try {
-              await receieveSink.flush();
-              await receieveSink.close();
-            } on Exception catch (e) {
-              endProcess();
-              return EasyDialog.showErrorDialog(e, context);
-            }
-
-            log.text += "Done:" + currentNum.toString() + "\n";
-          }
-          endProcess();
-        } else {
-          log.text += "filePath is null. exit....\n";
+      // "ready"を送信するとデータが送られてくるので、そのStreamをIOSinkで書き込み
+      // Listen上ではSocketのStreamを扱えないので二回通信する必要がある
+      for (currentNum = 0; currentNum < fileName.length; currentNum++) {
+        // 2回目以降の通信でファイルを受信
+        try {
+          connectionTask = await Socket.startConnect(ip, 4782);
+          socket = await connectionTask.socket;
+        } on SocketException catch (e) {
+          Wakelock.disable();
+          EasyDialog.showErrorDialog(e, context);
+          return false;
         }
-      })
-      ..onError((e) {
-        return EasyDialog.showErrorDialog(e, context);
-      });
+        // サーバーi個目のファイルをファイルを要求
+        socket.add(utf8.encode(currentNum.toString()));
+
+        // 受信ディレクトリにファイルを作成
+        late File receieveFile;
+        if (fileName.length < 2) {
+          receieveFile = File(path);
+        } else {
+          receieveFile = File(p.join(path, fileName[currentNum]));
+        }
+
+        // 進捗を定期的に更新する
+        int latestCompletedFileLen = 0;
+        timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+          final currentFileLength = receieveFile.lengthSync();
+          dialogSetState(() {
+            // 1つのファイルの進捗
+            singleFileProgress =
+                (currentFileLength / fileSize[currentNum]).toDouble();
+            // 現在までに受信した容量 = (現在の容量 - 最後に取得した時の容量) + いままでの容量
+            completedLength =
+                (currentFileLength - latestCompletedFileLen) + completedLength;
+            // トータルの進捗
+            totalProgress = (completedLength / totalFileLength).toDouble();
+          });
+          // 最後に取得した時の容量を更新
+          latestCompletedFileLen = currentFileLength;
+        });
+
+        // 流れてきたデータをファイルに書き込む
+        final IOSink receieveSink =
+            receieveFile.openWrite(mode: FileMode.writeOnly);
+        await receieveSink.addStream(socket).catchError((e) {
+          timer.cancel();
+          endProcess();
+          return EasyDialog.showErrorDialog(e, context);
+        });
+
+        // 進捗更新の停止
+        timer.cancel();
+        // ファイルの最終処理
+        try {
+          await receieveSink.flush();
+          await receieveSink.close();
+        } on Exception catch (e) {
+          endProcess();
+          EasyDialog.showErrorDialog(e, context);
+          return true;
+        }
+      }
+      endProcess();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /// ファイルの保存場所をユーザーなどから取得
