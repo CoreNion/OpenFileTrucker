@@ -81,6 +81,7 @@ class ReceiveFile {
       final int totalFileLength = fileSize.reduce((a, b) => a + b);
       int completedLength = 0;
       late Timer timer;
+      bool pushCancelButton = false;
 
       // 全ファイルの受信の終了時の処理(異常終了関係なし)
       void endProcess() {
@@ -129,8 +130,12 @@ class ReceiveFile {
                   },
                 ),
                 actions: <Widget>[
-                  // TO DO キャンセルボタンの実装
-                  TextButton(child: const Text("中止"), onPressed: null)
+                  TextButton(
+                      child: const Text("キャンセル"),
+                      onPressed: () {
+                        pushCancelButton = true;
+                        socket.destroy();
+                      })
                 ],
               ),
             );
@@ -139,6 +144,11 @@ class ReceiveFile {
       // "ready"を送信するとデータが送られてくるので、そのStreamをIOSinkで書き込み
       // Listen上ではSocketのStreamを扱えないので二回通信する必要がある
       for (currentNum = 0; currentNum < fileName.length; currentNum++) {
+        // キャンセルボタンによって前回の通信が終了した場合はbreak
+        if (pushCancelButton) {
+          break;
+        }
+
         // 2回目以降の通信でファイルを受信
         try {
           connectionTask = await Socket.startConnect(ip, 4782);
@@ -199,7 +209,27 @@ class ReceiveFile {
         }
       }
       endProcess();
-      return true;
+
+      // キャンセルボタンが押されて終了した場合は作成したファイルを削除
+      if (pushCancelButton) {
+        if (fileName.length < 2) {
+          File(path).deleteSync();
+        } else {
+          for (var name in fileName) {
+            final file = File(p.join(path + name));
+            if (file.existsSync()) {
+              file.deleteSync();
+            }
+          }
+        }
+        showDialog(
+            context: context,
+            builder: (context) =>
+                EasyDialog.showSmallInfo(context, "情報", "ファイルの受信はキャンセルされました。"));
+        return false;
+      } else {
+        return true;
+      }
     } else {
       return false;
     }
