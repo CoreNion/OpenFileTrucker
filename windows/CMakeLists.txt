@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(open_file_trucker LANGUAGES CXX)
 
-set(BINARY_NAME "open_file_trucker")
+set(BINARY_NAME "open_filetrucker")
 
 cmake_policy(SET CMP0063 NEW)
 

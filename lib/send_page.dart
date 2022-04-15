@@ -206,35 +206,32 @@ class _SendPageState extends State<SendPage>
                   ),
                   child: const Text("送信する"),
                   onPressed: () async {
-                    // ファイル選択時のみ実行
-                    if (selectedFiles.isNotEmpty) {
+                    if (serverListen) {
+                      showDialog(
+                          context: context,
+                          builder: (context) => EasyDialog.showSmallInfo(
+                              context, "エラー", "他のファイルの共有を停止してください。"));
+                    } else if (selectedFiles.isNotEmpty) {
                       try {
                         final ip = await SendFiles.selectNetwork(context);
                         if (!(ip == null)) {
-                          if (!serverListen) {
-                            final qr = await SendFiles.serverStart(
-                                ip, selectedFiles, context);
-                            serverListen = true;
-                            qrCode = qr;
-                            ipText = "IP: " + ip;
-                            stopServerButton = FloatingActionButton(
-                              onPressed: _stopShareProcess,
-                              tooltip: '共有を停止する',
-                              child: const Icon(Icons.pause),
-                            );
-                            if (isSmallUI) {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    _pushQRPageForSmallScreen(context),
-                              ));
-                            } else {
-                              setState(() {});
-                            }
+                          final qr = await SendFiles.serverStart(
+                              ip, selectedFiles, context);
+                          serverListen = true;
+                          qrCode = qr;
+                          ipText = "IP: " + ip;
+                          stopServerButton = FloatingActionButton(
+                            onPressed: _stopShareProcess,
+                            tooltip: '共有を停止する',
+                            child: const Icon(Icons.pause),
+                          );
+                          if (isSmallUI) {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  _pushQRPageForSmallScreen(context),
+                            ));
                           } else {
-                            showDialog(
-                                context: context,
-                                builder: (context) => EasyDialog.showSmallInfo(
-                                    context, "エラー", "他のファイルの共有を停止してください。"));
+                            setState(() {});
                           }
                         } else {
                           showDialog(
@@ -301,7 +298,9 @@ class _SendPageState extends State<SendPage>
             ],
           ));
     } else {
-      return Center(
+      return Container(
+        margin: const EdgeInsets.only(left: 10, right: 10),
+        alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[

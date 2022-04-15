@@ -94,7 +94,7 @@ BEGIN
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "filetrucker" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2022 CoreNion. All rights reserved." "\0"
-            VALUE "OriginalFilename", "open_file_trucker.exe" "\0"
+            VALUE "OriginalFilename", "open_filetrucker.exe" "\0"
             VALUE "ProductName", "Open FileTrucker" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
