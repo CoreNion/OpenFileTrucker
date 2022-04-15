@@ -70,13 +70,15 @@ class SendFiles {
 
   static ServerSocket? _server;
 
-  static Future<QrImage> serverStart(
-      String ip, String key, List<File> files, BuildContext context) async {
+  static Future<QrImage> serverStart(String ip,
+      /* String key, */ List<File> files, BuildContext context) async {
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files));
 
     return QrImage(
-      data: json.encode(QRCodeData(ip: ip, key: key).toJson()),
+      data: json.encode(QRCodeData(
+        ip: ip, /* key: key */
+      ).toJson()),
       size: 300,
       backgroundColor: Colors.white,
     );

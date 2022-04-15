@@ -26,7 +26,7 @@ class _ReceivePageState extends State<ReceivePage>
     super.build(context);
     final formKey = GlobalKey<FormState>();
     String ip = "";
-    String key = "";
+    // String key = "";
 
     late Widget? qrButton;
     if (Platform.isIOS || Platform.isAndroid) {
@@ -83,6 +83,7 @@ class _ReceivePageState extends State<ReceivePage>
                       },
                       onSaved: (newValue) => ip = newValue!,
                     ),
+                    /* 
                     TextFormField(
                       decoration: const InputDecoration(
                           labelText: 'Key (任意)',
@@ -90,7 +91,7 @@ class _ReceivePageState extends State<ReceivePage>
                           icon: Icon(Icons.vpn_key)),
                       obscureText: true,
                       onSaved: (newValue) => key = newValue!,
-                    ),
+                    ), */
                     Container(
                       margin: const EdgeInsets.symmetric(vertical: 30),
                       height: 40,
@@ -109,8 +110,8 @@ class _ReceivePageState extends State<ReceivePage>
                                 // 結果のメッセージを削除
                                 sucsessWidght.clear();
 
-                                final result =
-                                    await ReceiveFile.receiveFile(ip, context);
+                                final result = await ReceiveFile.receiveFile(
+                                    ip, /* key, */ context);
                                 // ファイルの受信に成功したらメッセージを表示
                                 if (result) {
                                   sucsessWidght.add(const Text("ファイルの受信が完了しました",

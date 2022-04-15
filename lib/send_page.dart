@@ -213,7 +213,7 @@ class _SendPageState extends State<SendPage>
                         if (!(ip == null)) {
                           if (!serverListen) {
                             final qr = await SendFiles.serverStart(
-                                ip, "no", selectedFiles, context);
+                                ip, selectedFiles, context);
                             serverListen = true;
                             qrCode = qr;
                             ipText = "IP: " + ip;

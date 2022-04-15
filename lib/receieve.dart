@@ -11,7 +11,8 @@ import 'dart:io';
 
 class ReceiveFile {
   /// ファイルの受信の処理をする関数
-  static Future<bool> receiveFile(String ip, BuildContext context) async {
+  static Future<bool> receiveFile(
+      String ip, /* String key */ BuildContext context) async {
     late ConnectionTask<Socket> connectionTask;
     late Socket socket;
     bool err = false;
