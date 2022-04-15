@@ -29,7 +29,7 @@ class _ReceivePageState extends State<ReceivePage>
     // String key = "";
 
     late Widget? qrButton;
-    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS) {
+    if (Platform.isIOS || Platform.isAndroid) {
       qrButton = FloatingActionButton(
         onPressed: () async {
           // 権限の確認
