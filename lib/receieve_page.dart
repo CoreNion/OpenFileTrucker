@@ -29,7 +29,7 @@ class _ReceivePageState extends State<ReceivePage>
     // String key = "";
 
     late Widget? qrButton;
-    if (Platform.isIOS || Platform.isAndroid) {
+    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS) {
       qrButton = FloatingActionButton(
         onPressed: () async {
           // 権限の確認
@@ -39,7 +39,7 @@ class _ReceivePageState extends State<ReceivePage>
                     builder: (builder) => const ScanQRCodePage()))
                 .then((result) {
               if (result is QRCodeData) {
-                ReceiveFile.receiveFile(result.ip, context);
+                _startReceive(result.ip);
               } else {
                 Wakelock.disable();
               }
@@ -107,26 +107,7 @@ class _ReceivePageState extends State<ReceivePage>
                             if (formKey.currentState != null) {
                               if (formKey.currentState!.validate()) {
                                 formKey.currentState!.save();
-                                // 結果のメッセージを削除
-                                sucsessWidght.clear();
-
-                                final result = await ReceiveFile.receiveFile(
-                                    ip, /* key, */ context);
-                                // ファイルの受信に成功したらメッセージを表示
-                                if (result) {
-                                  sucsessWidght.add(const Text("ファイルの受信が完了しました",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 25,
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold)));
-                                  if (Platform.isIOS) {
-                                    sucsessWidght.add(const Text(
-                                        '\niOSではファイルは、アプリ用の外から読み書きが可能なフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
-                                        textAlign: TextAlign.start));
-                                  }
-                                  setState(() {});
-                                }
+                                _startReceive(ip);
                               }
                             }
                           }),
@@ -137,5 +118,25 @@ class _ReceivePageState extends State<ReceivePage>
               ),
             ),
             floatingActionButton: qrButton));
+  }
+
+  Future<void> _startReceive(String ip /*, String key  */) async {
+    // 結果のメッセージを削除
+    sucsessWidght.clear();
+
+    final result = await ReceiveFile.receiveFile(ip, /* key, */ context);
+    // ファイルの受信に成功したらメッセージを表示
+    if (result) {
+      sucsessWidght.add(const Text("ファイルの受信が完了しました",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: 25, color: Colors.red, fontWeight: FontWeight.bold)));
+      if (Platform.isIOS) {
+        sucsessWidght.add(const Text(
+            '\niOSではファイルは、アプリ用の外から読み書きが可能なフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
+            textAlign: TextAlign.start));
+      }
+      setState(() {});
+    }
   }
 }
