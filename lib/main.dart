@@ -3,7 +3,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:open_file_trucker/receieve_page.dart';
 import 'package:open_file_trucker/send_page.dart';
-import 'package:cool_alert/cool_alert.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,41 +56,50 @@ class _MyAppState extends State<MyApp> {
                             ? setState(() => MyApp.isDark = false)
                             : setState(() => MyApp.isDark = true)),
                     IconButton(
-                      icon: const Icon(Icons.info),
-                      onPressed: () => showAboutDialog(
-                          context: context,
-                          applicationIcon: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              child: SvgPicture.asset(
-                                'original_media/FileTrucker.svg',
-                                width: 80,
-                                height: 80,
-                              )),
-                          applicationName: 'Open FileTrucker',
-                          applicationVersion: 'Dev (Nightly Build)',
-                          applicationLegalese: 'Copyright (c) 2022 CoreNion',
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                CoolAlert.show(
-                                  context: context,
-                                  type: CoolAlertType.error,
-                                  animType: CoolAlertAnimType.rotate,
-                                  title: "ﾊﾟｧｧｧｧ!!()",
-                                  text: "このアプリはまだ公開されていません！\nまだまだ開発中です！",
-                                );
-                              },
-                              child: const Text('GitHub Repo'),
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.transparent,
-                                elevation: 0,
-                                shadowColor: Colors.transparent,
-                                onPrimary: Colors.blue,
-                              ),
-                            ),
-                          ]),
-                    ),
+                        icon: const Icon(Icons.info),
+                        onPressed: () async {
+                          PackageInfo packageInfo =
+                              await PackageInfo.fromPlatform();
+                          showAboutDialog(
+                              context: context,
+                              applicationIcon: ClipRRect(
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(12)),
+                                  child: SvgPicture.asset(
+                                    'original_media/FileTrucker.svg',
+                                    width: 80,
+                                    height: 80,
+                                  )),
+                              applicationName: 'Open FileTrucker',
+                              applicationVersion:
+                                  "Version: ${packageInfo.version}",
+                              applicationLegalese:
+                                  'Copyright (c) 2022 CoreNion\n',
+                              children: <Widget>[
+                                if (await canLaunch(
+                                    "https://corenion.github.io/")) ...{
+                                  ElevatedButton(
+                                    child: const Text('公式サイト'),
+                                    style: ElevatedButton.styleFrom(
+                                      primary: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      onPrimary: Colors.green,
+                                    ),
+                                    onPressed: () async => await launch(
+                                        "https://corenion.github.io/file_trucker/"),
+                                  ),
+                                  ElevatedButton(
+                                      child: const Text('GitHub'),
+                                      style: ElevatedButton.styleFrom(
+                                        primary: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        onPrimary: Colors.blue,
+                                      ),
+                                      onPressed: () async => await launch(
+                                          "https://github.com/CoreNion/OpenFileTrucker")),
+                                }
+                              ]);
+                        }),
                   ],
                   bottom: const TabBar(
                     tabs: [
