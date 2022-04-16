@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,9 +31,16 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         title: 'Open FileTrucker',
         theme: ThemeData(
+          fontFamily: 'Noto Sans JP',
           primarySwatch: Colors.green,
         ),
         darkTheme: ThemeData.dark().copyWith(
+          textTheme: ThemeData.dark().textTheme.apply(
+                fontFamily: 'Noto Sans JP',
+              ),
+          primaryTextTheme: ThemeData.dark().textTheme.apply(
+                fontFamily: 'Noto Sans JP',
+              ),
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.lightGreen,
             brightness: Brightness.dark,
@@ -58,15 +67,25 @@ class _MyAppState extends State<MyApp> {
                     IconButton(
                         icon: const Icon(Icons.info),
                         onPressed: () async {
+                          final ofl = await rootBundle
+                              .loadString("assets/fonts/OFL.txt");
+                          LicenseRegistry.addLicense(() {
+                            return Stream<LicenseEntry>.fromIterable(<
+                                LicenseEntry>[
+                              LicenseEntryWithLineBreaks(
+                                  <String>['Noto Sans JP'], ofl)
+                            ]);
+                          });
                           PackageInfo packageInfo =
                               await PackageInfo.fromPlatform();
+
                           showAboutDialog(
                               context: context,
                               applicationIcon: ClipRRect(
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                   child: SvgPicture.asset(
-                                    'original_media/FileTrucker.svg',
+                                    'assets/FileTrucker.svg',
                                     width: 80,
                                     height: 80,
                                   )),
