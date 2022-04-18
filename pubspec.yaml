@@ -57,6 +57,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
+  msix: ^3.5.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -96,3 +97,14 @@ flutter:
        - asset: assets/fonts/NotoSansJP-Regular.otf
        - asset: assets/fonts/NotoSansJP-Bold.otf
          weight: 700
+
+msix_config:
+  display_name: Open FileTrucker
+  publisher_display_name: CoreNion
+  identity_name: com.corenion.filetrucker
+  logo_path: ./assets/icon_400x400.png
+  msix_version: 1.0.0.0
+  languages: ja-jp
+  capabilities: privateNetworkClientServer
+  execution_alias: filetrucker
+  store: false
