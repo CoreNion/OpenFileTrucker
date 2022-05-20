@@ -26,14 +26,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  int currentPageIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Open FileTrucker',
         theme: ThemeData(
           colorSchemeSeed: Colors.green,
-          appBarTheme: AppBarTheme(backgroundColor: Colors.green.shade100),
-          tabBarTheme: const TabBarTheme(labelColor: Colors.black),
           brightness: Brightness.light,
           fontFamily: 'Noto Sans JP',
           useMaterial3: true,
@@ -43,84 +43,89 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.dark,
           fontFamily: 'Noto Sans JP',
           scaffoldBackgroundColor: Colors.black,
-          appBarTheme: AppBarTheme(backgroundColor: Colors.green.shade900),
           useMaterial3: true,
         ),
         themeMode: MyApp.isDark ? ThemeMode.dark : ThemeMode.light,
-        home: DefaultTabController(
-            length: 2,
-            child: Builder(
-              builder: (context) => Scaffold(
-                appBar: AppBar(
-                  actions: <Widget>[
-                    IconButton(
-                        icon: const Icon(Icons.brightness_6),
-                        onPressed: () => MyApp.isDark
-                            ? setState(() => MyApp.isDark = false)
-                            : setState(() => MyApp.isDark = true)),
-                    IconButton(
-                        icon: const Icon(Icons.info),
-                        onPressed: () async {
-                          final ofl = await rootBundle
-                              .loadString("assets/fonts/OFL.txt");
-                          LicenseRegistry.addLicense(() {
-                            return Stream<LicenseEntry>.fromIterable(<
-                                LicenseEntry>[
-                              LicenseEntryWithLineBreaks(
-                                  <String>['Noto Sans JP'], ofl)
-                            ]);
-                          });
-                          PackageInfo packageInfo =
-                              await PackageInfo.fromPlatform();
-
-                          showAboutDialog(
-                              context: context,
-                              applicationIcon: ClipRRect(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(12)),
-                                  child: SvgPicture.asset(
-                                    'assets/FileTrucker.svg',
-                                    width: 80,
-                                    height: 80,
-                                  )),
-                              applicationName: 'Open FileTrucker',
-                              applicationVersion:
-                                  "Version: ${packageInfo.version}",
-                              applicationLegalese:
-                                  'Copyright (c) 2022 CoreNion\n',
-                              children: <Widget>[
-                                if (await canLaunch(
-                                    "https://corenion.github.io/")) ...{
-                                  TextButton(
-                                    child: const Text('公式サイト'),
-                                    onPressed: () async => await launch(
-                                        "https://corenion.github.io/file_trucker/"),
-                                  ),
-                                  TextButton(
-                                      child: const Text('GitHub'),
-                                      style: TextButton.styleFrom(
-                                          primary: Colors.blue),
-                                      onPressed: () async => await launch(
-                                          "https://github.com/CoreNion/OpenFileTrucker")),
-                                }
+        home: Builder(
+            builder: (context) => Scaffold(
+                  appBar: AppBar(
+                    title: const Text("Open FileTrucker"),
+                    actions: <Widget>[
+                      IconButton(
+                          icon: const Icon(Icons.brightness_6),
+                          onPressed: () => MyApp.isDark
+                              ? setState(() => MyApp.isDark = false)
+                              : setState(() => MyApp.isDark = true)),
+                      IconButton(
+                          icon: const Icon(Icons.info),
+                          onPressed: () async {
+                            final ofl = await rootBundle
+                                .loadString("assets/fonts/OFL.txt");
+                            LicenseRegistry.addLicense(() {
+                              return Stream<LicenseEntry>.fromIterable(<
+                                  LicenseEntry>[
+                                LicenseEntryWithLineBreaks(
+                                    <String>['Noto Sans JP'], ofl)
                               ]);
-                        }),
-                  ],
-                  bottom: const TabBar(
-                    tabs: [
-                      Tab(text: "送信", icon: Icon(Icons.send)),
-                      Tab(text: "受信", icon: Icon(Icons.download)),
+                            });
+                            PackageInfo packageInfo =
+                                await PackageInfo.fromPlatform();
+                            showAboutDialog(
+                                context: context,
+                                applicationIcon: ClipRRect(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(12)),
+                                    child: SvgPicture.asset(
+                                      'assets/FileTrucker.svg',
+                                      width: 80,
+                                      height: 80,
+                                    )),
+                                applicationName: 'Open FileTrucker',
+                                applicationVersion:
+                                    "Version: ${packageInfo.version}",
+                                applicationLegalese:
+                                    'Copyright (c) 2022 CoreNion\n',
+                                children: <Widget>[
+                                  if (await canLaunch(
+                                      "https://corenion.github.io/")) ...{
+                                    TextButton(
+                                      child: const Text('公式サイト'),
+                                      onPressed: () async => await launch(
+                                          "https://corenion.github.io/file_trucker/"),
+                                    ),
+                                    TextButton(
+                                        child: const Text('GitHub'),
+                                        style: TextButton.styleFrom(
+                                            primary: Colors.blue),
+                                        onPressed: () async => await launch(
+                                            "https://github.com/CoreNion/OpenFileTrucker")),
+                                  }
+                                ]);
+                          }),
                     ],
                   ),
-                  title: const Text('Open FileTrucker'),
-                ),
-                body: const TabBarView(
-                  children: [
-                    SendPage(),
-                    ReceivePage(),
-                  ],
-                ),
-              ),
-            )));
+                  bottomNavigationBar: NavigationBar(
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        currentPageIndex = index;
+                      });
+                    },
+                    selectedIndex: currentPageIndex,
+                    destinations: const <Widget>[
+                      NavigationDestination(
+                        icon: Icon(Icons.send),
+                        label: '送信',
+                      ),
+                      NavigationDestination(
+                        icon: Icon(Icons.download),
+                        label: '受信',
+                      ),
+                    ],
+                  ),
+                  body: <Widget>[
+                    const SendPage(),
+                    const ReceivePage(),
+                  ][currentPageIndex],
+                )));
   }
 }
