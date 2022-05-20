@@ -31,26 +31,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         title: 'Open FileTrucker',
         theme: ThemeData(
+          colorSchemeSeed: Colors.green,
+          appBarTheme: AppBarTheme(backgroundColor: Colors.green.shade100),
+          tabBarTheme: const TabBarTheme(labelColor: Colors.black),
+          brightness: Brightness.light,
           fontFamily: 'Noto Sans JP',
-          primarySwatch: Colors.green,
+          useMaterial3: true,
         ),
-        darkTheme: ThemeData.dark().copyWith(
-          textTheme: ThemeData.dark().textTheme.apply(
-                fontFamily: 'Noto Sans JP',
-              ),
-          primaryTextTheme: ThemeData.dark().textTheme.apply(
-                fontFamily: 'Noto Sans JP',
-              ),
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.lightGreen,
-            brightness: Brightness.dark,
-          ),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-              backgroundColor: Colors.green, foregroundColor: Colors.white),
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.green.shade800,
-          ),
+        darkTheme: ThemeData(
+          colorSchemeSeed: Colors.green,
+          brightness: Brightness.dark,
+          fontFamily: 'Noto Sans JP',
           scaffoldBackgroundColor: Colors.black,
+          appBarTheme: AppBarTheme(backgroundColor: Colors.green.shade900),
+          useMaterial3: true,
         ),
         themeMode: MyApp.isDark ? ThemeMode.dark : ThemeMode.light,
         home: DefaultTabController(
@@ -97,23 +91,15 @@ class _MyAppState extends State<MyApp> {
                               children: <Widget>[
                                 if (await canLaunch(
                                     "https://corenion.github.io/")) ...{
-                                  ElevatedButton(
+                                  TextButton(
                                     child: const Text('公式サイト'),
-                                    style: ElevatedButton.styleFrom(
-                                      primary: Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      onPrimary: Colors.green,
-                                    ),
                                     onPressed: () async => await launch(
                                         "https://corenion.github.io/file_trucker/"),
                                   ),
-                                  ElevatedButton(
+                                  TextButton(
                                       child: const Text('GitHub'),
-                                      style: ElevatedButton.styleFrom(
-                                        primary: Colors.transparent,
-                                        shadowColor: Colors.transparent,
-                                        onPrimary: Colors.blue,
-                                      ),
+                                      style: TextButton.styleFrom(
+                                          primary: Colors.blue),
                                       onPressed: () async => await launch(
                                           "https://github.com/CoreNion/OpenFileTrucker")),
                                 }
