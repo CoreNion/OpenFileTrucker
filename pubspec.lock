@@ -112,7 +112,7 @@ packages:
       name: dynamic_color
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.3"
   fake_async:
     dependency: transitive
     description:
@@ -126,7 +126,7 @@ packages:
       name: ffi
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.2"
+    version: "1.2.1"
   file:
     dependency: transitive
     description:
@@ -204,7 +204,7 @@ packages:
       name: http_parser
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1"
   image:
     dependency: transitive
     description:
@@ -250,12 +250,10 @@ packages:
   mobile_scanner:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: fe88e168d1055a528e582c688eb15d86b5f296bf
-      url: "https://github.com/juliansteenbakker/mobile_scanner.git"
-    source: git
-    version: "1.0.0"
+      name: mobile_scanner
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   msix:
     dependency: "direct dev"
     description:
@@ -540,7 +538,7 @@ packages:
       name: url_launcher_ios
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.0.16"
+    version: "6.0.17"
   url_launcher_linux:
     dependency: transitive
     description:
@@ -624,7 +622,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.5.2"
+    version: "2.6.1"
   xdg_directories:
     dependency: transitive
     description:
@@ -647,5 +645,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.17.0-206.0.dev <3.0.0"
+  dart: ">=2.17.0 <3.0.0"
   flutter: ">=2.13.0-0.2.pre"

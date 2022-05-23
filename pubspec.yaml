@@ -45,11 +45,7 @@ dependencies:
   flutter_svg: ^1.0.3
   package_info_plus: ^1.4.2
   url_launcher: ^6.0.20
-  # TO DO: エラー修正板がpubでリリースされたら最新バージョンにする
-  mobile_scanner:
-    git:
-      url: https://github.com/juliansteenbakker/mobile_scanner.git
-      ref: master
+  mobile_scanner: ^1.1.0
   dynamic_color: ^1.2.2
 
 dev_dependencies:
