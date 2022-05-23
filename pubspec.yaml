@@ -50,6 +50,7 @@ dependencies:
     git:
       url: https://github.com/juliansteenbakker/mobile_scanner.git
       ref: master
+  dynamic_color: ^1.2.2
 
 dev_dependencies:
   flutter_test:

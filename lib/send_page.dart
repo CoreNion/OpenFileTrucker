@@ -22,15 +22,8 @@ class _SendPageState extends State<SendPage>
 
   late bool isSmallUI;
   List<File> selectedFiles = <File>[];
-  static Text firstFileButtonText = const Text(
-    "ファイルを選択\nまたはドラック&ドロップ",
-    style: TextStyle(
-      fontSize: 30,
-      color: Colors.green,
-    ),
-    textAlign: TextAlign.center,
-  );
-  Text selectFileButtonText = firstFileButtonText;
+  static String firstFileButtonText = "ファイルを選択\nまたはドラック&ドロップ";
+  String selectFileButtonText = firstFileButtonText;
   List<String> fileName = <String>[];
   String ipText = "";
   String keyText = "";
@@ -138,16 +131,12 @@ class _SendPageState extends State<SendPage>
                         fileName.add(_file[i].name);
                       }
                       setState(() {
-                        selectFileButtonText = Text(
-                          "選択されたファイル:\n" + _setFileInfoStr(),
-                          style: const TextStyle(
-                              fontSize: 20, color: Colors.green),
-                          textAlign: TextAlign.center,
-                        );
+                        selectFileButtonText =
+                            "選択されたファイル:\n" + _setFileInfoStr();
                       });
                     },
                     child: DottedBorder(
-                      color: Colors.green,
+                      color: Theme.of(context).colorScheme.primary,
                       strokeWidth: 3,
                       dashPattern: const [30, 5],
                       child: SizedBox(
@@ -155,11 +144,18 @@ class _SendPageState extends State<SendPage>
                         height: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              primary: Colors.transparent,
-                              elevation: 0,
-                              shadowColor:
-                                  const Color.fromARGB(95, 185, 185, 185)),
-                          child: selectFileButtonText,
+                            primary: Colors.transparent,
+                            onPrimary: Colors.transparent,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                          ),
+                          child: Text(
+                            selectFileButtonText,
+                            style: TextStyle(
+                                fontSize: 25,
+                                color: Theme.of(context).colorScheme.primary),
+                            textAlign: TextAlign.center,
+                          ),
                           onPressed: () async {
                             // 過去のファイル情報を消去
                             selectedFiles.clear();
@@ -176,12 +172,8 @@ class _SendPageState extends State<SendPage>
                                 fileName.add(res.files[i].name);
                               }
                               setState(() {
-                                selectFileButtonText = Text(
-                                  "選択されたファイル:\n" + _setFileInfoStr(),
-                                  style: const TextStyle(
-                                      fontSize: 20, color: Colors.green),
-                                  textAlign: TextAlign.center,
-                                );
+                                selectFileButtonText =
+                                    "選択されたファイル:\n" + _setFileInfoStr();
                               });
                             } else {
                               // ファイルが何も選択されていない場合はボタン内の文章を初期化
@@ -201,8 +193,8 @@ class _SendPageState extends State<SendPage>
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.blueGrey,
-                    onPrimary: Colors.white,
+                    onPrimary: Theme.of(context).colorScheme.onPrimary,
+                    primary: Theme.of(context).colorScheme.primary,
                   ),
                   child: const Text("送信する"),
                   onPressed: () async {
@@ -337,7 +329,9 @@ class _SendPageState extends State<SendPage>
                 textAlign: TextAlign.start,
                 text: TextSpan(
                     text: "送信待機中です",
-                    style: const TextStyle(fontSize: 22),
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyText1!.color,
+                        fontSize: 22),
                     children: <TextSpan>[
                       TextSpan(
                         text: '\n' + fileName.length.toString() + "個のファイル",
