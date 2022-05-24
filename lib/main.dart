@@ -130,19 +130,23 @@ class _MyAppState extends State<MyApp> {
                       selectedIndex: currentPageIndex,
                       destinations: const <Widget>[
                         NavigationDestination(
-                          icon: Icon(Icons.send),
+                          icon: Icon(Icons.send_outlined),
+                          selectedIcon: Icon(Icons.send),
                           label: '送信',
                         ),
                         NavigationDestination(
-                          icon: Icon(Icons.download),
+                          icon: Icon(Icons.download_outlined),
+                          selectedIcon: Icon(Icons.download),
                           label: '受信',
                         ),
                       ],
                     ),
-                    body: <Widget>[
-                      const SendPage(),
-                      const ReceivePage(),
-                    ][currentPageIndex],
+                    body: IndexedStack(
+                        index: currentPageIndex,
+                        children: const <Widget>[
+                          SendPage(),
+                          ReceivePage(),
+                        ]),
                   )));
     }));
   }
