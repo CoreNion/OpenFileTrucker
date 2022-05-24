@@ -9,7 +9,7 @@ class ScanQRCodePage extends StatefulWidget {
   const ScanQRCodePage({Key? key}) : super(key: key);
 
   @override
-  _ScanQRCodePageState createState() => _ScanQRCodePageState();
+  State<ScanQRCodePage> createState() => _ScanQRCodePageState();
 }
 
 class _ScanQRCodePageState extends State<ScanQRCodePage> {

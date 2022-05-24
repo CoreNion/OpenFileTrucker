@@ -32,16 +32,16 @@ class EasyDialog {
       } else {
         errorTitle = "通信エラー";
         errorMessage = "通信エラーが発生しました。\n入力された値が正しいか、ネットワークに問題が無いか確認してください。\n";
-        exceptionMessage = "詳細:\n" + e.toString();
+        exceptionMessage = "詳細:\n$e";
       }
     } else if (e is IOException) {
       errorTitle = "I/Oエラー";
       errorMessage = "ファイルの読み書き中にエラーが発生しました。\n";
-      exceptionMessage = "詳細:\n" + e.toString();
+      exceptionMessage = "詳細:\n$e";
     } else {
       errorTitle = "不明なエラー";
       errorMessage = "エラーが発生しました。\n";
-      exceptionMessage = "詳細:\n" + e.toString();
+      exceptionMessage = "詳細:\n$e";
     }
 
     return showDialog(

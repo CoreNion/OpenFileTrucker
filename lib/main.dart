@@ -34,6 +34,7 @@ class _MyAppState extends State<MyApp> {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       ColorScheme lightColorScheme;
       ColorScheme darkColorScheme;
+      Uri siteUri = Uri.https("corenion.github.io", "/file_trucker/");
 
       if (lightDynamic != null && darkDynamic != null) {
         lightColorScheme = lightDynamic.harmonized();
@@ -102,19 +103,19 @@ class _MyAppState extends State<MyApp> {
                                   applicationLegalese:
                                       'Copyright (c) 2022 CoreNion\n',
                                   children: <Widget>[
-                                    if (await canLaunch(
-                                        "https://corenion.github.io/")) ...{
+                                    if (await canLaunchUrl(siteUri)) ...{
                                       TextButton(
                                         child: const Text('公式サイト'),
-                                        onPressed: () async => await launch(
-                                            "https://corenion.github.io/file_trucker/"),
+                                        onPressed: () async =>
+                                            await launchUrl(siteUri),
                                       ),
                                       TextButton(
-                                          child: const Text('GitHub'),
                                           style: TextButton.styleFrom(
                                               primary: Colors.blue),
-                                          onPressed: () async => await launch(
-                                              "https://github.com/CoreNion/OpenFileTrucker")),
+                                          onPressed: () async =>
+                                              await launchUrl(Uri.parse(
+                                                  "https://github.com/CoreNion/OpenFileTrucker")),
+                                          child: const Text('GitHub')),
                                     }
                                   ]);
                             }),

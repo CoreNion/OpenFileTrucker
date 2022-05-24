@@ -34,7 +34,7 @@ class SendFiles {
 
           dialogOptions.add(SimpleDialogOption(
             onPressed: () => Navigator.pop(context, strAddr),
-            child: Text(interfaceName + " " + strAddr),
+            child: Text("$interfaceName $strAddr"),
             // 表示例: "Wi-Fi 192.168.0.10"
           ));
         }

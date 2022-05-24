@@ -12,7 +12,7 @@ class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
 
   @override
-  _SendPageState createState() => _SendPageState();
+  State<SendPage> createState() => _SendPageState();
 }
 
 class _SendPageState extends State<SendPage>
@@ -92,15 +92,14 @@ class _SendPageState extends State<SendPage>
       int fileLength = selectedFiles[i].lengthSync();
       totalSize += fileLength;
       if (selectedFiles.length <= 5) {
-        fileInfo += fileName[i] + " " + FileSize.getSize(fileLength) + "\n";
+        fileInfo += "${fileName[i]} ${FileSize.getSize(fileLength)}\n";
       }
     }
     if (fileInfo == "") {
-      fileInfo = (selectedFiles.length + 1).toString() +
-          "個のファイル " +
-          FileSize.getSize(totalSize);
+      fileInfo =
+          "${selectedFiles.length + 1}個のファイル ${FileSize.getSize(totalSize)}";
     } else {
-      fileInfo += "合計: " + FileSize.getSize(totalSize);
+      fileInfo += "合計: ${FileSize.getSize(totalSize)}";
     }
 
     return fileInfo;
@@ -125,14 +124,14 @@ class _SendPageState extends State<SendPage>
                       fileName.clear();
 
                       // ドロップされたファイルの情報を記録
-                      final _file = detail.files;
-                      for (var i = 0; i < _file.length; i++) {
-                        selectedFiles.add(File(_file[i].path));
-                        fileName.add(_file[i].name);
+                      final file = detail.files;
+                      for (var i = 0; i < file.length; i++) {
+                        selectedFiles.add(File(file[i].path));
+                        fileName.add(file[i].name);
                       }
                       setState(() {
                         selectFileButtonText =
-                            "選択されたファイル:\n" + _setFileInfoStr();
+                            "選択されたファイル:\n${_setFileInfoStr()}";
                       });
                     },
                     child: DottedBorder(
@@ -173,7 +172,7 @@ class _SendPageState extends State<SendPage>
                               }
                               setState(() {
                                 selectFileButtonText =
-                                    "選択されたファイル:\n" + _setFileInfoStr();
+                                    "選択されたファイル:\n${_setFileInfoStr()}";
                               });
                             } else {
                               // ファイルが何も選択されていない場合はボタン内の文章を初期化
@@ -211,7 +210,7 @@ class _SendPageState extends State<SendPage>
                               ip, selectedFiles, context);
                           serverListen = true;
                           qrCode = qr;
-                          ipText = "IP: " + ip;
+                          ipText = "IP: $ip";
                           stopServerButton = FloatingActionButton(
                             onPressed: _stopShareProcess,
                             tooltip: '共有を停止する',
@@ -334,7 +333,7 @@ class _SendPageState extends State<SendPage>
                         fontSize: 22),
                     children: <TextSpan>[
                       TextSpan(
-                        text: '\n' + fileName.length.toString() + "個のファイル",
+                        text: "\n${fileName.length.toString()}個のファイル",
                         style: const TextStyle(
                           fontSize: 14,
                         ),
