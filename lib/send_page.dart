@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:open_file_trucker/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -155,6 +156,16 @@ class _SendPageState extends State<SendPage>
                             // 過去のファイル情報を消去
                             selectedFiles.clear();
                             fileName.clear();
+
+                            if (Platform.isAndroid &&
+                                !(await Permission.storage
+                                    .request()
+                                    .isDenied)) {
+                              EasyDialog.showPermissionAlert(
+                                  "ファイルを参照するには、ストレージへのアクセス権限が必要です。",
+                                  Navigator.of(context));
+                              return;
+                            }
 
                             // ピッカーを起動
                             var res = await FilePicker.platform.pickFiles(
