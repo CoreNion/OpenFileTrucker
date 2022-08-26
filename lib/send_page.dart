@@ -158,9 +158,7 @@ class _SendPageState extends State<SendPage>
                             fileName.clear();
 
                             if (Platform.isAndroid &&
-                                !(await Permission.storage
-                                    .request()
-                                    .isDenied)) {
+                                await Permission.storage.request().isDenied) {
                               EasyDialog.showPermissionAlert(
                                   "ファイルを参照するには、ストレージへのアクセス権限が必要です。",
                                   Navigator.of(context));
