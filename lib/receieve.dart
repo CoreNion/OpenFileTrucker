@@ -25,13 +25,11 @@ class ReceiveFile {
           return WillPopScope(
             // 戻る無効化
             onWillPop: () => Future.value(false),
-            child: AlertDialog(
-              title: const Text("接続しています..."),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => connectionTask.cancel(),
-                    child: const Text("キャンセル")),
-              ],
+            child: const AlertDialog(
+              title: Text(
+                "接続しています...",
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         });
@@ -41,8 +39,8 @@ class ReceiveFile {
 
     // 最初の接続を開始
     try {
-      connectionTask = await Socket.startConnect(ip, 4782);
-      socket = await connectionTask.socket;
+      socket =
+          await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
       socket.add(utf8.encode("first"));
     } on SocketException catch (e) {
       Wakelock.disable();
