@@ -44,10 +44,6 @@ class _SendPageState extends State<SendPage>
           return largeUI();
         } else {
           isSmallUI = true;
-          /* if (qrCode is QrImage) {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (builder) => _pushQRPageForSmallScreen(context)));
-          } */
           return smallUI();
         }
       },
@@ -197,17 +193,18 @@ class _SendPageState extends State<SendPage>
                   ),
                   child: const Text("送信する"),
                   onPressed: () async {
+                    final nav = Navigator.of(context);
                     if (serverListen) {
                       showDialog(
                           context: context,
                           builder: (context) => EasyDialog.showSmallInfo(
-                              context, "エラー", "他のファイルの共有を停止してください。"));
+                              nav, "エラー", "他のファイルの共有を停止してください。"));
                     } else if (selectedFiles.isNotEmpty) {
                       try {
                         final ip = await SendFiles.selectNetwork(context);
                         if (!(ip == null)) {
-                          final qr = await SendFiles.serverStart(
-                              ip, selectedFiles, context);
+                          final qr =
+                              await SendFiles.serverStart(ip, selectedFiles);
                           serverListen = true;
                           qrCode = qr;
                           ipText = "IP: $ip";
@@ -217,7 +214,7 @@ class _SendPageState extends State<SendPage>
                             child: const Icon(Icons.pause),
                           );
                           if (isSmallUI) {
-                            Navigator.of(context).push(MaterialPageRoute(
+                            nav.push(MaterialPageRoute(
                               builder: (context) =>
                                   _pushQRPageForSmallScreen(context),
                             ));
@@ -228,16 +225,18 @@ class _SendPageState extends State<SendPage>
                           showDialog(
                               context: context,
                               builder: (context) => EasyDialog.showSmallInfo(
-                                  context, "エラー", "ネットワークに接続してください。"));
+                                  Navigator.of(context),
+                                  "エラー",
+                                  "ネットワークに接続してください。"));
                         }
                       } on Exception catch (e) {
-                        EasyDialog.showErrorDialog(e, context);
+                        EasyDialog.showErrorDialog(e, Navigator.of(context));
                       }
                     } else {
                       showDialog(
                           context: context,
                           builder: (context) => EasyDialog.showSmallInfo(
-                              context, "エラー", "ファイルを選択してください。"));
+                              Navigator.of(context), "エラー", "ファイルを選択してください。"));
                     }
                   },
                 ),

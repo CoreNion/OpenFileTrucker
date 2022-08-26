@@ -6,21 +6,21 @@ import 'package:permission_handler/permission_handler.dart';
 class EasyDialog {
   /// 小規模なダイアログを表示する
   static Widget showSmallInfo(
-      BuildContext context, String title, String content) {
+      NavigatorState nav, String title, String content) {
     return AlertDialog(
       title: Text(title),
       content: Text(content),
       actions: <Widget>[
         TextButton(
           child: const Text("OK"),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => nav.pop(),
         )
       ],
     );
   }
 
   /// エラーのダイアログを表示する
-  static Future<void> showErrorDialog(Exception e, BuildContext context) {
+  static Future<void> showErrorDialog(Exception e, NavigatorState nav) {
     late String errorTitle;
     late String errorMessage;
     String exceptionMessage = "";
@@ -45,7 +45,7 @@ class EasyDialog {
     }
 
     return showDialog(
-        context: context,
+        context: nav.context,
         builder: (builder) {
           return AlertDialog(
             title: Text(errorTitle),
@@ -53,7 +53,7 @@ class EasyDialog {
             actions: <Widget>[
               TextButton(
                 child: const Text("閉じる"),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => nav.pop(),
               )
             ],
           );
@@ -61,9 +61,9 @@ class EasyDialog {
   }
 
   /// 権限が必要であることを伝えるダイアログを表示する
-  static Future<void> showPermissionAlert(String reason, BuildContext context) {
+  static Future<void> showPermissionAlert(String reason, NavigatorState nav) {
     return showDialog(
-        context: context,
+        context: nav.context,
         builder: (_) {
           return AlertDialog(
             title: const Text("権限が必要です"),
@@ -75,7 +75,7 @@ class EasyDialog {
               ),
               TextButton(
                 child: const Text("閉じる"),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => nav.pop(),
               )
             ],
           );

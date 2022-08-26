@@ -13,6 +13,7 @@ class ReceiveFile {
   /// ファイルの受信の処理をする関数
   static Future<bool> receiveFile(
       String ip, /* String key */ BuildContext context) async {
+    final nav = Navigator.of(context);
     late ConnectionTask<Socket> connectionTask;
     late Socket socket;
     bool err = false;
@@ -46,8 +47,8 @@ class ReceiveFile {
     } on SocketException catch (e) {
       Wakelock.disable();
       // 「接続しています」のダイアログを消す
-      Navigator.pop(context);
-      EasyDialog.showErrorDialog(e, context);
+      nav.pop();
+      EasyDialog.showErrorDialog(e, nav);
       return false;
     }
 
@@ -63,7 +64,7 @@ class ReceiveFile {
         })
         .asFuture<void>()
         .catchError((e) {
-          EasyDialog.showErrorDialog(e, context);
+          EasyDialog.showErrorDialog(e, nav);
           err = true;
         });
     if (err) {
@@ -71,9 +72,9 @@ class ReceiveFile {
     }
 
     // 終了次第「接続しています」のダイアログを消す
-    Navigator.pop(context);
+    nav.pop();
     // ファイルの保存場所を取得(聞く)
-    String? path = await _getSavePath(fileName, context);
+    String? path = await _getSavePath(fileName, nav);
     if (path != null) {
       late int currentNum;
       double singleFileProgress = 0;
@@ -156,7 +157,7 @@ class ReceiveFile {
           socket = await connectionTask.socket;
         } on SocketException catch (e) {
           Wakelock.disable();
-          EasyDialog.showErrorDialog(e, context);
+          EasyDialog.showErrorDialog(e, nav);
           return false;
         }
         // サーバーi個目のファイルをファイルを要求
@@ -194,7 +195,7 @@ class ReceiveFile {
         await receieveSink.addStream(socket).catchError((e) {
           timer.cancel();
           endProcess();
-          return EasyDialog.showErrorDialog(e, context);
+          return EasyDialog.showErrorDialog(e, nav);
         });
 
         // 進捗更新の停止
@@ -205,7 +206,7 @@ class ReceiveFile {
           await receieveSink.close();
         } on Exception catch (e) {
           endProcess();
-          EasyDialog.showErrorDialog(e, context);
+          EasyDialog.showErrorDialog(e, nav);
           return true;
         }
       }
@@ -226,7 +227,7 @@ class ReceiveFile {
         showDialog(
             context: context,
             builder: (context) =>
-                EasyDialog.showSmallInfo(context, "情報", "ファイルの受信はキャンセルされました。"));
+                EasyDialog.showSmallInfo(nav, "情報", "ファイルの受信はキャンセルされました。"));
         return false;
       } else {
         return true;
@@ -238,7 +239,7 @@ class ReceiveFile {
 
   /// ファイルの保存場所をユーザーなどから取得
   static Future<String?> _getSavePath(
-      List<String> fileName, BuildContext context) async {
+      List<String> fileName, NavigatorState nav) async {
     // Desktopはファイル保存のダイアログ経由
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       if (fileName.length < 2) {
@@ -264,8 +265,7 @@ class ReceiveFile {
           return null;
         }
       } else {
-        EasyDialog.showPermissionAlert(
-            "ファイルを保存するには、ストレージへのアクセス権限が必要です。", context);
+        EasyDialog.showPermissionAlert("ファイルを保存するには、ストレージへのアクセス権限が必要です。", nav);
         return null;
       }
     } else if (Platform.isIOS) {

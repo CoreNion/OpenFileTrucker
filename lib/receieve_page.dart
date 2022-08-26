@@ -46,7 +46,7 @@ class _ReceivePageState extends State<ReceivePage>
             });
           } else {
             EasyDialog.showPermissionAlert(
-                "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", context);
+                "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", Navigator.of(context));
           }
         },
         tooltip: "QRコードを利用する",
