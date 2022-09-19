@@ -98,8 +98,10 @@ class _ReceivePageState extends State<ReceivePage>
                       width: double.infinity,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: Theme.of(context).colorScheme.primary,
-                            onPrimary: Theme.of(context).colorScheme.onPrimary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                           ),
                           child: const Text("ファイルを受信"),
                           onPressed: () async {

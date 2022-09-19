@@ -140,8 +140,8 @@ class _SendPageState extends State<SendPage>
                         height: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.transparent,
-                            onPrimary: Colors.transparent,
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.transparent,
                             elevation: 0,
                             shadowColor: Colors.transparent,
                           ),
@@ -197,8 +197,8 @@ class _SendPageState extends State<SendPage>
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    onPrimary: Theme.of(context).colorScheme.onPrimary,
-                    primary: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
                   child: const Text("送信する"),
                   onPressed: () async {

@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
                                       ),
                                       TextButton(
                                           style: TextButton.styleFrom(
-                                              primary: Colors.blue),
+                                              foregroundColor: Colors.blue),
                                           onPressed: () async =>
                                               await launchUrl(Uri.parse(
                                                   "https://github.com/CoreNion/OpenFileTrucker")),
