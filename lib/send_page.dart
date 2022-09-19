@@ -23,7 +23,8 @@ class _SendPageState extends State<SendPage>
 
   late bool isSmallUI;
   List<File> selectedFiles = <File>[];
-  static String firstFileButtonText = "ファイルを選択\nまたはドラック&ドロップ";
+  static String firstFileButtonText =
+      Platform.isIOS ? "タップしてファイルを選択" : "タップしてファイルを選択\nまたはドラック&ドロップ";
   String selectFileButtonText = firstFileButtonText;
   List<String> fileName = <String>[];
   String ipText = "";
