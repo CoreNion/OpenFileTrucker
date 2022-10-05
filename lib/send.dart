@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:open_file_trucker/qr_data.dart';
 import 'package:wakelock/wakelock.dart';
@@ -65,6 +68,29 @@ class SendFiles {
               ));
         },
       );
+    }
+  }
+
+  /// ファイルを選択する関数
+  static Future<List<File>?> pickFiles(BuildContext context) async {
+    List<File> files = <File>[];
+
+    if (Platform.isAndroid && await Permission.storage.request().isDenied) {
+      EasyDialog.showPermissionAlert(
+          "ファイルを参照するには、ストレージへのアクセス権限が必要です。", Navigator.of(context));
+      return null;
+    }
+
+    var res = await FilePicker.platform
+        .pickFiles(allowMultiple: true, dialogTitle: "送信するファイルを取得");
+    if (!(res == null)) {
+      // 選択されたファイルの情報を記録
+      for (var i = 0; i < res.files.length; i++) {
+        files.add(File(res.files[i].path!));
+      }
+      return files;
+    } else {
+      return null;
     }
   }
 

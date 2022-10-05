@@ -47,6 +47,8 @@ dependencies:
   url_launcher: ^6.0.20
   mobile_scanner: ^2.0.0
   dynamic_color: ^1.5.4
+  image_picker: ^0.8.5+3
+  cross_file: ^0.3.3+2
 
 dev_dependencies:
   flutter_test:

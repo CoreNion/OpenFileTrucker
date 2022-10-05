@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as p;
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -26,7 +25,6 @@ class _SendPageState extends State<SendPage>
   static String firstFileButtonText =
       Platform.isIOS ? "タップしてファイルを選択" : "タップしてファイルを選択\nまたはドラック&ドロップ";
   String selectFileButtonText = firstFileButtonText;
-  List<String> fileName = <String>[];
   String ipText = "";
   String keyText = "";
   Widget qrCode = Container();
@@ -90,7 +88,8 @@ class _SendPageState extends State<SendPage>
       int fileLength = selectedFiles[i].lengthSync();
       totalSize += fileLength;
       if (selectedFiles.length <= 5) {
-        fileInfo += "${fileName[i]} ${FileSize.getSize(fileLength)}\n";
+        fileInfo +=
+            "${p.basename(selectedFiles[0].path)} ${FileSize.getSize(fileLength)}\n";
       }
     }
     if (fileInfo == "") {
@@ -119,13 +118,11 @@ class _SendPageState extends State<SendPage>
                     onDragDone: (detail) {
                       // 過去のファイル情報を消去
                       selectedFiles.clear();
-                      fileName.clear();
 
                       // ドロップされたファイルの情報を記録
                       final file = detail.files;
                       for (var i = 0; i < file.length; i++) {
                         selectedFiles.add(File(file[i].path));
-                        fileName.add(file[i].name);
                       }
                       setState(() {
                         selectFileButtonText =
@@ -156,35 +153,14 @@ class _SendPageState extends State<SendPage>
                           onPressed: () async {
                             // 過去のファイル情報を消去
                             selectedFiles.clear();
-                            fileName.clear();
 
-                            if (Platform.isAndroid &&
-                                await Permission.storage.request().isDenied) {
-                              EasyDialog.showPermissionAlert(
-                                  "ファイルを参照するには、ストレージへのアクセス権限が必要です。",
-                                  Navigator.of(context));
-                              return;
-                            }
-
-                            // ピッカーを起動
-                            var res = await FilePicker.platform.pickFiles(
-                                allowMultiple: true,
-                                dialogTitle: "送信するファイルを取得");
-                            if (!(res == null)) {
-                              // 選択されたファイルの情報を記録
-                              for (var i = 0; i < res.files.length; i++) {
-                                selectedFiles.add(File(res.files[i].path!));
-                                fileName.add(res.files[i].name);
-                              }
-                              setState(() {
-                                selectFileButtonText =
-                                    "選択されたファイル:\n${_setFileInfoStr()}";
-                              });
+                            if (Platform.isAndroid || Platform.isIOS) {
+                              // ファイルの種類選択ダイアログを表示
+                              await showDialog(
+                                  context: context,
+                                  builder: (_) => _selectFileType());
                             } else {
-                              // ファイルが何も選択されていない場合はボタン内の文章を初期化
-                              setState(() {
-                                selectFileButtonText = firstFileButtonText;
-                              });
+                              SendFiles.pickFiles(context).then(_setFiles);
                             }
                           },
                         ),
@@ -342,7 +318,7 @@ class _SendPageState extends State<SendPage>
                         fontSize: 22),
                     children: <TextSpan>[
                       TextSpan(
-                        text: "\n${fileName.length.toString()}個のファイル",
+                        text: "\n${selectedFiles.length.toString()}個のファイル",
                         style: const TextStyle(
                           fontSize: 14,
                         ),
@@ -380,5 +356,55 @@ class _SendPageState extends State<SendPage>
             onPressed: () => Navigator.pop(context), child: const Text("いいえ"))
       ],
     );
+  }
+
+  /// ファイルの種類を選択するダイアログ
+  Widget _selectFileType() {
+    return AlertDialog(
+      title: const Text("データの種類を選択", textAlign: TextAlign.center),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+                IconButton(
+                    onPressed: () {
+                      SendFiles.pickFiles(context).then(_setFiles);
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.file_copy, size: 70)),
+                const Text("ファイル")
+              ],
+            ),
+            Column(
+              children: [
+                IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.image, size: 70)),
+                const Text("写真/動画")
+              ],
+            )
+          ],
+        )
+      ],
+    );
+  }
+
+  /// 選択したファイルを設定する
+  void _setFiles(val) {
+    if (val == null) {
+      // ファイルが何も選択されていない場合はボタン内の文章を初期化
+      setState(() {
+        selectFileButtonText = firstFileButtonText;
+      });
+    } else {
+      selectedFiles = val;
+      setState(() {
+        selectFileButtonText = "選択されたファイル:\n${_setFileInfoStr()}";
+      });
+    }
   }
 }
