@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as p;
 import 'package:wakelock/wakelock.dart';
-import 'package:open_file_trucker/dialog.dart';
+import 'package:open_file_trucker/widget/dialog.dart';
 import 'dart:io';
 
 class ReceiveFile {
