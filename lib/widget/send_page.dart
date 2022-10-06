@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cross_file/cross_file.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
+import 'package:image_picker/image_picker.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -383,6 +383,7 @@ class _SendPageState extends State<SendPage>
               children: [
                 IconButton(
                     onPressed: () {
+                      ImagePicker().pickMultiImage().then(_setFiles);
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.image, size: 70)),
@@ -399,7 +400,7 @@ class _SendPageState extends State<SendPage>
   ///
   /// File型を設定した場合、自動的にXFileに変換されます。
   void _setFiles(List<dynamic>? val) {
-    if (val == null) {
+    if (val == null || val.isEmpty) {
       // ファイルが何も選択されていない場合はボタン内の文章を初期化
       setState(() {
         selectFileButtonText = firstFileButtonText;

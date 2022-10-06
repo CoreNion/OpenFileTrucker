@@ -57,7 +57,7 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>画像や動画を写真ライブラリに保存するには、写真ライブラリへのアクセスの許可が必要です。</string>
+	<string>画像や動画を利用するには、写真ライブラリへのアクセスの許可が必要です。</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>LSApplicationQueriesSchemes</key>
