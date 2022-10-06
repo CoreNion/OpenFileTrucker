@@ -80,27 +80,31 @@ class _SendPageState extends State<SendPage>
         body: selectFileArea(), floatingActionButton: stopServerButton);
   }
 
-  /// selectedFilesからファイル選択ボタンに書かれる文章を生成
-  Future<String> _setFileInfoStr() async {
+  /// selectedFilesからファイル選択ボタンに書かれる文章を設定
+  Future<void> _setFileInfo() async {
     String fileInfo = "";
     int totalSize = 0;
+    // ファイル数が多かったら詳細を省略する
+    bool abbreviation = selectedFiles.length > 5;
 
-    for (var i = 0; i < selectedFiles.length; i++) {
-      int fileLength = await selectedFiles[i].length();
+    // ファイル名とサイズを取得
+    for (XFile file in selectedFiles) {
+      int fileLength = await file.length();
       totalSize += fileLength;
-      if (selectedFiles.length <= 5) {
+      if (!abbreviation) {
         fileInfo +=
-            "${p.basename(selectedFiles[0].path)} ${FileSize.getSize(fileLength)}\n";
+            "${p.basename(file.path)} ${FileSize.getSize(fileLength)}\n";
       }
     }
-    if (fileInfo == "") {
-      fileInfo =
-          "${selectedFiles.length + 1}個のファイル ${FileSize.getSize(totalSize)}";
-    } else {
-      fileInfo += "合計: ${FileSize.getSize(totalSize)}";
-    }
 
-    return fileInfo;
+    if (abbreviation) {
+      fileInfo += "${selectedFiles.length}個のファイル ";
+    }
+    fileInfo += "合計: ${FileSize.getSize(totalSize)}";
+
+    setState(() {
+      selectFileButtonText = "選択されたファイル:\n$fileInfo";
+    });
   }
 
   /// ファイルを選択する部分のUI
@@ -125,10 +129,7 @@ class _SendPageState extends State<SendPage>
                       for (var i = 0; i < file.length; i++) {
                         selectedFiles.add(XFile(file[i].path));
                       }
-                      setState(() async {
-                        selectFileButtonText =
-                            "選択されたファイル:\n${await _setFileInfoStr()}";
-                      });
+                      _setFileInfo();
                     },
                     child: DottedBorder(
                       color: Theme.of(context).colorScheme.primary,
@@ -418,10 +419,6 @@ class _SendPageState extends State<SendPage>
       throw ArgumentError.value(val);
     }
 
-    _setFileInfoStr().then((text) {
-      setState(() {
-        selectFileButtonText = text;
-      });
-    });
+    _setFileInfo();
   }
 }
