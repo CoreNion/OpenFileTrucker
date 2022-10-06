@@ -84,8 +84,8 @@ class _SendPageState extends State<SendPage>
   Future<void> _setFileInfo() async {
     String fileInfo = "";
     int totalSize = 0;
-    // ファイル数が多かったら詳細を省略する
-    bool abbreviation = selectedFiles.length > 5;
+    // ファイル数が多い場合/画面が小さい場合、詳細を省略する
+    bool abbreviation = selectedFiles.length > 5 || isSmallUI;
 
     // ファイル名とサイズを取得
     for (XFile file in selectedFiles) {
@@ -98,7 +98,7 @@ class _SendPageState extends State<SendPage>
     }
 
     if (abbreviation) {
-      fileInfo += "${selectedFiles.length}個のファイル ";
+      fileInfo += "${selectedFiles.length}個のファイル\n";
     }
     fileInfo += "合計: ${FileSize.getSize(totalSize)}";
 
