@@ -153,9 +153,6 @@ class _SendPageState extends State<SendPage>
                             textAlign: TextAlign.center,
                           ),
                           onPressed: () async {
-                            // 過去のファイル情報を消去
-                            selectedFiles.clear();
-
                             if (Platform.isAndroid || Platform.isIOS) {
                               // ファイルの種類選択ダイアログを表示
                               await showDialog(
@@ -401,12 +398,12 @@ class _SendPageState extends State<SendPage>
   /// File型を設定した場合、自動的にXFileに変換されます。
   void _setFiles(List<dynamic>? val) {
     if (val == null || val.isEmpty) {
-      // ファイルが何も選択されていない場合はボタン内の文章を初期化
-      setState(() {
-        selectFileButtonText = firstFileButtonText;
-      });
       return;
-    } else if (val is List<File>) {
+    }
+    // 過去のファイル情報を消去
+    selectedFiles.clear();
+
+    if (val is List<File>) {
       // XFileに変換
       List<XFile> xFiles = List.empty(growable: true);
       for (File file in val) {
@@ -420,6 +417,7 @@ class _SendPageState extends State<SendPage>
       throw ArgumentError.value(val);
     }
 
+    // 文章設定
     _setFileInfo();
   }
 }
