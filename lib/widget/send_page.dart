@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ class _SendPageState extends State<SendPage>
   bool get wantKeepAlive => true;
 
   late bool isSmallUI;
-  List<File> selectedFiles = <File>[];
+  List<XFile> selectedFiles = <XFile>[];
   static String firstFileButtonText =
       Platform.isIOS ? "タップしてファイルを選択" : "タップしてファイルを選択\nまたはドラック&ドロップ";
   String selectFileButtonText = firstFileButtonText;
@@ -80,12 +81,12 @@ class _SendPageState extends State<SendPage>
   }
 
   /// selectedFilesからファイル選択ボタンに書かれる文章を生成
-  String _setFileInfoStr() {
+  Future<String> _setFileInfoStr() async {
     String fileInfo = "";
     int totalSize = 0;
 
     for (var i = 0; i < selectedFiles.length; i++) {
-      int fileLength = selectedFiles[i].lengthSync();
+      int fileLength = await selectedFiles[i].length();
       totalSize += fileLength;
       if (selectedFiles.length <= 5) {
         fileInfo +=
@@ -122,11 +123,11 @@ class _SendPageState extends State<SendPage>
                       // ドロップされたファイルの情報を記録
                       final file = detail.files;
                       for (var i = 0; i < file.length; i++) {
-                        selectedFiles.add(File(file[i].path));
+                        selectedFiles.add(XFile(file[i].path));
                       }
-                      setState(() {
+                      setState(() async {
                         selectFileButtonText =
-                            "選択されたファイル:\n${_setFileInfoStr()}";
+                            "選択されたファイル:\n${await _setFileInfoStr()}";
                       });
                     },
                     child: DottedBorder(
@@ -393,18 +394,34 @@ class _SendPageState extends State<SendPage>
     );
   }
 
-  /// 選択したファイルを設定する
-  void _setFiles(val) {
+  /// 選択したファイルを設定し、文言を追加する (Listの型はFileかXFileのみ有効)
+  ///
+  /// File型を設定した場合、自動的にXFileに変換されます。
+  void _setFiles(List<dynamic>? val) {
     if (val == null) {
       // ファイルが何も選択されていない場合はボタン内の文章を初期化
       setState(() {
         selectFileButtonText = firstFileButtonText;
       });
-    } else {
+      return;
+    } else if (val is List<File>) {
+      // XFileに変換
+      List<XFile> xFiles = List.empty(growable: true);
+      for (File file in val) {
+        xFiles.add(XFile(file.path));
+      }
+
+      selectedFiles = xFiles;
+    } else if (val is List<XFile>) {
       selectedFiles = val;
-      setState(() {
-        selectFileButtonText = "選択されたファイル:\n${_setFileInfoStr()}";
-      });
+    } else {
+      throw ArgumentError.value(val);
     }
+
+    _setFileInfoStr().then((text) {
+      setState(() {
+        selectFileButtonText = text;
+      });
+    });
   }
 }
