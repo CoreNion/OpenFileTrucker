@@ -159,7 +159,11 @@ class _SendPageState extends State<SendPage>
                                   context: context,
                                   builder: (_) => _selectFileType());
                             } else {
-                              SendFiles.pickFiles(context).then(_setFiles);
+                              SendFiles.pickFiles(context)
+                                  .then(_setFiles)
+                                  .catchError((e, stackTrace) =>
+                                      EasyDialog.showErrorDialog(
+                                          e, Navigator.of(context)));
                             }
                           },
                         ),
@@ -369,7 +373,9 @@ class _SendPageState extends State<SendPage>
               children: <Widget>[
                 IconButton(
                     onPressed: () {
-                      SendFiles.pickFiles(context).then(_setFiles);
+                      SendFiles.pickFiles(context).then(_setFiles).catchError(
+                          (e, stackTrace) => EasyDialog.showErrorDialog(
+                              e, Navigator.of(context)));
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.file_copy, size: 70)),
@@ -380,7 +386,9 @@ class _SendPageState extends State<SendPage>
               children: [
                 IconButton(
                     onPressed: () {
-                      ImagePicker().pickMultiImage().then(_setFiles);
+                      ImagePicker().pickMultiImage().then(_setFiles).catchError(
+                          (e, stackTrace) => EasyDialog.showErrorDialog(
+                              e, Navigator.of(context)));
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.image, size: 70)),
