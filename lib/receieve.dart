@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as p;
 import 'package:wakelock/wakelock.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
@@ -250,20 +249,15 @@ class ReceiveFile {
       }
     } else if (Platform.isAndroid) {
       // なぜかiOSでは動作しない...
-      if (await Permission.storage.request().isGranted) {
-        String? path = await FilePicker.platform
-            .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
-        if (path != null) {
-          if (fileName.length < 2) {
-            return p.join(path, fileName.first);
-          } else {
-            return path;
-          }
+      String? path = await FilePicker.platform
+          .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
+      if (path != null) {
+        if (fileName.length < 2) {
+          return p.join(path, fileName.first);
         } else {
-          return null;
+          return path;
         }
       } else {
-        EasyDialog.showPermissionAlert("ファイルを保存するには、ストレージへのアクセス権限が必要です。", nav);
         return null;
       }
     } else if (Platform.isIOS) {
