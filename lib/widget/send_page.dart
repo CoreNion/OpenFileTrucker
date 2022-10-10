@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_sizes/file_sizes.dart';
@@ -8,6 +9,7 @@ import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
+import 'package:sodium_libs/sodium_libs.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -31,6 +33,7 @@ class _SendPageState extends State<SendPage>
   Widget qrCode = Container();
   Widget stopServerButton = Container();
   bool serverListen = false;
+  bool checkFileHash = false;
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +118,7 @@ class _SendPageState extends State<SendPage>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Expanded(
-              flex: 7,
+              flex: 8,
               child: Container(
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 20),
@@ -173,6 +176,16 @@ class _SendPageState extends State<SendPage>
             ),
             Expanded(
               flex: 1,
+              child: SwitchListTile(
+                value: checkFileHash,
+                title: const Text('受信時にファイルの整合性を確認する'),
+                onChanged: (bool value) => setState(() {
+                  checkFileHash = value;
+                }),
+              ),
+            ),
+            Expanded(
+              flex: 1,
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -192,8 +205,34 @@ class _SendPageState extends State<SendPage>
                       try {
                         final ip = await SendFiles.selectNetwork(context);
                         if (!(ip == null)) {
-                          final qr =
-                              await SendFiles.serverStart(ip, selectedFiles);
+                          List<Uint8List>? hashs = [];
+
+                          if (checkFileHash) {
+                            // SnackBarで通知
+                            ScaffoldMessenger.of(nav.context).showSnackBar(
+                              const SnackBar(
+                                content: Text("ファイルのハッシュを取得中です..."),
+                                duration: Duration(days: 100),
+                              ),
+                            );
+
+                            final sodium = await SodiumInit.init();
+                            // 各ファイルのハッシュを計算
+                            for (var file in selectedFiles) {
+                              hashs.add(await sodium.crypto.genericHash
+                                  .stream(messages: file.openRead()));
+                            }
+
+                            // SnackBarで通知
+                            ScaffoldMessenger.of(nav.context)
+                                .removeCurrentSnackBar();
+                          } else {
+                            hashs = null;
+                          }
+
+                          // サーバーの開始
+                          final qr = await SendFiles.serverStart(
+                              ip, selectedFiles, hashs);
                           serverListen = true;
                           qrCode = qr;
                           ipText = "IP: $ip";
@@ -202,6 +241,8 @@ class _SendPageState extends State<SendPage>
                             tooltip: '共有を停止する',
                             child: const Icon(Icons.pause),
                           );
+
+                          // 小画面デバイスの場合、別ページでqrを表示
                           if (isSmallUI) {
                             nav.push(MaterialPageRoute(
                               builder: (context) =>

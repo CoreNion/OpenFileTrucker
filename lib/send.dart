@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:path/path.dart';
@@ -97,10 +98,10 @@ class SendFiles {
 
   static ServerSocket? _server;
 
-  static Future<QrImage> serverStart(
-      String ip, /* String key, */ List<XFile> files) async {
+  static Future<QrImage> serverStart(String ip,
+      /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
     _server = await ServerSocket.bind(ip, 4782);
-    _server?.listen((event) => _serverListen(event, files));
+    _server?.listen((event) => _serverListen(event, files, hashs));
 
     return QrImage(
       data: json.encode(QRCodeData(
@@ -111,7 +112,8 @@ class SendFiles {
     );
   }
 
-  static void _serverListen(Socket socket, List<XFile> files) {
+  static void _serverListen(
+      Socket socket, List<XFile> files, List<Uint8List>? hashs) {
     socket.listen((event) async {
       String mesg = utf8.decode(event);
       if (mesg == "first") {
@@ -122,8 +124,16 @@ class SendFiles {
           nameList.add(basename(files[i].path));
           lengthList.add(await files[i].length());
         }
-        socket.add(utf8.encode(
-            json.encode({"nameList": nameList, "lengthList": lengthList})));
+        if (!(hashs == null)) {
+          socket.add(utf8.encode(json.encode({
+            "nameList": nameList,
+            "lengthList": lengthList,
+            "hashList": hashs
+          })));
+        } else {
+          socket.add(utf8.encode(
+              json.encode({"nameList": nameList, "lengthList": lengthList})));
+        }
         socket.destroy();
       } else {
         int? fileNumber = int.tryParse(mesg);

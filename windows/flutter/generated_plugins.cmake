@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop
   dynamic_color
   permission_handler_windows
+  sodium_libs
   url_launcher_windows
 )
 

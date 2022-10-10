@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:sodium_libs/sodium_libs.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'dart:io';
@@ -53,12 +57,23 @@ class ReceiveFile {
     // ファイルの情報を受信
     late List<String> fileName;
     late List<int> fileSize;
+    late List<Uint8List>? hashs;
     // ファイルの情報を取得したら一旦通信終了される
     await socket
         .listen((event) {
+          // 各情報を保存
           Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
           fileName = fileInfo["nameList"].cast<String>();
           fileSize = fileInfo["lengthList"].cast<int>();
+          // cast<List<Uint8List>>が効かないのでmapを介す
+          if (fileInfo.containsKey("hashList")) {
+            hashs = (fileInfo["hashList"] as List<dynamic>)
+                .map((subList) =>
+                    Uint8List.fromList((subList as List<dynamic>).cast<int>()))
+                .toList();
+          } else {
+            hashs = null;
+          }
         })
         .asFuture<void>()
         .catchError((e) {
@@ -214,6 +229,48 @@ class ReceiveFile {
           return true;
         }
       }
+
+      // ハッシュ計算
+      if (!(hashs == null)) {
+        // 進捗のダイアログを消す
+        nav.pop();
+
+        // ダイアログ表示
+        showDialog(
+            context: context,
+            builder: (_) {
+              return WillPopScope(
+                // 戻る無効化
+                onWillPop: () => Future.value(false),
+                child: const AlertDialog(
+                  title: Text(
+                    "整合性を確認しています...",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            });
+
+        final sodium = await SodiumInit.init();
+        // 各ファイルのハッシュ値を確認
+        for (var i = 0; i < fileName.length; i++) {
+          final Uint8List origHash = hashs![i];
+          final XFile file = fileName.length < 2
+              ? XFile(path)
+              : XFile(p.join(path + fileName[i]));
+          Uint8List receieHash =
+              await sodium.crypto.genericHash.stream(messages: file.openRead());
+
+          if (!(listEquals(origHash, receieHash))) {
+            endProcess();
+
+            throw const FileSystemException(
+                "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。");
+          }
+        }
+      }
+
+      // 共通の終了処理
       endProcess();
 
       // キャンセルボタンが押されて終了した場合は作成したファイルを削除

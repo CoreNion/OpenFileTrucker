@@ -126,7 +126,11 @@ class _ReceivePageState extends State<ReceivePage>
     // 結果のメッセージを削除
     sucsessWidght.clear();
 
-    final result = await ReceiveFile.receiveFile(ip, /* key, */ context);
+    final result = await ReceiveFile.receiveFile(ip, /* key, */ context)
+        .onError((e, stackTrace) {
+      EasyDialog.showErrorDialog(Exception(e), Navigator.of(context));
+      return false;
+    });
     // ファイルの受信に成功したらメッセージを表示
     if (result) {
       sucsessWidght.add(const Text("ファイルの受信が完了しました",
