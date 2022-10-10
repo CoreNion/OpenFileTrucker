@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
+import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -78,6 +79,7 @@ class ReceiveFile {
       double totalProgress = 0;
       late Function dialogSetState;
       final int totalFileLength = fileSize.reduce((a, b) => a + b);
+      int receieveSpeed = 0;
       int completedLength = 0;
       late Timer timer;
       bool pushCancelButton = false;
@@ -121,6 +123,10 @@ class ReceiveFile {
                               LinearProgressIndicator(
                                 value: singleFileProgress,
                               ),
+                              Text(
+                                "速度: ${FileSize.getSize(receieveSpeed * 10)}/s",
+                                textAlign: TextAlign.right,
+                              )
                             ],
                           ),
                         ],
@@ -176,9 +182,10 @@ class ReceiveFile {
             // 1つのファイルの進捗
             singleFileProgress =
                 (currentFileLength / fileSize[currentNum]).toDouble();
+            // この100msで取得した容量 (現在の容量 - 最後に取得した時の容量)
+            receieveSpeed = currentFileLength - latestCompletedFileLen;
             // 現在までに受信した容量 = (現在の容量 - 最後に取得した時の容量) + いままでの容量
-            completedLength =
-                (currentFileLength - latestCompletedFileLen) + completedLength;
+            completedLength = receieveSpeed + completedLength;
             // トータルの進捗
             totalProgress = (completedLength / totalFileLength).toDouble();
           });
