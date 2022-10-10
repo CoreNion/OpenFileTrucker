@@ -258,7 +258,7 @@ class ReceiveFile {
           final Uint8List origHash = hashs![i];
           final XFile file = fileName.length < 2
               ? XFile(path)
-              : XFile(p.join(path + fileName[i]));
+              : XFile(p.join(path, fileName[i]));
           Uint8List receieHash =
               await sodium.crypto.genericHash.stream(messages: file.openRead());
 
