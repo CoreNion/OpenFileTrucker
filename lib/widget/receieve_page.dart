@@ -19,7 +19,14 @@ class _ReceivePageState extends State<ReceivePage>
   @override
   bool get wantKeepAlive => true;
 
-  List<Widget> sucsessWidght = <Widget>[];
+  List<Widget> sucsessWidght = Platform.isAndroid
+      ? <Widget>[
+          const Text(
+            "Androidでは、選択が可能なフォルダーでもファイルを保存できない場合があります。\n特に指定が無い場合、「ダウンロード」フォルダーにFileTrucker用のフォルダーを作成し、そこにファイルを保存することがおすすめです。",
+            textAlign: TextAlign.center,
+          )
+        ]
+      : <Widget>[];
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +130,15 @@ class _ReceivePageState extends State<ReceivePage>
   }
 
   Future<void> _startReceive(String ip /*, String key  */) async {
-    // 結果のメッセージを削除
-    sucsessWidght.clear();
-
     final result = await ReceiveFile.receiveFile(ip, /* key, */ context)
         .onError((e, stackTrace) {
       EasyDialog.showErrorDialog(Exception(e), Navigator.of(context));
       return false;
     });
+
+    // 結果のメッセージを削除
+    sucsessWidght.clear();
+
     // ファイルの受信に成功したらメッセージを表示
     if (result) {
       sucsessWidght.add(const Text("ファイルの受信が完了しました",
