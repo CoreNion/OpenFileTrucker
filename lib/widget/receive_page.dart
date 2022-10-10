@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/qr_data.dart';
-import 'package:open_file_trucker/receieve.dart';
+import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:open_file_trucker/widget/receieve_qr.dart';
+import 'package:open_file_trucker/widget/receive_qr.dart';
 import 'package:wakelock/wakelock.dart';
 
 class ReceivePage extends StatefulWidget {

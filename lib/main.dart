@@ -3,7 +3,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:open_file_trucker/widget/receieve_page.dart';
+import 'package:open_file_trucker/widget/receive_page.dart';
 import 'package:open_file_trucker/widget/send_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
