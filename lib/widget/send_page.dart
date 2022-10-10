@@ -174,15 +174,13 @@ class _SendPageState extends State<SendPage>
                     ),
                   )),
             ),
-            Expanded(
-              flex: 1,
-              child: SwitchListTile(
-                value: checkFileHash,
-                title: const Text('受信時にファイルの整合性を確認する'),
-                onChanged: (bool value) => setState(() {
-                  checkFileHash = value;
-                }),
-              ),
+            SwitchListTile(
+              value: checkFileHash,
+              title: const Text('受信時にファイルの整合性を確認する'),
+              subtitle: const Text("一部端末では利用できない場合があります。"),
+              onChanged: (bool value) => setState(() {
+                checkFileHash = value;
+              }),
             ),
             Expanded(
               flex: 1,
@@ -211,7 +209,8 @@ class _SendPageState extends State<SendPage>
                             // SnackBarで通知
                             ScaffoldMessenger.of(nav.context).showSnackBar(
                               const SnackBar(
-                                content: Text("ファイルのハッシュを取得中です..."),
+                                content: Text(
+                                    "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
                                 duration: Duration(days: 100),
                               ),
                             );

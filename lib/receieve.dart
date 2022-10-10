@@ -247,6 +247,7 @@ class ReceiveFile {
                     "整合性を確認しています...",
                     textAlign: TextAlign.center,
                   ),
+                  content: Text("ファイルの大きさなどによっては、時間がかかる場合があります。"),
                 ),
               );
             });
