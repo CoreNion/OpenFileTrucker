@@ -253,20 +253,29 @@ class ReceiveFile {
             });
 
         final sodium = await SodiumInit.init();
+        late Uint8List receieHash;
+
         // 各ファイルのハッシュ値を確認
         for (var i = 0; i < fileName.length; i++) {
           final Uint8List origHash = hashs![i];
           final XFile file = fileName.length < 2
               ? XFile(path)
               : XFile(p.join(path, fileName[i]));
-          Uint8List receieHash =
-              await sodium.crypto.genericHash.stream(messages: file.openRead());
+          try {
+            receieHash = await sodium.crypto.genericHash
+                .stream(messages: file.openRead());
+          } catch (e) {
+            endProcess();
+
+            throw FileSystemException("整合性の確認中にエラーが発生しました。", file.path);
+          }
 
           if (!(listEquals(origHash, receieHash))) {
             endProcess();
 
-            throw const FileSystemException(
-                "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。");
+            throw FileSystemException(
+                "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。",
+                file.path);
           }
         }
       }
