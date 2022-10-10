@@ -256,7 +256,7 @@ class _SendPageState extends State<SendPage>
                               builder: (context) => EasyDialog.showSmallInfo(
                                   Navigator.of(context),
                                   "エラー",
-                                  "ネットワークに接続してください。"));
+                                  "WiFiやイーサーネットなどの、ローカルネットワークに接続してください。"));
                         }
                       } on Exception catch (e) {
                         EasyDialog.showErrorDialog(e, Navigator.of(context));

@@ -44,10 +44,11 @@ class SendFiles {
           ));
         }
 
-        if (!Platform.isAndroid) {
+        // Androidではwlanのみ表示
+        if (Platform.isAndroid && interfaceName.contains("wlan")) {
           addOption();
-        } else if (interfaceName.contains("wlan")) {
-          // Androidではwlanのみ表示
+          // iOSではen*のみ表示
+        } else if (Platform.isIOS && interfaceName.contains("en")) {
           addOption();
         }
       }
