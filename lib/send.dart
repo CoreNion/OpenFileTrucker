@@ -50,6 +50,8 @@ class SendFiles {
           // iOSではen*のみ表示
         } else if (Platform.isIOS && interfaceName.contains("en")) {
           addOption();
+        } else {
+          addOption();
         }
       }
     }
