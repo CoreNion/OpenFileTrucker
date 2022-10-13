@@ -203,7 +203,7 @@ class ReceiveFile {
       }
 
       // ハッシュ計算
-      if (!(hashs == null)) {
+      if (!(hashs == null) && !pushCancelButton) {
         // 進捗のダイアログを消す
         nav.pop();
 
