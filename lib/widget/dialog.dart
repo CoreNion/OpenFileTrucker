@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sodium_libs/sodium_libs.dart';
 
 class EasyDialog {
   /// 小規模なダイアログを表示する
@@ -20,7 +21,7 @@ class EasyDialog {
   }
 
   /// エラーのダイアログを表示する
-  static Future<void> showErrorDialog(Exception e, NavigatorState nav) {
+  static Future<void> showErrorDialog(e, NavigatorState nav) {
     late String errorTitle;
     late String errorMessage;
     String exceptionMessage = "";
@@ -37,6 +38,11 @@ class EasyDialog {
     } else if (e is IOException) {
       errorTitle = "I/Oエラー";
       errorMessage = "ファイルの読み書き中にエラーが発生しました。\n";
+      exceptionMessage = "詳細:\n$e";
+    } else if (e is SodiumException) {
+      errorTitle = "Sodiumエラー";
+      errorMessage =
+          "libSodiumでの処理中にエラーが発生しました。\nこの端末では、整合性確認機能などが利用できない可能性があります。\n";
       exceptionMessage = "詳細:\n$e";
     } else {
       errorTitle = "不明なエラー";

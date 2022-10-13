@@ -20,7 +20,6 @@ class ReceiveFile {
     final nav = Navigator.of(context);
     late ConnectionTask<Socket> connectionTask;
     late Socket socket;
-    bool err = false;
 
     // ダイアログ表示
     showDialog(
@@ -42,47 +41,30 @@ class ReceiveFile {
     Wakelock.enable();
 
     // 最初の接続を開始
-    try {
-      socket =
-          await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-      socket.add(utf8.encode("first"));
-    } on SocketException catch (e) {
-      Wakelock.disable();
-      // 「接続しています」のダイアログを消す
-      nav.pop();
-      EasyDialog.showErrorDialog(e, nav);
-      return false;
-    }
+    socket =
+        await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
+    socket.add(utf8.encode("first"));
 
     // ファイルの情報を受信
     late List<String> fileName;
     late List<int> fileSize;
     late List<Uint8List>? hashs;
     // ファイルの情報を取得したら一旦通信終了される
-    await socket
-        .listen((event) {
-          // 各情報を保存
-          Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
-          fileName = fileInfo["nameList"].cast<String>();
-          fileSize = fileInfo["lengthList"].cast<int>();
-          // cast<List<Uint8List>>が効かないのでmapを介す
-          if (fileInfo.containsKey("hashList")) {
-            hashs = (fileInfo["hashList"] as List<dynamic>)
-                .map((subList) =>
-                    Uint8List.fromList((subList as List<dynamic>).cast<int>()))
-                .toList();
-          } else {
-            hashs = null;
-          }
-        })
-        .asFuture<void>()
-        .catchError((e) {
-          EasyDialog.showErrorDialog(e, nav);
-          err = true;
-        });
-    if (err) {
-      return false;
-    }
+    await socket.listen((event) {
+      // 各情報を保存
+      Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
+      fileName = fileInfo["nameList"].cast<String>();
+      fileSize = fileInfo["lengthList"].cast<int>();
+      // cast<List<Uint8List>>が効かないのでmapを介す
+      if (fileInfo.containsKey("hashList")) {
+        hashs = (fileInfo["hashList"] as List<dynamic>)
+            .map((subList) =>
+                Uint8List.fromList((subList as List<dynamic>).cast<int>()))
+            .toList();
+      } else {
+        hashs = null;
+      }
+    }).asFuture<void>();
 
     // 終了次第「接続しています」のダイアログを消す
     nav.pop();
@@ -211,23 +193,13 @@ class ReceiveFile {
         // 流れてきたデータをファイルに書き込む
         final IOSink receieveSink =
             receieveFile.openWrite(mode: FileMode.writeOnly);
-        await receieveSink.addStream(socket).catchError((e) {
-          timer.cancel();
-          endProcess();
-          return EasyDialog.showErrorDialog(e, nav);
-        });
+        await receieveSink.addStream(socket);
 
         // 進捗更新の停止
         timer.cancel();
         // ファイルの最終処理
-        try {
-          await receieveSink.flush();
-          await receieveSink.close();
-        } on Exception catch (e) {
-          endProcess();
-          EasyDialog.showErrorDialog(e, nav);
-          return true;
-        }
+        await receieveSink.flush();
+        await receieveSink.close();
       }
 
       // ハッシュ計算
@@ -261,14 +233,9 @@ class ReceiveFile {
           final XFile file = fileName.length < 2
               ? XFile(path)
               : XFile(p.join(path, fileName[i]));
-          try {
-            receieHash = await sodium.crypto.genericHash
-                .stream(messages: file.openRead());
-          } catch (e) {
-            endProcess();
 
-            throw FileSystemException("整合性の確認中にエラーが発生しました。", file.path);
-          }
+          receieHash =
+              await sodium.crypto.genericHash.stream(messages: file.openRead());
 
           if (!(listEquals(origHash, receieHash))) {
             endProcess();

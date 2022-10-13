@@ -131,16 +131,20 @@ class _ReceivePageState extends State<ReceivePage>
 
   Future<void> _startReceive(String ip /*, String key  */) async {
     final result = await ReceiveFile.receiveFile(ip, /* key, */ context)
-        .onError((e, stackTrace) {
-      EasyDialog.showErrorDialog(Exception(e), Navigator.of(context));
+        .onError((e, stackTrace) async {
+      await EasyDialog.showErrorDialog(e, Navigator.of(context));
+
+      // ignore: use_build_context_synchronously
+      Navigator.popUntil(context, (route) => route.isFirst);
+
       return false;
     });
 
-    // 結果のメッセージを削除
-    sucsessWidght.clear();
-
     // ファイルの受信に成功したらメッセージを表示
     if (result) {
+      // 結果のメッセージを削除
+      sucsessWidght.clear();
+
       sucsessWidght.add(const Text("ファイルの受信が完了しました",
           textAlign: TextAlign.center,
           style: TextStyle(

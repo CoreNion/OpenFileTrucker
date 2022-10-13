@@ -258,7 +258,7 @@ class _SendPageState extends State<SendPage>
                                   "エラー",
                                   "WiFiやイーサーネットなどの、ローカルネットワークに接続してください。"));
                         }
-                      } on Exception catch (e) {
+                      } catch (e) {
                         EasyDialog.showErrorDialog(e, Navigator.of(context));
                       }
                     } else {
