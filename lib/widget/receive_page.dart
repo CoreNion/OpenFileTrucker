@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/qr_data.dart';
@@ -132,6 +133,9 @@ class _ReceivePageState extends State<ReceivePage>
   Future<void> _startReceive(String ip /*, String key  */) async {
     final result = await ReceiveFile.receiveFile(ip, /* key, */ context)
         .onError((e, stackTrace) async {
+      // キャッシュ削除
+      FilePicker.platform.clearTemporaryFiles();
+
       await EasyDialog.showErrorDialog(e, Navigator.of(context));
 
       // ignore: use_build_context_synchronously

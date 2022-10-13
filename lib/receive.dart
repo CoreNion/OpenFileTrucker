@@ -85,6 +85,10 @@ class ReceiveFile {
       void endProcess() {
         Wakelock.disable();
         socket.destroy();
+
+        // キャッシュ削除
+        FilePicker.platform.clearTemporaryFiles();
+
         Navigator.of(context).pop();
       }
 
