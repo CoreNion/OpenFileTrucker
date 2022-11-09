@@ -1,0 +1,3 @@
+[submodule "flutter-plugins"]
+	path = flutter-plugins
+	url = https://github.com/CoreNion/flutter-plugins.git
