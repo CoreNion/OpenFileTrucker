@@ -170,6 +170,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.1"
+  image_gallery_saver:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: "6676c04a858761736dc6b166ef14887578c6218f"
+      url: "https://github.com/hui-z/image_gallery_saver.git"
+    source: git
+    version: "1.7.1"
   image_picker:
     dependency: "direct main"
     description:
@@ -247,6 +256,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0"
+  mime:
+    dependency: "direct main"
+    description:
+      name: mime
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   mobile_scanner:
     dependency: "direct main"
     description:

@@ -51,6 +51,11 @@ dependencies:
   cross_file: ^0.3.3+2
   sodium: ^1.2.5
   sodium_libs: ^1.2.5+1
+  image_gallery_saver:
+    git:
+      url: https://github.com/hui-z/image_gallery_saver.git
+      ref: master
+  mime: ^1.0.2
 
 dev_dependencies:
   flutter_test:

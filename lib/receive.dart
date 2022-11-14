@@ -6,11 +6,14 @@ import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
+import 'package:mime/mime.dart';
 import 'dart:io';
 
 class ReceiveFile {
@@ -65,6 +68,19 @@ class ReceiveFile {
         hashs = null;
       }
     }).asFuture<void>();
+
+    // iOSの場合, 画像かどうかチェック
+    bool onlyImage = false;
+    if (Platform.isIOS) {
+      onlyImage = fileName.every((name) {
+        final mine = lookupMimeType(name);
+        if (mine != null) {
+          return mine.contains(RegExp(r"image|video"));
+        } else {
+          return false;
+        }
+      });
+    }
 
     // 終了次第「接続しています」のダイアログを消す
     nav.pop();
@@ -247,6 +263,39 @@ class ReceiveFile {
             throw FileSystemException(
                 "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。",
                 file.path);
+          }
+        }
+      }
+
+      // iOSの場合で画像のみの場合は、フォトライブラリーに保存するか尋ねる
+      if (Platform.isIOS && onlyImage) {
+        final savePhotoLibrary = await showDialog(
+            context: context,
+            builder: ((context) {
+              return AlertDialog(
+                title: const Text("写真/動画の保存場所の確認"),
+                content:
+                    const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("はい")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("いいえ")),
+                ],
+              );
+            }));
+
+        // 権限を確認し、各ファイルを写真ライブラリに保存
+        if (savePhotoLibrary &&
+            await Permission.photosAddOnly.request().isGranted) {
+          for (var i = 0; i < fileName.length; i++) {
+            final XFile file = fileName.length < 2
+                ? XFile(path)
+                : XFile(p.join(path, fileName[i]));
+
+            await ImageGallerySaver.saveFile(file.path);
           }
         }
       }
