@@ -52,7 +52,7 @@ class ReceiveFile {
     late List<String> fileName;
     late List<int> fileSize;
     late List<Uint8List>? hashs;
-    // ファイルの情報を取得したら一旦通信終了される
+    // ファイルの情報を取得したら一旦通信を終了
     await socket.listen((event) {
       // 各情報を保存
       Map<String, dynamic> fileInfo = json.decode(utf8.decode(event));
@@ -67,6 +67,9 @@ class ReceiveFile {
       } else {
         hashs = null;
       }
+
+      // 切断
+      socket.destroy();
     }).asFuture<void>();
 
     // iOSの場合, 画像かどうかチェック
@@ -100,7 +103,6 @@ class ReceiveFile {
       // 全ファイルの受信の終了時の処理(異常終了関係なし)
       void endProcess() {
         Wakelock.disable();
-        socket.destroy();
 
         // キャッシュ削除
         FilePicker.platform.clearTemporaryFiles();
@@ -220,6 +222,9 @@ class ReceiveFile {
         // ファイルの最終処理
         await receieveSink.flush();
         await receieveSink.close();
+
+        // 通信の終了
+        socket.destroy();
       }
 
       // ハッシュ計算
