@@ -47,8 +47,7 @@ dependencies:
   url_launcher: ^6.1.6
   mobile_scanner: ^2.0.0
   dynamic_color: ^1.5.4
-  image_picker:
-    path: ./image_picker/image_picker
+  image_picker: ^0.8.6
   cross_file: ^0.3.3+2
   sodium: ^1.2.5
   sodium_libs: ^1.2.5+1

@@ -426,13 +426,13 @@ class _SendPageState extends State<SendPage>
               children: [
                 IconButton(
                     onPressed: () {
-                      ImagePicker().pickMultiMedia().then(_setFiles).catchError(
+                      ImagePicker().pickMultiImage().then(_setFiles).catchError(
                           (e, stackTrace) => EasyDialog.showErrorDialog(
                               e, Navigator.of(context)));
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.image, size: 70)),
-                const Text("写真/動画 (WIP)")
+                const Text("写真/動画")
               ],
             )
           ],
