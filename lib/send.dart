@@ -153,8 +153,10 @@ class SendFiles {
   static void serverClose() {
     _server?.close();
 
-    // キャッシュ削除
-    FilePicker.platform.clearTemporaryFiles();
+    if (Platform.isIOS || Platform.isAndroid) {
+      // キャッシュ削除
+      FilePicker.platform.clearTemporaryFiles();
+    }
     // スリープ有効化
     Wakelock.disable();
   }
