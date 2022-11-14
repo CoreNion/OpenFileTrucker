@@ -1,9 +1,7 @@
 # Open FileTrucker
-![LICENSE](https://img.shields.io/github/license/CoreNion/OpenFileTrucker) ![SDK](https://img.shields.io/badge/SDK-Flutter-blue)
+![LICENSE](https://img.shields.io/github/license/CoreNion/OpenFileTrucker) ![SDK](https://img.shields.io/badge/SDK-Flutter-blue) ![GitHub Repo stars](https://img.shields.io/github/stars/CoreNion/OpenFileTrucker)
 
-![FileTrucker](assets/thumbnail.svg)
-
-どんな端末でも使える、プライバシー重視のファイル共有アプリ。
+どんな端末でも使える、サーバーを介さないファイル共有アプリ。
 
 ## **＊詳しい情報は、[公式サイト](https://corenion.github.io/file_trucker/)をご覧ください。**
 
