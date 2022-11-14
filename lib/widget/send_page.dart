@@ -432,7 +432,7 @@ class _SendPageState extends State<SendPage>
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.image, size: 70)),
-                const Text("写真/動画")
+                const Text("写真")
               ],
             )
           ],
