@@ -156,7 +156,7 @@ class _SendPageState extends State<SendPage>
                             textAlign: TextAlign.center,
                           ),
                           onPressed: () async {
-                            if (Platform.isAndroid || Platform.isIOS) {
+                            if (Platform.isIOS) {
                               // ファイルの種類選択ダイアログを表示
                               await showDialog(
                                   context: context,
