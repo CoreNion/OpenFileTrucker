@@ -8,7 +8,7 @@ import Foundation
 import desktop_drop
 import dynamic_color
 import mobile_scanner
-import package_info_plus_macos
+import package_info_plus
 import path_provider_macos
 import sodium_libs
 import url_launcher_macos
