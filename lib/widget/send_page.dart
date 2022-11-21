@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
-import 'package:image_picker/image_picker.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 
 class SendPage extends StatefulWidget {
@@ -162,7 +163,7 @@ class _SendPageState extends State<SendPage>
                                   context: context,
                                   builder: (_) => _selectFileType());
                             } else {
-                              SendFiles.pickFiles(context)
+                              SendFiles.pickFiles(context: context)
                                   .then(_setFiles)
                                   .catchError((e, stackTrace) =>
                                       EasyDialog.showErrorDialog(
@@ -413,9 +414,11 @@ class _SendPageState extends State<SendPage>
               children: <Widget>[
                 IconButton(
                     onPressed: () {
-                      SendFiles.pickFiles(context).then(_setFiles).catchError(
-                          (e, stackTrace) => EasyDialog.showErrorDialog(
-                              e, Navigator.of(context)));
+                      SendFiles.pickFiles(context: context)
+                          .then(_setFiles)
+                          .catchError((e, stackTrace) =>
+                              EasyDialog.showErrorDialog(
+                                  e, Navigator.of(context)));
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.file_copy, size: 70)),
@@ -425,14 +428,19 @@ class _SendPageState extends State<SendPage>
             Column(
               children: [
                 IconButton(
-                    onPressed: () {
-                      ImagePicker().pickMultiImage().then(_setFiles).catchError(
-                          (e, stackTrace) => EasyDialog.showErrorDialog(
-                              e, Navigator.of(context)));
+                    onPressed: () async {
                       Navigator.pop(context);
+                      if (Platform.isIOS) {
+                        SendFiles.pickFiles(
+                                context: context, type: FileType.media)
+                            .then(_setFiles)
+                            .catchError((e, stackTrace) =>
+                                EasyDialog.showErrorDialog(
+                                    e, Navigator.of(context)));
+                      }
                     },
-                    icon: const Icon(Icons.image, size: 70)),
-                const Text("写真")
+                    icon: const Icon(Icons.perm_media, size: 70)),
+                const Text("写真/動画")
               ],
             )
           ],

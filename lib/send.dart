@@ -77,7 +77,8 @@ class SendFiles {
   }
 
   /// ファイルを選択する関数
-  static Future<List<File>?> pickFiles(BuildContext context) async {
+  static Future<List<File>?> pickFiles(
+      {required BuildContext context, FileType type = FileType.any}) async {
     List<File> files = <File>[];
 
     if (Platform.isAndroid && await Permission.storage.request().isDenied) {
@@ -86,8 +87,11 @@ class SendFiles {
       return null;
     }
 
-    var res = await FilePicker.platform
-        .pickFiles(allowMultiple: true, dialogTitle: "送信するファイルを取得");
+    var res = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        dialogTitle: "送信するファイルを選択",
+        type: type,
+        allowCompression: false);
     if (!(res == null)) {
       // 選択されたファイルの情報を記録
       for (var i = 0; i < res.files.length; i++) {
