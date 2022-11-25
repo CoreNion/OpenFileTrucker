@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/qr_data.dart';
 import 'package:open_file_trucker/receive.dart';
@@ -37,24 +38,49 @@ class _ReceivePageState extends State<ReceivePage>
     // String key = "";
 
     late Widget? qrButton;
-    if (Platform.isIOS || Platform.isAndroid) {
+    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS) {
       qrButton = FloatingActionButton(
         onPressed: () async {
-          // 権限の確認
-          if (await Permission.camera.request().isGranted) {
+          final nav = Navigator.of(context);
+
+          // QR読み取り画面に移管する
+          void popQRScreen() {
             Navigator.of(context)
                 .push(MaterialPageRoute(
                     builder: (builder) => const ScanQRCodePage()))
                 .then((result) {
               if (result is QRCodeData) {
+                // 読み取りが終了したら受信開始
                 _startReceive(result.ip);
               } else {
                 Wakelock.disable();
               }
             });
-          } else {
-            EasyDialog.showPermissionAlert(
-                "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", Navigator.of(context));
+          }
+
+          // 権限の確認
+          if (Platform.isIOS && Platform.isAndroid) {
+            if (await Permission.camera.request().isGranted) {
+              popQRScreen();
+            } else {
+              EasyDialog.showPermissionAlert(
+                  "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", nav);
+            }
+          } else if (Platform.isMacOS) {
+            // 権限の取得などに独自実装が必要なOS
+            const platform =
+                MethodChannel('com.corenion.filetrucker/permission');
+            final request =
+                await platform.invokeMethod("requestCameraPermission");
+
+            if (request == null) {
+              EasyDialog.showErrorDialog("権限の要求中にエラーが発生しました。", nav);
+            } else if (request) {
+              popQRScreen();
+            } else {
+              EasyDialog.showSmallInfo(
+                  nav, "権限が必要です", "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。");
+            }
           }
         },
         tooltip: "QRコードを利用する",
