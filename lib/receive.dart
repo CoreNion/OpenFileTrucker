@@ -105,7 +105,9 @@ class ReceiveFile {
         Wakelock.disable();
 
         // キャッシュ削除
-        FilePicker.platform.clearTemporaryFiles();
+        if (Platform.isIOS || Platform.isAndroid) {
+          FilePicker.platform.clearTemporaryFiles();
+        }
 
         Navigator.of(context).pop();
       }
