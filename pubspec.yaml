@@ -55,6 +55,7 @@ dependencies:
       url: https://github.com/hui-z/image_gallery_saver.git
       ref: master
   mime: ^1.0.2
+  share_handler: ^0.0.16
 
 dev_dependencies:
   flutter_test:
