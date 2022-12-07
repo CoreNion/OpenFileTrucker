@@ -30,11 +30,14 @@ class _ReceivePageState extends State<ReceivePage>
         ]
       : <Widget>[];
 
+  bool bypassAdressCheck = false;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final formKey = GlobalKey<FormState>();
     String ip = "";
+
     // String key = "";
 
     late Widget? qrButton;
@@ -108,9 +111,9 @@ class _ReceivePageState extends State<ReceivePage>
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return '値を入力してください';
-                        } else if (!RegExp(
-                                r"(^192\.168\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])$)|(^172\.([1][6-9]|[2][0-9]|[3][0-1])\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])$)|(^10\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])\.([0-9]|[0-9][0-9]|[0-2][0-5][0-5])$)")
-                            .hasMatch(value)) {
+                        } else if (!bypassAdressCheck &&
+                            !RegExp(r"(^(127(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$)|(10(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$)|(192\.168(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}$)|(172\.(?:1[6-9]|2\d|3[0-1])(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}$))")
+                                .hasMatch(value)) {
                           return "正しいIPアドレスを入力してください。(IPv4 / プライベートIPアドレスのみ入力可能)";
                         }
                         return null;
@@ -126,6 +129,14 @@ class _ReceivePageState extends State<ReceivePage>
                       obscureText: true,
                       onSaved: (newValue) => key = newValue!,
                     ), */
+                    SwitchListTile(
+                      value: bypassAdressCheck,
+                      title: const Text('IPアドレスの確認を行わない'),
+                      subtitle: const Text("正しいIPアドレスを入力しても正しくない判定になる場合に利用"),
+                      onChanged: (bool value) => setState(() {
+                        bypassAdressCheck = value;
+                      }),
+                    ),
                     Container(
                       margin: const EdgeInsets.symmetric(vertical: 30),
                       height: 40,
