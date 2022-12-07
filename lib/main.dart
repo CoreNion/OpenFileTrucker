@@ -10,7 +10,6 @@ import 'package:open_file_trucker/widget/send_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:share_handler_platform_interface/share_handler_platform_interface.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,29 +30,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int currentPageIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  SharedMedia? media;
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    final handler = ShareHandlerPlatform.instance;
-    media = await handler.getInitialSharedMedia();
-
-    handler.sharedMediaStream.listen((SharedMedia media) {
-      print(media);
-
-      if (!mounted) return;
-      setState(() {
-        this.media = media;
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
