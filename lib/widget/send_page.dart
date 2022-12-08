@@ -64,9 +64,7 @@ class _SendPageState extends State<SendPage>
 
     // アプリ実行中に来た時用
     handler.sharedMediaStream.listen((SharedMedia media) {
-      if (!mounted) return;
       setShareFiles(media);
-      _setFiles(files);
     });
   }
 
