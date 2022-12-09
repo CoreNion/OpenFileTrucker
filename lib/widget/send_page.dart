@@ -11,6 +11,7 @@ import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
 import 'package:sodium_libs/sodium_libs.dart';
+import 'package:share_handler_platform_interface/share_handler_platform_interface.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -35,6 +36,37 @@ class _SendPageState extends State<SendPage>
   Widget stopServerButton = Container();
   bool serverListen = false;
   bool checkFileHash = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ファイル共有APIからの処理のInit
+    initShareHandlerPlatformState();
+  }
+
+  Future<void> initShareHandlerPlatformState() async {
+    final handler = ShareHandlerPlatform.instance;
+    final media = await handler.getInitialSharedMedia();
+    List<XFile> files = [];
+
+    void setShareFiles(SharedMedia? sharedMedia) {
+      if (sharedMedia != null && sharedMedia.attachments != null) {
+        for (var i = 0; i < sharedMedia.attachments!.length; i++) {
+          files.add(XFile(sharedMedia.attachments![i]!.path));
+        }
+        _setFiles(files);
+      }
+    }
+
+    // 起動時に来た共有ファイルを処理する
+    setShareFiles(media);
+
+    // アプリ実行中に来た時用
+    handler.sharedMediaStream.listen((SharedMedia media) {
+      setShareFiles(media);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
