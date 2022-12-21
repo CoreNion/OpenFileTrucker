@@ -12,6 +12,7 @@ import 'package:open_file_trucker/qr_data.dart';
 import 'package:wakelock/wakelock.dart';
 
 class SendFiles {
+  /// 利用するネットワークを選択する関数
   static Future<String?> selectNetwork(BuildContext context) async {
     // ネットワーク一覧のDialogOptionのList
     List<SimpleDialogOption> dialogOptions = [];
@@ -24,6 +25,7 @@ class SendFiles {
     for (NetworkInterface interface in await NetworkInterface.list()) {
       String strAddr = "";
       String interfaceName = interface.name;
+
       for (InternetAddress addr in interface.addresses) {
         // IPv4/プライベートIPのみ取得
         if (addr.type == InternetAddressType.IPv4 ||
@@ -36,20 +38,36 @@ class SendFiles {
       if (strAddr.isNotEmpty) {
         void addOption() {
           addressList.add(strAddr);
+          late String userInterfaceName;
+
+          // インターフェースの名前を分かりやすくする(Unix系のみ)
+          switch (interfaceName) {
+            case "wlan":
+              userInterfaceName = "無線LAN($interfaceName)";
+              break;
+            case "eth":
+            case "en":
+              userInterfaceName = "ネットワーク($interfaceName)";
+              break;
+            case "ap":
+            case "bridge":
+              userInterfaceName = "テザリング($interfaceName)";
+              break;
+            default:
+              userInterfaceName = interfaceName;
+          }
 
           dialogOptions.add(SimpleDialogOption(
             onPressed: () => Navigator.pop(context, strAddr),
-            child: Text("$interfaceName $strAddr"),
-            // 表示例: "Wi-Fi 192.168.0.10"
+            child: Text("$userInterfaceName $strAddr"),
           ));
         }
 
-        // Androidではwlanのみ表示
-        if (Platform.isAndroid && interfaceName.contains("wlan")) {
-          addOption();
-          // iOSではen*のみ表示
-        } else if (Platform.isIOS && interfaceName.contains("en")) {
-          addOption();
+        // Androidではwlan/eth系、iOSではen/ap/bridge系のみのみ表示
+        if (Platform.isAndroid || Platform.isIOS) {
+          if (interfaceName.contains(RegExp("wlan|eth|en|ap|bridge"))) {
+            addOption();
+          }
         } else {
           addOption();
         }
