@@ -297,6 +297,9 @@ class _SendPageState extends State<SendPage>
                         }
                       } catch (e) {
                         EasyDialog.showErrorDialog(e, Navigator.of(context));
+
+                        ScaffoldMessenger.of(nav.context)
+                            .removeCurrentSnackBar();
                       }
                     } else {
                       showDialog(
@@ -371,10 +374,14 @@ class _SendPageState extends State<SendPage>
     }
   }
 
+  /// ファイル共有を停止し、初期状態に戻す関数
   void _stopShareProcess() {
     SendFiles.serverClose();
     serverListen = false;
+    selectedFiles.clear();
+
     setState(() {
+      selectFileButtonText = firstFileButtonText;
       qrCode = Container();
       ipText = "";
       stopServerButton = Container();
