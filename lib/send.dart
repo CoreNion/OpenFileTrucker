@@ -41,20 +41,14 @@ class SendFiles {
           late String userInterfaceName;
 
           // インターフェースの名前を分かりやすくする(Unix系のみ)
-          switch (interfaceName) {
-            case "wlan":
-              userInterfaceName = "無線LAN($interfaceName)";
-              break;
-            case "eth":
-            case "en":
-              userInterfaceName = "ネットワーク($interfaceName)";
-              break;
-            case "ap":
-            case "bridge":
-              userInterfaceName = "テザリング($interfaceName)";
-              break;
-            default:
-              userInterfaceName = interfaceName;
+          if (interfaceName.contains(RegExp("wlan|wl|wlp|ath"))) {
+            userInterfaceName = "無線LAN ($interfaceName)";
+          } else if (interfaceName.contains(RegExp("eth|en"))) {
+            userInterfaceName = "ネットワーク ($interfaceName)";
+          } else if (interfaceName.contains(RegExp("bridge|ap"))) {
+            userInterfaceName = "テザリング(アクセスポイント)/インターネット共有 ($interfaceName)";
+          } else {
+            userInterfaceName = interfaceName;
           }
 
           dialogOptions.add(SimpleDialogOption(
@@ -65,7 +59,8 @@ class SendFiles {
 
         // Androidではwlan/eth系、iOSではen/ap/bridge系のみのみ表示
         if (Platform.isAndroid || Platform.isIOS) {
-          if (interfaceName.contains(RegExp("wlan|eth|en|ap|bridge"))) {
+          if (interfaceName
+              .contains(RegExp("wlan|wl|wlp|ath|eth|en|ap|bridge"))) {
             addOption();
           }
         } else {
