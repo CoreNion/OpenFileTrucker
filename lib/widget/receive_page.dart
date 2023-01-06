@@ -62,7 +62,7 @@ class _ReceivePageState extends State<ReceivePage>
           }
 
           // 権限の確認
-          if (Platform.isIOS && Platform.isAndroid) {
+          if (Platform.isIOS || Platform.isAndroid) {
             if (await Permission.camera.request().isGranted) {
               popQRScreen();
             } else {
