@@ -33,9 +33,9 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  file_picker: ^5.2.2
+  file_picker: ^5.2.5
   qr_flutter: ^4.0.0
-  path_provider: ^2.0.11
+  path_provider: ^2.0.12
   wakelock: ^0.6.2
   permission_handler: ^10.2.0
   dotted_border: ^2.0.0+3
@@ -44,17 +44,17 @@ dependencies:
   path: ^1.8.1
   flutter_svg: ^1.1.6
   package_info_plus: ^3.0.2
-  url_launcher: ^6.1.6
+  url_launcher: ^6.1.8
   mobile_scanner: ^2.1.0
   dynamic_color: ^1.5.4
   cross_file: ^0.3.3+2
-  sodium: ^1.2.5
-  sodium_libs: ^1.2.5+1
+  sodium: ^2.0.1
+  sodium_libs: ^2.0.0
   image_gallery_saver:
     git:
       url: https://github.com/hui-z/image_gallery_saver.git
       ref: master
-  mime: ^1.0.2
+  mime: ^1.0.4
   share_handler: ^0.0.16
 
 dev_dependencies:
