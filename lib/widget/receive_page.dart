@@ -3,11 +3,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
-import 'package:open_file_trucker/qr_data.dart';
 import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file_trucker/widget/receive_qr.dart';
 import 'package:wakelock/wakelock.dart';
+
+import '../class/qr_data.dart';
 
 class ReceivePage extends StatefulWidget {
   const ReceivePage({Key? key}) : super(key: key);

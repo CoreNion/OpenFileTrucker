@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:open_file_trucker/qr_data.dart';
+
+import '../class/qr_data.dart';
 
 class ScanQRCodePage extends StatefulWidget {
   const ScanQRCodePage({Key? key}) : super(key: key);

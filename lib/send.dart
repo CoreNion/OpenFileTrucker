@@ -8,8 +8,9 @@ import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:open_file_trucker/qr_data.dart';
 import 'package:wakelock/wakelock.dart';
+
+import 'class/qr_data.dart';
 
 class SendFiles {
   /// 利用するネットワークを選択する関数
