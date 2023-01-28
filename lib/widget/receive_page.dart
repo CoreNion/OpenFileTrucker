@@ -169,7 +169,43 @@ class _ReceivePageState extends State<ReceivePage>
   }
 
   Future<void> _startReceive(String ip /*, String key  */) async {
-    final result = await ReceiveFile.receiveFile(ip, /* key, */ context)
+    //スリープ無効化
+    Wakelock.enable();
+    // ダイアログ表示
+    showDialog(
+        context: context,
+        builder: (_) {
+          return WillPopScope(
+            // 戻る無効化
+            onWillPop: () => Future.value(false),
+            child: const AlertDialog(
+              title: Text(
+                "接続しています...",
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        });
+
+    // ファイル情報を取得
+    final fileInfo = await ReceiveFile.getServerFileInfo(ip);
+    // 終了次第「接続しています」のダイアログを消す
+    if (mounted) {
+      Navigator.pop(context);
+    }
+
+    // 保存場所を取得 (何も入力されない場合は終了)
+    final path = await ReceiveFile.getSavePath(fileInfo.names);
+    if (path == null) {
+      return;
+    }
+
+    // iOSで画像/動画のみかを確認する
+    final iosAndOnlyMedia =
+        Platform.isIOS ? ReceiveFile.checkMediaOnly(fileInfo) : false;
+
+    final result = await ReceiveFile.receiveFile(
+            ip, fileInfo, path, iosAndOnlyMedia, context)
         .onError((e, stackTrace) async {
       // キャッシュ削除
       FilePicker.platform.clearTemporaryFiles();
