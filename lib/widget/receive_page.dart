@@ -218,8 +218,60 @@ class _ReceivePageState extends State<ReceivePage>
       return false;
     });
 
-    // ファイルの受信に成功したらメッセージを表示
+    // ファイルの受信完了時の処理
     if (result) {
+      if (fileInfo.hashs != null) {
+        // ハッシュ値のチェック
+        showDialog(
+            context: context,
+            builder: (_) {
+              return WillPopScope(
+                // 戻る無効化
+                onWillPop: () => Future.value(false),
+                child: const AlertDialog(
+                  title: Text(
+                    "整合性を確認しています...",
+                    textAlign: TextAlign.center,
+                  ),
+                  content: Text("ファイルの大きさなどによっては、時間がかかる場合があります。"),
+                ),
+              );
+            });
+
+        if (!(await ReceiveFile.checkFileHash(path, fileInfo))) {
+          await EasyDialog.showErrorDialog(
+              const FileSystemException(
+                  "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。"),
+              Navigator.of(context));
+        }
+
+        Navigator.pop(context);
+      }
+
+      if (iosAndOnlyMedia) {
+        final savePhotoLibrary = await showDialog(
+            context: context,
+            builder: ((context) {
+              return AlertDialog(
+                title: const Text("写真/動画の保存場所の確認"),
+                content:
+                    const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("はい")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("いいえ")),
+                ],
+              );
+            }));
+
+        if (savePhotoLibrary) {
+          ReceiveFile.savePhotoLibrary(path, fileInfo);
+        }
+      }
+
       // 結果のメッセージを削除
       sucsessWidght.clear();
 

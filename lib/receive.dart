@@ -28,7 +28,6 @@ class ReceiveFile {
 
     final fileName = fileInfo.names;
     final fileSize = fileInfo.sizes;
-    final hashs = fileInfo.hashs;
 
     late int currentNum;
     double singleFileProgress = 0;
@@ -169,84 +168,6 @@ class ReceiveFile {
       socket.destroy();
     }
 
-    // ハッシュ計算
-    if (!(hashs == null) && !pushCancelButton) {
-      // 進捗のダイアログを消す
-      nav.pop();
-
-      // ダイアログ表示
-      showDialog(
-          context: context,
-          builder: (_) {
-            return WillPopScope(
-              // 戻る無効化
-              onWillPop: () => Future.value(false),
-              child: const AlertDialog(
-                title: Text(
-                  "整合性を確認しています...",
-                  textAlign: TextAlign.center,
-                ),
-                content: Text("ファイルの大きさなどによっては、時間がかかる場合があります。"),
-              ),
-            );
-          });
-
-      final sodium = await SodiumInit.init();
-      late Uint8List receieHash;
-
-      // 各ファイルのハッシュ値を確認
-      for (var i = 0; i < fileName.length; i++) {
-        final Uint8List origHash = hashs[i];
-        final XFile file = fileName.length < 2
-            ? XFile(path)
-            : XFile(p.join(path, fileName[i]));
-
-        receieHash =
-            await sodium.crypto.genericHash.stream(messages: file.openRead());
-
-        if (!(listEquals(origHash, receieHash))) {
-          endProcess();
-
-          throw FileSystemException(
-              "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。",
-              file.path);
-        }
-      }
-    }
-
-    // iOSの場合で画像のみの場合は、フォトライブラリーに保存するか尋ねる
-    if (Platform.isIOS && onlyImage) {
-      final savePhotoLibrary = await showDialog(
-          context: context,
-          builder: ((context) {
-            return AlertDialog(
-              title: const Text("写真/動画の保存場所の確認"),
-              content:
-                  const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text("はい")),
-                TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text("いいえ")),
-              ],
-            );
-          }));
-
-      // 権限を確認し、各ファイルを写真ライブラリに保存
-      if (savePhotoLibrary &&
-          await Permission.photosAddOnly.request().isGranted) {
-        for (var i = 0; i < fileName.length; i++) {
-          final XFile file = fileName.length < 2
-              ? XFile(path)
-              : XFile(p.join(path, fileName[i]));
-
-          await ImageGallerySaver.saveFile(file.path);
-        }
-      }
-    }
-
     // 共通の終了処理
     endProcess();
 
@@ -338,5 +259,40 @@ class ReceiveFile {
     } else {
       return null;
     }
+  }
+
+  /// 各ファイルの整合性を確認する関数
+  static Future<bool> checkFileHash(String dirPath, FileInfo fileInfo) async {
+    final sodium = await SodiumInit.init();
+
+    // 各ファイルのハッシュ値を確認
+    for (var i = 0; i < fileInfo.names.length; i++) {
+      final Uint8List origHash = fileInfo.hashs![i];
+      final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
+
+      final receieHash =
+          await sodium.crypto.genericHash.stream(messages: file.openRead());
+      if (!(listEquals(origHash, receieHash))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// 画像ライブラリに保存する関数
+  static Future<bool> savePhotoLibrary(
+      String dirPath, FileInfo fileInfo) async {
+    if (await Permission.photosAddOnly.request().isDenied) {
+      return false;
+    }
+
+    for (var i = 0; i < fileInfo.names.length; i++) {
+      final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
+
+      await ImageGallerySaver.saveFile(file.path);
+    }
+
+    return true;
   }
 }
