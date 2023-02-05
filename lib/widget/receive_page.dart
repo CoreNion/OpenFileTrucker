@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_file_trucker/widget/dialog.dart';
@@ -7,7 +9,9 @@ import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file_trucker/widget/receive_qr.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:path/path.dart' as p;
 
+import '../class/file_info.dart';
 import '../class/qr_data.dart';
 
 class ReceivePage extends StatefulWidget {
@@ -169,112 +173,196 @@ class _ReceivePageState extends State<ReceivePage>
   }
 
   Future<void> _startReceive(String ip /*, String key  */) async {
-    //スリープ無効化
+    int currentIndex = 0;
+    late FileInfo fileInfo;
+    late StreamController<ReceiveProgress> controller;
+
+    // スリープ無効化
     Wakelock.enable();
-    // ダイアログ表示
+
+    // ダイアログ関連の変数
+    bool receiveReady = false;
+    final setStateCompleter = Completer<Function>();
+    ReceiveProgress progress = ReceiveProgress(
+        totalProgress: 0,
+        singleProgress: 0,
+        receiveSpeed: 0,
+        currentFileSize: 0,
+        currentTotalSize: 0);
+
     showDialog(
         context: context,
-        builder: (_) {
+        builder: (context) {
           return WillPopScope(
             // 戻る無効化
-            onWillPop: () => Future.value(false),
-            child: const AlertDialog(
-              title: Text(
-                "接続しています...",
-                textAlign: TextAlign.center,
-              ),
-            ),
+            onWillPop: (() => Future.value(false)),
+            child: StatefulBuilder(builder: (stContext, dialogSetState) {
+              // Progressの更新のためのSetStateを外でも使えるようにする
+              // setState読み込みより先にdialogSetStateが呼び出されることがあるのでCompleterを利用して対策
+              if (!setStateCompleter.isCompleted) {
+                setStateCompleter.complete(dialogSetState);
+              }
+
+              return AlertDialog(
+                scrollable: true,
+                title: Text(receiveReady ? "ファイルを受信しています..." : "接続しています..."),
+                actions: receiveReady
+                    ? <Widget>[
+                        TextButton(
+                            child: const Text("キャンセル"),
+                            onPressed: () {
+                              controller.close();
+
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("ファイルの受信はキャンセルされました。"),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            })
+                      ]
+                    : null,
+                content: Column(
+                  children: [
+                    Text(
+                      "${receiveReady ? currentIndex + 1 : 0}個目のファイルを受信中 ${(progress.totalProgress)!.toStringAsFixed(1)}%完了",
+                      textAlign: TextAlign.center,
+                    ),
+                    LinearProgressIndicator(
+                      value: receiveReady ? progress.totalProgress : null,
+                    ),
+                    Text(
+                      receiveReady
+                          ? "${fileInfo.names[currentIndex]} ${(progress.singleProgress * 100).toStringAsFixed(1)}%完了"
+                          : "",
+                      textAlign: TextAlign.center,
+                    ),
+                    LinearProgressIndicator(
+                      value: progress.singleProgress,
+                    ),
+                    Text(
+                      receiveReady
+                          ? "速度: ${FileSize.getSize(progress.receiveSpeed)}/s"
+                          : "",
+                      textAlign: TextAlign.right,
+                    )
+                  ],
+                ),
+              );
+            }),
           );
         });
 
-    // ファイル情報を取得
-    final fileInfo = await ReceiveFile.getServerFileInfo(ip);
-    // 終了次第「接続しています」のダイアログを消す
-    if (mounted) {
+    try {
+      // ファイル情報を取得
+      fileInfo = await ReceiveFile.getServerFileInfo(ip);
+    } catch (e) {
       Navigator.pop(context);
+      EasyDialog.showErrorDialog(e, Navigator.of(context));
+      return;
     }
 
     // 保存場所を取得 (何も入力されない場合は終了)
-    final path = await ReceiveFile.getSavePath(fileInfo.names);
-    if (path == null) {
+    final dirPath = await ReceiveFile.getSavePath(fileInfo.names);
+    if (dirPath == null) {
+      if (!mounted) return;
+      Navigator.pop(context);
       return;
     }
+
+    // ダイアログ更新
+    final dialogSetState = await setStateCompleter.future;
+    dialogSetState(() {
+      receiveReady = true;
+    });
+
+    // 全ファイルの受信の終了時の処理(異常終了関係なし)
+    void endProcess() {
+      // 画面ロック防止を解除
+      Wakelock.disable();
+      // キャッシュ削除
+      if (Platform.isIOS || Platform.isAndroid) {
+        FilePicker.platform.clearTemporaryFiles();
+      }
+
+      Navigator.pop(context);
+    }
+
+    // 各ファイルを受信する
+    controller = await ReceiveFile.receiveAllFiles(ip, fileInfo, dirPath);
+    final stream = controller.stream;
+    // 進捗を適宜更新する
+    stream.listen((newProgress) {
+      dialogSetState(() {
+        progress = newProgress;
+      });
+    });
+    await controller.done;
+
+    /* ファイルの受信完了時の処理 */
 
     // iOSで画像/動画のみかを確認する
     final iosAndOnlyMedia =
         Platform.isIOS ? ReceiveFile.checkMediaOnly(fileInfo) : false;
 
-    final result = await ReceiveFile.receiveFile(
-            ip, fileInfo, path, iosAndOnlyMedia, context)
-        .onError((e, stackTrace) async {
-      // キャッシュ削除
-      FilePicker.platform.clearTemporaryFiles();
-
-      await EasyDialog.showErrorDialog(e, Navigator.of(context));
-
-      // ignore: use_build_context_synchronously
-      Navigator.popUntil(context, (route) => route.isFirst);
-
-      return false;
-    });
-
-    // ファイルの受信完了時の処理
-    if (result) {
-      if (fileInfo.hashs != null) {
-        // ハッシュ値のチェック
-        showDialog(
-            context: context,
-            builder: (_) {
-              return WillPopScope(
-                // 戻る無効化
-                onWillPop: () => Future.value(false),
-                child: const AlertDialog(
-                  title: Text(
-                    "整合性を確認しています...",
-                    textAlign: TextAlign.center,
-                  ),
-                  content: Text("ファイルの大きさなどによっては、時間がかかる場合があります。"),
+    if (fileInfo.hashs != null) {
+      // ハッシュ値のチェック
+      showDialog(
+          context: context,
+          builder: (_) {
+            return WillPopScope(
+              // 戻る無効化
+              onWillPop: () => Future.value(false),
+              child: const AlertDialog(
+                title: Text(
+                  "整合性を確認しています...",
+                  textAlign: TextAlign.center,
                 ),
-              );
-            });
+                content: Text("ファイルの大きさなどによっては、時間がかかる場合があります。"),
+              ),
+            );
+          });
 
-        if (!(await ReceiveFile.checkFileHash(path, fileInfo))) {
-          await EasyDialog.showErrorDialog(
-              const FileSystemException(
-                  "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。"),
-              Navigator.of(context));
-        }
-
-        Navigator.pop(context);
+      if (!(await ReceiveFile.checkFileHash(dirPath, fileInfo))) {
+        await EasyDialog.showErrorDialog(
+            const FileSystemException(
+                "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。"),
+            Navigator.of(context));
       }
 
-      if (iosAndOnlyMedia) {
-        final savePhotoLibrary = await showDialog(
-            context: context,
-            builder: ((context) {
-              return AlertDialog(
-                title: const Text("写真/動画の保存場所の確認"),
-                content:
-                    const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
-                actions: <Widget>[
-                  TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text("はい")),
-                  TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text("いいえ")),
-                ],
-              );
-            }));
+      Navigator.pop(context);
+    }
 
-        if (savePhotoLibrary) {
-          ReceiveFile.savePhotoLibrary(path, fileInfo);
-        }
+    if (iosAndOnlyMedia) {
+      final savePhotoLibrary = await showDialog(
+          context: context,
+          builder: ((context) {
+            return AlertDialog(
+              title: const Text("写真/動画の保存場所の確認"),
+              content:
+                  const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text("はい")),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text("いいえ")),
+              ],
+            );
+          }));
+
+      if (savePhotoLibrary) {
+        ReceiveFile.savePhotoLibrary(dirPath, fileInfo);
       }
+    }
 
-      // 結果のメッセージを削除
+    // 終了処理
+    endProcess();
+    // 結果のメッセージを削除し、新しいメッセージを表示
+    setState(() {
       sucsessWidght.clear();
-
       sucsessWidght.add(const Text("ファイルの受信が完了しました",
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -284,7 +372,6 @@ class _ReceivePageState extends State<ReceivePage>
             '\niOSではファイルは、アプリ用の外から読み書きが可能なフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
             textAlign: TextAlign.start));
       }
-      setState(() {});
-    }
+    });
   }
 }
