@@ -11,4 +11,4 @@ PRODUCT_NAME = FileTrucker
 PRODUCT_BUNDLE_IDENTIFIER = com.corenion.filetrucker
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2022 CoreNion. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2023 CoreNion. All rights reserved.

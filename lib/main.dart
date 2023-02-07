@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
                                   applicationVersion:
                                       "Version: ${packageInfo.version}",
                                   applicationLegalese:
-                                      'Copyright (c) 2022 CoreNion\n',
+                                      'Copyright (c) 2023 CoreNion\n',
                                   children: <Widget>[
                                     if (await canLaunchUrl(siteUri)) ...{
                                       TextButton(
