@@ -188,39 +188,19 @@ class ReceiveFile {
     return result;
   }
 
-  /// ファイルの保存場所をユーザーなどから取得
-  static Future<String?> getSavePath(List<String> fileNames) async {
+  /// ファイルの保存場所(ディレクトリ)のパスをユーザーなどから取得
+  static Future<String?> getSavePath() async {
     // Desktopはファイル保存のダイアログ経由
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      if (fileNames.length < 2) {
-        // ファイルが一つだけの場合はファイルの保存のダイアログを開く
-        return await FilePicker.platform.saveFile(
-            dialogTitle: "ファイルの保存場所を選択...", fileName: fileNames.first);
-      } else {
-        return await FilePicker.platform
-            .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
-      }
-    } else if (Platform.isAndroid) {
-      // なぜかiOSでは動作しない...
-      String? path = await FilePicker.platform
+    if (Platform.isWindows ||
+        Platform.isMacOS ||
+        Platform.isLinux ||
+        Platform.isAndroid) {
+      return await FilePicker.platform
           .getDirectoryPath(dialogTitle: "ファイルを保存するフォルダーを選択...");
-      if (path != null) {
-        if (fileNames.length < 2) {
-          return p.join(path, fileNames.first);
-        } else {
-          return path;
-        }
-      } else {
-        return null;
-      }
     } else if (Platform.isIOS) {
       // iOSはgetApplicationDocumentsDirectoryでもファイルアプリに表示可
       final directory = await getApplicationDocumentsDirectory();
-      if (fileNames.length < 2) {
-        return p.join(directory.path, fileNames.first);
-      } else {
-        return directory.path;
-      }
+      return directory.path;
     } else {
       return null;
     }

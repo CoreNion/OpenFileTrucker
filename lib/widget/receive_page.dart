@@ -264,7 +264,7 @@ class _ReceivePageState extends State<ReceivePage>
     }
 
     // 保存場所を取得 (何も入力されない場合は終了)
-    final dirPath = await ReceiveFile.getSavePath(fileInfo.names);
+    final dirPath = await ReceiveFile.getSavePath();
     if (dirPath == null) {
       if (!mounted) return;
       Navigator.pop(context);
