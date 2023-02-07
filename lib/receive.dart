@@ -52,28 +52,35 @@ class ReceiveFile {
     };
 
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(socket).then((value) async {
-      /* 書き込み終了時の処理 (キャンセル関係なく実行) */
-      timer.cancel();
+    receiveSink.addStream(socket)
+      ..then((v) async {
+        /* 書き込み終了時の処理 (キャンセル関係なく実行) */
+        timer.cancel();
 
-      // 通信の終了
-      socket.destroy();
+        // 通信の終了
+        socket.destroy();
 
-      // 終了処理
-      await receiveSink.flush();
-      await receiveSink.close();
+        // 終了処理
+        await receiveSink.flush();
+        await receiveSink.close();
 
-      if (!onCancel) {
-        // 正常終了のステータスを付ける
-        receiveDone = true;
-      } else {
-        // キャンセルの場合はファイルを削除
-        if (saveFile.existsSync()) {
-          saveFile.deleteSync();
+        if (!onCancel) {
+          // 正常終了のステータスを付ける
+          receiveDone = true;
+        } else {
+          // キャンセルの場合はファイルを削除
+          if (saveFile.existsSync()) {
+            saveFile.deleteSync();
+          }
         }
-      }
-      await controller.close();
-    });
+        await controller.close();
+      })
+      ..catchError((error) {
+        timer.cancel();
+        socket.destroy();
+
+        controller.addError(error);
+      });
 
     return controller;
   }
@@ -130,6 +137,8 @@ class ReceiveFile {
               currentFileSize: progress.currentFileSize,
               currentTotalSize: currentTotalSize);
           controller.sink.add(totalReceiveProgress);
+        }, onError: (e) {
+          controller.addError(e);
         });
         await singleController.done;
       }

@@ -291,12 +291,17 @@ class _ReceivePageState extends State<ReceivePage>
 
     // 各ファイルを受信する
     controller = await ReceiveFile.receiveAllFiles(ip, fileInfo, dirPath);
-    final stream = controller.stream;
     // 進捗を適宜更新する
+    final stream = controller.stream;
     stream.listen((newProgress) {
       dialogSetState(() {
         progress = newProgress;
       });
+    }, onError: (e) {
+      endProcess();
+
+      EasyDialog.showErrorDialog(e, Navigator.of(context));
+      return;
     });
     await controller.done;
 
@@ -324,11 +329,15 @@ class _ReceivePageState extends State<ReceivePage>
             );
           });
 
-      if (!(await ReceiveFile.checkFileHash(dirPath, fileInfo))) {
-        await EasyDialog.showErrorDialog(
-            const FileSystemException(
-                "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。"),
-            Navigator.of(context));
+      try {
+        if (!(await ReceiveFile.checkFileHash(dirPath, fileInfo))) {
+          await EasyDialog.showErrorDialog(
+              const FileSystemException(
+                  "ファイルはダウンロードされましたが、整合性が確認できませんでした。\n安定した環境でファイルの共有を行ってください。"),
+              Navigator.of(context));
+        }
+      } catch (e) {
+        await EasyDialog.showErrorDialog(e, Navigator.of(context));
       }
 
       Navigator.pop(context);
@@ -354,7 +363,15 @@ class _ReceivePageState extends State<ReceivePage>
           }));
 
       if (savePhotoLibrary) {
-        ReceiveFile.savePhotoLibrary(dirPath, fileInfo);
+        try {
+          final res = await ReceiveFile.savePhotoLibrary(dirPath, fileInfo);
+          if (!res) {
+            EasyDialog.showPermissionAlert(
+                "写真ライブラリに画像を保存するには、ライブラリへの権限が必要です。", Navigator.of(context));
+          }
+        } catch (e) {
+          EasyDialog.showErrorDialog(e, Navigator.of(context));
+        }
       }
     }
 
