@@ -205,7 +205,7 @@ class _ReceivePageState extends State<ReceivePage>
 
               return AlertDialog(
                 scrollable: true,
-                title: Text(receiveReady ? "ファイルを受信しています..." : "接続しています..."),
+                title: Text(receiveReady ? "ファイルを受信しています..." : "端末に接続しています..."),
                 actions: receiveReady
                     ? <Widget>[
                         TextButton(
@@ -226,7 +226,9 @@ class _ReceivePageState extends State<ReceivePage>
                 content: Column(
                   children: [
                     Text(
-                      "${receiveReady ? currentIndex + 1 : 0}個目のファイルを受信中 ${(progress.totalProgress)!.toStringAsFixed(1)}%完了",
+                      receiveReady
+                          ? "${currentIndex + 1}個目のファイルを受信中 ${(progress.totalProgress)!.toStringAsFixed(1)}%完了"
+                          : "",
                       textAlign: TextAlign.center,
                     ),
                     LinearProgressIndicator(
@@ -350,7 +352,7 @@ class _ReceivePageState extends State<ReceivePage>
             return AlertDialog(
               title: const Text("写真/動画の保存場所の確認"),
               content:
-                  const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内フォルダーには保存済みです。)"),
+                  const Text("写真ライブラリにも画像や動画を保存しますか？\n(アプリ内のフォルダーには保存済みです。)"),
               actions: <Widget>[
                 TextButton(
                     onPressed: () => Navigator.pop(context, true),
@@ -386,7 +388,7 @@ class _ReceivePageState extends State<ReceivePage>
               fontSize: 25, color: Colors.red, fontWeight: FontWeight.bold)));
       if (Platform.isIOS) {
         sucsessWidght.add(const Text(
-            '\niOSではファイルは、アプリ用の外から読み書きが可能なフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
+            '\niOSではファイルは、アプリ用のフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
             textAlign: TextAlign.start));
       }
     });
