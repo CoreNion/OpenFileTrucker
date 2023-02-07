@@ -13,16 +13,11 @@ import 'package:wakelock/wakelock.dart';
 import 'class/qr_data.dart';
 
 class SendFiles {
-  /// 利用するネットワークを選択する関数
-  static Future<String?> selectNetwork(BuildContext context) async {
-    // ネットワーク一覧のDialogOptionのList
-    List<SimpleDialogOption> dialogOptions = [];
+  /// FileTruckerで利用可能なネットワーク一覧を取得
+  static Future<List<TruckerNetworkInfo>?> getAvailableNetworks() async {
+    List<TruckerNetworkInfo> addressList = [];
 
-    // スリープ無効化
-    Wakelock.enable();
-
-    // NetworkInterfaceからIPアドレスを取得
-    List<String> addressList = [];
+    // NetworkInterfaceから情報を取得
     for (NetworkInterface interface in await NetworkInterface.list()) {
       String strAddr = "";
       String interfaceName = interface.name;
@@ -35,13 +30,12 @@ class SendFiles {
         }
       }
 
-      // 条件に合う場合のみdialogOptionsに追加
+      // 条件に合う場合のみlistに追加
       if (strAddr.isNotEmpty) {
-        void addOption() {
-          addressList.add(strAddr);
+        void addList() {
           late String userInterfaceName;
 
-          // インターフェースの名前を分かりやすくする(Unix系のみ)
+          // 既知のインターフェースの名前を分かりやすくする
           if (interfaceName.contains(RegExp("wlan|wl|wlp|ath"))) {
             userInterfaceName = "無線LAN ($interfaceName)";
           } else if (interfaceName.contains(RegExp("eth|en"))) {
@@ -52,41 +46,26 @@ class SendFiles {
             userInterfaceName = interfaceName;
           }
 
-          dialogOptions.add(SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, strAddr),
-            child: Text("$userInterfaceName $strAddr"),
-          ));
+          addressList.add(TruckerNetworkInfo(
+              interfaceName: userInterfaceName, ip: strAddr));
         }
 
-        // Androidではwlan/eth系、iOSではen/ap/bridge系のみのみ表示
+        // Androidではwlan/eth系、iOSではen/ap/bridge系のみ追加(それ以外は基本的に意味が無いため)
         if (Platform.isAndroid || Platform.isIOS) {
           if (interfaceName
               .contains(RegExp("wlan|wl|wlp|ath|eth|en|ap|bridge"))) {
-            addOption();
+            addList();
           }
         } else {
-          addOption();
+          addList();
         }
       }
     }
 
-    if (dialogOptions.isEmpty) {
+    if (addressList.isEmpty) {
       return null;
-    } else if (addressList.length == 1) {
-      return addressList[0];
     } else {
-      return showDialog<String>(
-        context: context,
-        builder: (BuildContext context) {
-          return WillPopScope(
-              // 戻る無効化
-              onWillPop: () => Future.value(false),
-              child: SimpleDialog(
-                title: const Text("利用するネットワークを選択してください。"),
-                children: dialogOptions,
-              ));
-        },
-      );
+      return addressList;
     }
   }
 
@@ -178,4 +157,13 @@ class SendFiles {
     // スリープ有効化
     Wakelock.disable();
   }
+}
+
+/// 簡易的なネットワーク情報
+class TruckerNetworkInfo {
+  final String interfaceName;
+
+  final String ip;
+
+  TruckerNetworkInfo({required this.interfaceName, required this.ip});
 }
