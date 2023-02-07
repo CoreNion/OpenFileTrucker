@@ -200,11 +200,9 @@ class _SendPageState extends State<SendPage>
                               context: context,
                               builder: (_) => _selectFileType());
                         } else {
-                          SendFiles.pickFiles(context: context)
-                              .then(_setFiles)
-                              .catchError((e, stackTrace) =>
-                                  EasyDialog.showErrorDialog(
-                                      e, Navigator.of(context)));
+                          SendFiles.pickFiles().then(_setFiles).catchError(
+                              (e, stackTrace) => EasyDialog.showErrorDialog(
+                                  e, Navigator.of(context)));
                         }
                       },
                     ),
@@ -489,11 +487,9 @@ class _SendPageState extends State<SendPage>
               children: <Widget>[
                 IconButton(
                     onPressed: () {
-                      SendFiles.pickFiles(context: context)
-                          .then(_setFiles)
-                          .catchError((e, stackTrace) =>
-                              EasyDialog.showErrorDialog(
-                                  e, Navigator.of(context)));
+                      SendFiles.pickFiles().then(_setFiles).catchError((e,
+                              stackTrace) =>
+                          EasyDialog.showErrorDialog(e, Navigator.of(context)));
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.file_copy, size: 70)),
@@ -506,8 +502,7 @@ class _SendPageState extends State<SendPage>
                     onPressed: () async {
                       Navigator.pop(context);
                       if (Platform.isIOS) {
-                        SendFiles.pickFiles(
-                                context: context, type: FileType.media)
+                        SendFiles.pickFiles(type: FileType.media)
                             .then(_setFiles)
                             .catchError((e, stackTrace) =>
                                 EasyDialog.showErrorDialog(
@@ -528,7 +523,11 @@ class _SendPageState extends State<SendPage>
   ///
   /// File型を設定した場合、自動的にXFileに変換されます。
   void _setFiles(List<dynamic>? val) {
-    if (val == null || val.isEmpty) {
+    if (val == null) {
+      EasyDialog.showPermissionAlert(
+          "ファイルを参照するには、ストレージへのアクセス権限が必要です。", Navigator.of(context));
+      return;
+    } else if (val.isEmpty) {
       return;
     }
     // 過去のファイル情報を消去
