@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:wakelock/wakelock.dart';
 
+import 'class/file_info.dart';
 import 'class/qr_data.dart';
 
 class SendFiles {
@@ -94,6 +94,7 @@ class SendFiles {
 
   static ServerSocket? _server;
 
+  /// ファイル送信用ののサーバーを立ち上げる
   static Future<QrImage> serverStart(String ip,
       /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
     _server = await ServerSocket.bind(ip, 4782);
@@ -113,25 +114,20 @@ class SendFiles {
     socket.listen((event) async {
       String mesg = utf8.decode(event);
       if (mesg == "first") {
-        // 1回目の場合、ファイルの各情報を送って一旦close(受信の処理の都合で1回の通信では送らない)
-        List<String> nameList = <String>[];
-        List<int> lengthList = <int>[];
+        // クライアント側にファイル情報を送信
+        List<String> names = <String>[];
+        List<int> sizes = <int>[];
         for (var i = 0; i < files.length; i++) {
-          nameList.add(basename(files[i].path));
-          lengthList.add(await files[i].length());
+          names.add(basename(files[i].path));
+          sizes.add(await files[i].length());
         }
-        if (!(hashs == null)) {
-          socket.add(utf8.encode(json.encode({
-            "nameList": nameList,
-            "lengthList": lengthList,
-            "hashList": hashs
-          })));
-        } else {
-          socket.add(utf8.encode(
-              json.encode({"nameList": nameList, "lengthList": lengthList})));
-        }
+
+        socket.add(utf8.encode(json.encode(
+            FileInfo(names: names, sizes: sizes, hashs: hashs).toMap())));
+
         socket.destroy();
       } else {
+        // n番目のファイルを送信
         int? fileNumber = int.tryParse(mesg);
         if (fileNumber != null) {
           await socket.addStream(files[fileNumber].openRead());
@@ -143,15 +139,9 @@ class SendFiles {
     });
   }
 
+  /// ファイル送信サーバーを閉じる
   static void serverClose() {
     _server?.close();
-
-    if (Platform.isIOS || Platform.isAndroid) {
-      // キャッシュ削除
-      FilePicker.platform.clearTemporaryFiles();
-    }
-    // スリープ有効化
-    Wakelock.disable();
   }
 }
 

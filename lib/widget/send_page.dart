@@ -405,8 +405,16 @@ class _SendPageState extends State<SendPage>
   }
 
   /// ファイル共有を停止し、初期状態に戻す関数
-  void _stopShareProcess() {
+  void _stopShareProcess() async {
     SendFiles.serverClose();
+
+    if (Platform.isIOS || Platform.isAndroid) {
+      // キャッシュ削除
+      await FilePicker.platform.clearTemporaryFiles();
+    }
+
+    // スリープ有効化
+    Wakelock.disable();
     serverListen = false;
     selectedFiles.clear();
 
