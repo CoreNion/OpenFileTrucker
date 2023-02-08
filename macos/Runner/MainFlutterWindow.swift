@@ -17,7 +17,11 @@ class MainFlutterWindow: NSWindow {
           self?.requestCameraPermission(result: result)
       })
       
-    let windowFrame = self.frame
+    var windowFrame = self.frame
+      
+    // Windowサイズの調整
+    windowFrame.size = NSSize(width: 1000, height:700)
+      
     self.contentViewController = flutterViewController
     self.setFrame(windowFrame, display: true)
 
