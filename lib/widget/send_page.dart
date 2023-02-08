@@ -531,13 +531,10 @@ class _SendPageState extends State<SendPage>
   ///
   /// File型を設定した場合、自動的にXFileに変換されます。
   void _setFiles(List<dynamic>? val) {
-    if (val == null) {
-      EasyDialog.showPermissionAlert(
-          "ファイルを参照するには、ストレージへのアクセス権限が必要です。", Navigator.of(context));
-      return;
-    } else if (val.isEmpty) {
+    if (val == null || val.isEmpty) {
       return;
     }
+
     // 過去のファイル情報を消去
     selectedFiles.clear();
 
