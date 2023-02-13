@@ -36,19 +36,20 @@ class _ScanQRCodePageState extends State<ScanQRCodePage> {
           Expanded(
             flex: 10,
             child: MobileScanner(
-                controller: cameraController,
-                allowDuplicates: false,
-                onDetect: (barcode, args) => _onQRDetect(barcode, context)),
+              controller: cameraController,
+              onDetect: (barcodes) => _onQRDetect(barcodes, context),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _onQRDetect(Barcode barcode, BuildContext context) async {
+  void _onQRDetect(BarcodeCapture barcodes, BuildContext context) async {
     late QRCodeData data;
     try {
-      data = QRCodeData.fromJson(json.decode(barcode.rawValue!));
+      data =
+          QRCodeData.fromJson(json.decode(barcodes.barcodes.first.rawValue!));
     } catch (e) {
       setState(() {
         ScaffoldMessenger.of(context).showSnackBar(

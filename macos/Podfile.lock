@@ -4,7 +4,7 @@ PODS:
   - dynamic_color (0.0.2):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - mobile_scanner (0.0.1):
+  - mobile_scanner (3.0.0):
     - FlutterMacOS
   - package_info_plus (0.0.1):
     - FlutterMacOS
@@ -57,9 +57,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   desktop_drop: 69eeff437544aa619c8db7f4481b3a65f7696898
-  dynamic_color: 394d6a888650f8534e029b27d2f8bc5c64e44008
+  dynamic_color: 2eaa27267de1ca20d879fbd6e01259773fb1670f
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  mobile_scanner: 35dc92ffdbd7934b0dbc411b1c731bc2ef23c2dc
+  mobile_scanner: ed7618fb749adc6574563e053f3b8e5002c13994
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
   path_provider_foundation: 37748e03f12783f9de2cb2c4eadfaa25fe6d4852
   Sodium: 23d11554ecd556196d313cf6130d406dfe7ac6da

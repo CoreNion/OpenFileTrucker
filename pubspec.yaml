@@ -40,20 +40,20 @@ dependencies:
   permission_handler: ^10.2.0
   dotted_border: ^2.0.0+3
   file_sizes: ^1.0.6
-  desktop_drop: ^0.4.0
+  desktop_drop: ^0.4.1
   path: ^1.8.1
-  flutter_svg: ^1.1.6
-  package_info_plus: ^3.0.2
-  url_launcher: ^6.1.8
-  mobile_scanner: ^2.1.0
-  dynamic_color: ^1.5.4
-  cross_file: ^0.3.3+2
+  flutter_svg: ^2.0.0+1
+  package_info_plus: ^3.0.3
+  url_launcher: ^6.1.9
+  mobile_scanner: ^3.0.0
+  dynamic_color: ^1.6.2
+  cross_file: ^0.3.3+4
   sodium: ^2.0.1
   sodium_libs: ^2.0.0
   image_gallery_saver:
     git:
       url: https://github.com/hui-z/image_gallery_saver.git
-      ref: master
+      ref: e319bc600a8c3e5ab4d414b890dc7844f6f9d6d9
   mime: ^1.0.4
   share_handler: ^0.0.16
 
