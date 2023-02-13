@@ -89,6 +89,8 @@ class _MyAppState extends State<MyApp> {
                               });
                               PackageInfo packageInfo =
                                   await PackageInfo.fromPlatform();
+
+                              // ignore: use_build_context_synchronously
                               showAboutDialog(
                                   context: context,
                                   applicationIcon: ClipRRect(
@@ -101,7 +103,7 @@ class _MyAppState extends State<MyApp> {
                                       )),
                                   applicationName: 'Open FileTrucker',
                                   applicationVersion:
-                                      "Version: ${packageInfo.version}",
+                                      "Version:${packageInfo.version} Build:${packageInfo.buildNumber}",
                                   applicationLegalese:
                                       'Copyright (c) 2023 CoreNion\n',
                                   children: <Widget>[
