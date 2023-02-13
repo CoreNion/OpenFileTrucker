@@ -9,7 +9,6 @@ import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file_trucker/widget/receive_qr.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:path/path.dart' as p;
 
 import '../class/file_info.dart';
 import '../class/qr_data.dart';
@@ -36,6 +35,8 @@ class _ReceivePageState extends State<ReceivePage>
       : <Widget>[];
 
   bool bypassAdressCheck = false;
+
+  TextEditingController textEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +125,7 @@ class _ReceivePageState extends State<ReceivePage>
                         return null;
                       },
                       onSaved: (newValue) => ip = newValue!,
+                      controller: textEditingController,
                     ),
                     /* 
                     TextFormField(
