@@ -229,7 +229,7 @@ class _ReceivePageState extends State<ReceivePage>
                   children: [
                     Text(
                       receiveReady
-                          ? "${currentIndex + 1}個目のファイルを受信中 ${(progress.totalProgress)!.toStringAsFixed(1)}%完了"
+                          ? "${currentIndex + 1}個目のファイルを受信中 ${(progress.totalProgress! * 100).toStringAsFixed(1)}%完了"
                           : "",
                       textAlign: TextAlign.center,
                     ),

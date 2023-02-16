@@ -94,7 +94,6 @@ class ReceiveFile {
     final receiveSpeed = currentFileSize - oldProg.currentFileSize;
 
     return ReceiveProgress(
-        totalProgress: singleProgress,
         singleProgress: singleProgress,
         receiveSpeed: receiveSpeed,
         currentFileSize: currentFileSize);
@@ -126,8 +125,14 @@ class ReceiveFile {
 
         singleController.stream.listen((progress) {
           // 各値を最新の値に更新
-          currentTotalSize = currentTotalSize + progress.currentFileSize;
-          totalProgress = currentTotalSize / totalFileSize;
+          if (!(fileInfo.names.length == 1)) {
+            currentTotalSize = currentTotalSize + progress.receiveSpeed;
+            totalProgress = (currentTotalSize / totalFileSize).toDouble();
+          } else {
+            // 受信するファイルが一つだけなら現在の進捗をそのまま流す
+            currentTotalSize = progress.currentFileSize;
+            totalProgress = progress.singleProgress;
+          }
 
           // 全体の進捗をstreamで送信
           final totalReceiveProgress = ReceiveProgress(
