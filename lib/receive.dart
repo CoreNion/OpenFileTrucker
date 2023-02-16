@@ -136,6 +136,7 @@ class ReceiveFile {
 
           // 全体の進捗をstreamで送信
           final totalReceiveProgress = ReceiveProgress(
+              currentFileIndex: i,
               totalProgress: totalProgress,
               singleProgress: progress.singleProgress,
               receiveSpeed: progress.receiveSpeed,
@@ -258,6 +259,9 @@ class ReceiveFile {
 
 /// 受信の進捗情報のクラス
 class ReceiveProgress {
+  /// 現在受信しているファイルのIndex番号
+  final int? currentFileIndex;
+
   /// 全体の進捗 (割合)
   final double? totalProgress;
 
@@ -274,7 +278,8 @@ class ReceiveProgress {
   final int? currentTotalSize;
 
   ReceiveProgress(
-      {this.totalProgress,
+      {this.currentFileIndex,
+      this.totalProgress,
       required this.singleProgress,
       required this.receiveSpeed,
       required this.currentFileSize,

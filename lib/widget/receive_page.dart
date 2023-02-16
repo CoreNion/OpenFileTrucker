@@ -186,6 +186,7 @@ class _ReceivePageState extends State<ReceivePage>
     bool receiveReady = false;
     final setStateCompleter = Completer<Function>();
     ReceiveProgress progress = ReceiveProgress(
+        currentFileIndex: 0,
         totalProgress: 0,
         singleProgress: 0,
         receiveSpeed: 0,
@@ -229,7 +230,7 @@ class _ReceivePageState extends State<ReceivePage>
                   children: [
                     Text(
                       receiveReady
-                          ? "${currentIndex + 1}個目のファイルを受信中 ${(progress.totalProgress! * 100).toStringAsFixed(1)}%完了"
+                          ? "${progress.currentFileIndex! + 1}個目のファイルを受信中 ${(progress.totalProgress! * 100).toStringAsFixed(1)}%完了"
                           : "",
                       textAlign: TextAlign.center,
                     ),
@@ -238,7 +239,7 @@ class _ReceivePageState extends State<ReceivePage>
                     ),
                     Text(
                       receiveReady
-                          ? "${fileInfo.names[currentIndex]} ${(progress.singleProgress * 100).toStringAsFixed(1)}%完了"
+                          ? "${fileInfo.names[progress.currentFileIndex!]} ${(progress.singleProgress * 100).toStringAsFixed(1)}%完了"
                           : "",
                       textAlign: TextAlign.center,
                     ),
