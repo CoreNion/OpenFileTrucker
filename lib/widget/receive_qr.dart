@@ -54,8 +54,8 @@ class _ScanQRCodePageState extends State<ScanQRCodePage> {
       setState(() {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text("対応していない形式のQRコードです。\nバージョンを確認するか、正しいQRコードを読み取ってください。"),
+            content: Text(
+                "対応していない形式のQRコードです。\n両方の端末のバージョンが合っているか確認するか、正しいQRコードを読み取ってください。"),
             duration: Duration(seconds: 6),
           ),
         );

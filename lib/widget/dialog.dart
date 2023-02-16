@@ -42,7 +42,7 @@ class EasyDialog {
     } else if (e is SodiumException) {
       errorTitle = "Sodiumエラー";
       errorMessage =
-          "libSodiumでの処理中にエラーが発生しました。\nこの端末では、整合性確認機能などが利用できない可能性があります。\n";
+          "libSodiumでの処理中にエラーが発生しました。\nこの端末では、整合性確認機能などは利用できない可能性があります。\n";
       exceptionMessage = "詳細:\n$e";
     } else {
       errorTitle = "不明なエラー";

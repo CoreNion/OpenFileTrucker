@@ -28,7 +28,7 @@ class _ReceivePageState extends State<ReceivePage>
   List<Widget> sucsessWidght = Platform.isAndroid
       ? <Widget>[
           const Text(
-            "Androidでは、選択が可能なフォルダーでもファイルを保存できない場合があります。\n特に指定が無い場合、「ダウンロード」フォルダーにFileTrucker用のフォルダーを作成し、そこにファイルを保存することがおすすめです。",
+            "Androidでは、選択が可能なフォルダーでもファイルを保存できない場合があります。\n特に指定が無い場合、「ダウンロード」フォルダーにFileTrucker用のフォルダーを作成し、ファイルを保存することがおすすめです。",
             textAlign: TextAlign.center,
           )
         ]
@@ -139,7 +139,7 @@ class _ReceivePageState extends State<ReceivePage>
                     SwitchListTile(
                       value: bypassAdressCheck,
                       title: const Text('IPアドレスの確認を行わない'),
-                      subtitle: const Text("正しいIPアドレスを入力しても正しくない判定になる場合に利用"),
+                      subtitle: const Text("IPアドレスの判定に問題がある場合に利用"),
                       onChanged: (bool value) => setState(() {
                         bypassAdressCheck = value;
                       }),
@@ -208,7 +208,7 @@ class _ReceivePageState extends State<ReceivePage>
 
               return AlertDialog(
                 scrollable: true,
-                title: Text(receiveReady ? "ファイルを受信しています..." : "端末に接続しています..."),
+                title: Text(receiveReady ? "受信しています..." : "デバイスに接続しています..."),
                 actions: receiveReady
                     ? <Widget>[
                         TextButton(
@@ -372,7 +372,7 @@ class _ReceivePageState extends State<ReceivePage>
           final res = await ReceiveFile.savePhotoLibrary(dirPath, fileInfo);
           if (!res) {
             EasyDialog.showPermissionAlert(
-                "写真ライブラリに画像を保存するには、ライブラリへの権限が必要です。", Navigator.of(context));
+                "写真ライブラリに画像を保存するには、ライブラリへのアクセス権限が必要です。", Navigator.of(context));
           }
         } catch (e) {
           EasyDialog.showErrorDialog(e, Navigator.of(context));
@@ -391,7 +391,7 @@ class _ReceivePageState extends State<ReceivePage>
               fontSize: 25, color: Colors.red, fontWeight: FontWeight.bold)));
       if (Platform.isIOS) {
         sucsessWidght.add(const Text(
-            '\niOSではファイルは、アプリ用のフォルダーに格納されています。\n内蔵の「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
+            '\niOSではファイルは、FileTrucker用のフォルダーに格納されています。\n「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
             textAlign: TextAlign.start));
       }
     });
