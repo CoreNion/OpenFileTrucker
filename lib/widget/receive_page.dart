@@ -36,8 +36,9 @@ class _ReceivePageState extends State<ReceivePage>
       : <Widget>[];
 
   bool bypassAdressCheck = false;
-
   TextEditingController textEditingController = TextEditingController();
+
+  List<String> broadcastIPs = [];
 
   @override
   void initState() {
@@ -48,8 +49,15 @@ class _ReceivePageState extends State<ReceivePage>
       socket.listen((event) {
         Datagram? datagram = socket.receive();
         if (datagram != null) {
-          print(
-              "Receive ${utf8.decode(datagram.data)} from ${datagram.address.address}");
+          final ip = datagram.address.address;
+          final data = utf8.decode(datagram.data);
+          print("Receive $data from $ip");
+
+          if (data == "FROM_FILE_TRUCKER" && !broadcastIPs.contains(ip)) {
+            setState(() {
+              broadcastIPs.add(ip);
+            });
+          }
         }
       });
     });
@@ -183,6 +191,15 @@ class _ReceivePageState extends State<ReceivePage>
                             }
                           }),
                     ),
+                    const Divider(),
+                    ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: broadcastIPs.length,
+                        itemBuilder: ((context, index) => ListTile(
+                            title: Text(broadcastIPs[index]),
+                            onTap: () {
+                              _startReceive(broadcastIPs[index]);
+                            }))),
                     Column(children: sucsessWidght),
                   ],
                 ),
