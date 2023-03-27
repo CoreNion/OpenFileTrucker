@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
@@ -93,12 +94,22 @@ class SendFiles {
   }
 
   static ServerSocket? _server;
+  static late RawDatagramSocket _datagramSocket;
+  static late Timer _broadcastTask;
 
-  /// ファイル送信用ののサーバーを立ち上げる
+  /// ファイル送信用のサーバーとブロードキャストを立ち上げる
   static Future<QrImage> serverStart(String ip,
       /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
+
+    // 1秒ごとに送信側の情報をブロードキャストする
+    _datagramSocket = await RawDatagramSocket.bind(ip, 4783);
+    _datagramSocket.broadcastEnabled = true;
+    _broadcastTask = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _datagramSocket.send(utf8.encode('FROM_FILE_TRUCKER'),
+          InternetAddress("255.255.255.255"), 4783);
+    });
 
     return QrImage(
       data: json.encode(QRCodeData(
@@ -139,9 +150,12 @@ class SendFiles {
     });
   }
 
-  /// ファイル送信サーバーを閉じる
+  /// ファイル送信サーバーとブロードキャストを閉じる
   static void serverClose() {
     _server?.close();
+
+    _broadcastTask.cancel();
+    _datagramSocket.close();
   }
 }
 

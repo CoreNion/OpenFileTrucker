@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
@@ -37,6 +38,22 @@ class _ReceivePageState extends State<ReceivePage>
   bool bypassAdressCheck = false;
 
   TextEditingController textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    RawDatagramSocket.bind(InternetAddress.anyIPv4, 4783).then((socket) {
+      socket.broadcastEnabled = true;
+      socket.listen((event) {
+        Datagram? datagram = socket.receive();
+        if (datagram != null) {
+          print(
+              "Receive ${utf8.decode(datagram.data)} from ${datagram.address.address}");
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
