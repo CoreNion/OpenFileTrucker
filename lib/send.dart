@@ -4,13 +4,10 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import 'class/file_info.dart';
-import 'class/qr_data.dart';
 
 class SendFiles {
   /// FileTruckerで利用可能なネットワーク一覧を取得
@@ -98,8 +95,8 @@ class SendFiles {
   static late Timer _broadcastTask;
 
   /// ファイル送信用のサーバーとブロードキャストを立ち上げる
-  static Future<QrImage> serverStart(String ip,
-      /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
+  static Future serverStart(String ip, /* String key, */ List<XFile> files,
+      List<Uint8List>? hashs) async {
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
 
@@ -111,13 +108,7 @@ class SendFiles {
           InternetAddress("255.255.255.255"), 4783);
     });
 
-    return QrImage(
-      data: json.encode(QRCodeData(
-        ip: ip, /* key: key */
-      ).toJson()),
-      size: 300,
-      backgroundColor: Colors.white,
-    );
+    return;
   }
 
   static void _serverListen(

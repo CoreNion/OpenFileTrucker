@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -10,9 +11,12 @@ import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_handler/share_handler.dart';
 import 'package:sodium_libs/sodium_libs.dart';
 import 'package:wakelock/wakelock.dart';
+
+import '../class/qr_data.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -306,10 +310,16 @@ class _SendPageState extends State<SendPage>
                     }
 
                     // サーバーの開始
-                    final qr =
-                        await SendFiles.serverStart(ip, selectedFiles, hashs);
+                    await SendFiles.serverStart(ip, selectedFiles, hashs);
+
                     serverListen = true;
-                    qrCode = qr;
+                    qrCode = QrImage(
+                      data: json.encode(QRCodeData(
+                        ip: ip, /* key: key */
+                      ).toJson()),
+                      size: 300,
+                      backgroundColor: Colors.white,
+                    );
                     ipText = "IP: $ip";
                     stopServerButton = FloatingActionButton(
                       onPressed: _stopShareProcess,
