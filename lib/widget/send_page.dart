@@ -40,7 +40,9 @@ class _SendPageState extends State<SendPage>
   Widget qrCode = Container();
   Widget stopServerButton = Container();
   bool serverListen = false;
-  bool checkFileHash = false;
+
+  bool checkFileHash = true;
+  bool noBroadcast = false;
 
   @override
   void initState() {
@@ -217,9 +219,17 @@ class _SendPageState extends State<SendPage>
         SwitchListTile(
           value: checkFileHash,
           title: const Text('受信時にファイルの整合性を確認する'),
-          subtitle: const Text("一部端末では利用できない場合があります。"),
           onChanged: (bool value) => setState(() {
             checkFileHash = value;
+          }),
+        ),
+        SwitchListTile(
+          value: noBroadcast,
+          title: const Text('送信待機状態を他の端末に隠す'),
+          subtitle: const Text(
+              '不特定多数が利用するネットワークなどで不正に受信されることを防ぎますが、受信側で自動検知機能は利用できません。'),
+          onChanged: (bool value) => setState(() {
+            noBroadcast = value;
           }),
         ),
         Expanded(
@@ -310,7 +320,8 @@ class _SendPageState extends State<SendPage>
                     }
 
                     // サーバーの開始
-                    await SendFiles.serverStart(ip, selectedFiles, hashs);
+                    await SendFiles.serverStart(ip, selectedFiles, hashs,
+                        noBroadcast: noBroadcast);
 
                     serverListen = true;
                     qrCode = QrImage(
