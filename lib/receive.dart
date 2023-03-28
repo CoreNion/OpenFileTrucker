@@ -257,8 +257,8 @@ class ReceiveFile {
   }
 
   /// ネットワークにいるFileTrucker送信待ちの端末を探す
-  static StreamController<String> findTruckerDevices(String? ip) {
-    StreamController<String> controller = StreamController();
+  static StreamController<List<String>> findTruckerDevices(String? ip) {
+    StreamController<List<String>> controller = StreamController();
     List<String> broadcastIPs = [];
 
     RawDatagramSocket.bind(ip ?? InternetAddress.anyIPv4, 4783).then((socket) {
@@ -268,9 +268,9 @@ class ReceiveFile {
         if (datagram != null) {
           final ip = datagram.address.address;
           final data = utf8.decode(datagram.data);
-          if (data == "FROM_FILE_TRUCKER" && !broadcastIPs.contains(ip)) {
+          if (data.contains("FILE_TRUCKER") && !broadcastIPs.contains(ip)) {
             broadcastIPs.add(ip);
-            controller.add(ip);
+            controller.add([ip, data.substring(14)]);
           }
         }
       });

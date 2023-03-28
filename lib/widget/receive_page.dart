@@ -38,17 +38,19 @@ class _ReceivePageState extends State<ReceivePage>
   bool bypassAdressCheck = false;
   TextEditingController textEditingController = TextEditingController();
 
-  late StreamController<String> findController;
+  late StreamController<List<String>> findController;
   List<String> broadcastIPs = [];
+  List<String> deviceNames = [];
 
   @override
   void initState() {
     super.initState();
 
     findController = ReceiveFile.findTruckerDevices(null);
-    findController.stream.listen((ip) {
+    findController.stream.listen((data) {
       setState(() {
-        broadcastIPs.add(ip);
+        broadcastIPs.add(data[0]);
+        deviceNames.add(data[1]);
       });
     });
   }
@@ -186,7 +188,12 @@ class _ReceivePageState extends State<ReceivePage>
                         shrinkWrap: true,
                         itemCount: broadcastIPs.length,
                         itemBuilder: ((context, index) => ListTile(
-                            title: Text(broadcastIPs[index]),
+                            leading: Icon(
+                              Icons.devices,
+                              color: Theme.of(context).iconTheme.color,
+                            ),
+                            title: Text(
+                                "${deviceNames[index]} - ${broadcastIPs[index]}"),
                             onTap: () {
                               _startReceive(broadcastIPs[index]);
                             }))),

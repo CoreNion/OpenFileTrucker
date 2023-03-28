@@ -8,6 +8,7 @@ import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'class/file_info.dart';
+import 'util.dart';
 
 class SendFiles {
   /// FileTruckerで利用可能なネットワーク一覧を取得
@@ -106,11 +107,13 @@ class SendFiles {
     _server?.listen((event) => _serverListen(event, files, hashs));
 
     if (!noBroadcast) {
+      final deviceName = await getUserDeviceName();
+
       // 1秒ごとに送信側の情報をブロードキャストする
       _datagramSocket = await RawDatagramSocket.bind(ip, 4783);
       _datagramSocket.broadcastEnabled = true;
       _broadcastTask = Timer.periodic(const Duration(seconds: 1), (timer) {
-        _datagramSocket.send(utf8.encode('FROM_FILE_TRUCKER'),
+        _datagramSocket.send(utf8.encode('FILE_TRUCKER__$deviceName'),
             InternetAddress("255.255.255.255"), 4783);
       });
     }
