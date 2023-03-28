@@ -255,6 +255,29 @@ class ReceiveFile {
 
     return true;
   }
+
+  /// ネットワークにいるFileTrucker送信待ちの端末を探す
+  static StreamController<String> findTruckerDevices(String? ip) {
+    StreamController<String> controller = StreamController();
+    List<String> broadcastIPs = [];
+
+    RawDatagramSocket.bind(ip ?? InternetAddress.anyIPv4, 4783).then((socket) {
+      socket.broadcastEnabled = true;
+      socket.listen((event) {
+        Datagram? datagram = socket.receive();
+        if (datagram != null) {
+          final ip = datagram.address.address;
+          final data = utf8.decode(datagram.data);
+          if (data == "FROM_FILE_TRUCKER" && !broadcastIPs.contains(ip)) {
+            broadcastIPs.add(ip);
+            controller.add(ip);
+          }
+        }
+      });
+    });
+
+    return controller;
+  }
 }
 
 /// 受信の進捗情報のクラス

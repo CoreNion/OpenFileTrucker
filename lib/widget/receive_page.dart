@@ -38,27 +38,17 @@ class _ReceivePageState extends State<ReceivePage>
   bool bypassAdressCheck = false;
   TextEditingController textEditingController = TextEditingController();
 
+  late StreamController<String> findController;
   List<String> broadcastIPs = [];
 
   @override
   void initState() {
     super.initState();
 
-    RawDatagramSocket.bind(InternetAddress.anyIPv4, 4783).then((socket) {
-      socket.broadcastEnabled = true;
-      socket.listen((event) {
-        Datagram? datagram = socket.receive();
-        if (datagram != null) {
-          final ip = datagram.address.address;
-          final data = utf8.decode(datagram.data);
-          print("Receive $data from $ip");
-
-          if (data == "FROM_FILE_TRUCKER" && !broadcastIPs.contains(ip)) {
-            setState(() {
-              broadcastIPs.add(ip);
-            });
-          }
-        }
+    findController = ReceiveFile.findTruckerDevices(null);
+    findController.stream.listen((ip) {
+      setState(() {
+        broadcastIPs.add(ip);
       });
     });
   }
