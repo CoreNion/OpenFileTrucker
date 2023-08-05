@@ -8,7 +8,7 @@ import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file_trucker/widget/receive_qr.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
 import '../class/qr_data.dart';
@@ -62,7 +62,7 @@ class _ReceivePageState extends State<ReceivePage>
                 // 読み取りが終了したら受信開始
                 _startReceive(result.ip);
               } else {
-                Wakelock.disable();
+                WakelockPlus.disable();
               }
             });
           }
@@ -180,7 +180,7 @@ class _ReceivePageState extends State<ReceivePage>
     late StreamController<ReceiveProgress> controller;
 
     // スリープ無効化
-    Wakelock.enable();
+    WakelockPlus.enable();
 
     // ダイアログ関連の変数
     bool receiveReady = false;
@@ -285,7 +285,7 @@ class _ReceivePageState extends State<ReceivePage>
     // 全ファイルの受信の終了時の処理(異常終了関係なし)
     void endProcess() {
       // 画面ロック防止を解除
-      Wakelock.disable();
+      WakelockPlus.disable();
       // キャッシュ削除
       if (Platform.isIOS || Platform.isAndroid) {
         FilePicker.platform.clearTemporaryFiles();

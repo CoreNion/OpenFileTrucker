@@ -95,12 +95,12 @@ class SendFiles {
   static ServerSocket? _server;
 
   /// ファイル送信用ののサーバーを立ち上げる
-  static Future<QrImage> serverStart(String ip,
+  static Future<QrImageView> serverStart(String ip,
       /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
 
-    return QrImage(
+    return QrImageView(
       data: json.encode(QRCodeData(
         ip: ip, /* key: key */
       ).toJson()),
