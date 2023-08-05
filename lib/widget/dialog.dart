@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sodium_libs/sodium_libs.dart';
+import 'package:webcrypto/webcrypto.dart';
 
 class EasyDialog {
   /// 小規模なダイアログを表示する
@@ -39,10 +39,10 @@ class EasyDialog {
       errorTitle = "I/Oエラー";
       errorMessage = "ファイルの読み書き中にエラーが発生しました。\n";
       exceptionMessage = "詳細:\n$e";
-    } else if (e is SodiumException) {
+    } else if (e is OperationError) {
       errorTitle = "Sodiumエラー";
       errorMessage =
-          "libSodiumでの処理中にエラーが発生しました。\nこの端末では、整合性確認機能などは利用できない可能性があります。\n";
+          "webcryptでの処理中にエラーが発生しました。\nこの端末では、整合性確認機能などは利用できない可能性があります。\n";
       exceptionMessage = "詳細:\n$e";
     } else {
       errorTitle = "不明なエラー";

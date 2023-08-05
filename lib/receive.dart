@@ -7,8 +7,8 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sodium_libs/sodium_libs.dart';
 import 'package:mime/mime.dart';
+import 'package:webcrypto/webcrypto.dart';
 import 'dart:io';
 
 import 'class/file_info.dart';
@@ -223,15 +223,12 @@ class ReceiveFile {
 
   /// 各ファイルの整合性を確認する関数
   static Future<bool> checkFileHash(String dirPath, FileInfo fileInfo) async {
-    final sodium = await SodiumInit.init();
-
     // 各ファイルのハッシュ値を確認
     for (var i = 0; i < fileInfo.names.length; i++) {
       final Uint8List origHash = fileInfo.hashs![i];
       final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
 
-      final receieHash =
-          await sodium.crypto.genericHash.stream(messages: file.openRead());
+      final receieHash = await Hash.sha256.digestStream(file.openRead());
       if (!(listEquals(origHash, receieHash))) {
         return false;
       }
