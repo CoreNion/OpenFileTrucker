@@ -54,7 +54,9 @@ dependencies:
   mime: ^1.0.4
   share_handler: ^0.0.16
   wakelock_plus: ^1.1.1
-  webcrypto: ^0.5.3
+  webcrypto:
+    git:
+      url: https://github.com/CoreNion/webcrypto.dart.git
 
 dev_dependencies:
   flutter_test:

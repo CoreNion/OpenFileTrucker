@@ -11,13 +11,12 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Sodium (0.9.1)
-  - sodium_libs (1.2.0):
-    - FlutterMacOS
-    - Sodium
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
-  - wakelock_macos (0.0.1):
+  - wakelock_plus (0.0.1):
+    - FlutterMacOS
+  - webcrypto (0.1.1):
+    - Flutter
     - FlutterMacOS
 
 DEPENDENCIES:
@@ -26,14 +25,10 @@ DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
   - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
-  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/macos`)
-  - sodium_libs (from `Flutter/ephemeral/.symlinks/plugins/sodium_libs/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
-  - wakelock_macos (from `Flutter/ephemeral/.symlinks/plugins/wakelock_macos/macos`)
-
-SPEC REPOS:
-  trunk:
-    - Sodium
+  - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
+  - webcrypto (from `Flutter/ephemeral/.symlinks/plugins/webcrypto/darwin`)
 
 EXTERNAL SOURCES:
   desktop_drop:
@@ -47,13 +42,13 @@ EXTERNAL SOURCES:
   package_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   path_provider_foundation:
-    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/macos
-  sodium_libs:
-    :path: Flutter/ephemeral/.symlinks/plugins/sodium_libs/macos
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   url_launcher_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
-  wakelock_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/wakelock_macos/macos
+  wakelock_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos
+  webcrypto:
+    :path: Flutter/ephemeral/.symlinks/plugins/webcrypto/darwin
 
 SPEC CHECKSUMS:
   desktop_drop: 69eeff437544aa619c8db7f4481b3a65f7696898
@@ -61,12 +56,11 @@ SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   mobile_scanner: ed7618fb749adc6574563e053f3b8e5002c13994
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
-  path_provider_foundation: 37748e03f12783f9de2cb2c4eadfaa25fe6d4852
-  Sodium: 23d11554ecd556196d313cf6130d406dfe7ac6da
-  sodium_libs: f6ceec5c5f48fb59fc88a8513e9d3f92a7ae92f7
-  url_launcher_macos: c04e4fa86382d4f94f6b38f14625708be3ae52e2
-  wakelock_macos: bc3f2a9bd8d2e6c89fee1e1822e7ddac3bd004a9
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
+  wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
+  webcrypto: f44963fa2d88f93deea971a9f59f2e21c2301689
 
 PODFILE CHECKSUM: 0d3963a09fc94f580682bd88480486da345dc3f0
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

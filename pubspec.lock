@@ -617,11 +617,12 @@ packages:
   webcrypto:
     dependency: "direct main"
     description:
-      name: webcrypto
-      sha256: a3cc45ce5efa053435505a958d32785f7497a684a859e6910d805ddf094f903f
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.3"
+      path: "."
+      ref: HEAD
+      resolved-ref: eb243555513a3c281df1fe76c649d34ec6191c43
+      url: "https://github.com/CoreNion/webcrypto.dart.git"
+    source: git
+    version: "0.5.4"
   win32:
     dependency: transitive
     description:
