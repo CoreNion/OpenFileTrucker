@@ -51,8 +51,11 @@ class ReceiveFile {
       }
     };
 
+    final key =
+        await AesCbcSecretKey.importRawKey(utf8.encode("1234567890123456"));
+
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(socket)
+    receiveSink.addStream(key.decryptStream(socket, List.filled(16, 1)))
       ..then((v) async {
         /* 書き込み終了時の処理 (キャンセル関係なく実行) */
         timer.cancel();

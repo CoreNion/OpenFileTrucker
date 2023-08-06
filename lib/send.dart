@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
 import 'class/qr_data.dart';
@@ -130,7 +131,11 @@ class SendFiles {
         // n番目のファイルを送信
         int? fileNumber = int.tryParse(mesg);
         if (fileNumber != null) {
-          await socket.addStream(files[fileNumber].openRead());
+          final key = await AesCbcSecretKey.importRawKey(
+              utf8.encode("1234567890123456"));
+
+          await socket.addStream(key.encryptStream(
+              files[fileNumber].openRead(), List.filled(16, 1)));
           socket.destroy();
         } else {
           socket.destroy();
