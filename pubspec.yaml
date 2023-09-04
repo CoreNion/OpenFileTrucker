@@ -57,6 +57,7 @@ dependencies:
   webcrypto:
     git:
       url: https://github.com/CoreNion/webcrypto.dart.git
+      ref: cc-custom
 
 dev_dependencies:
   flutter_test:

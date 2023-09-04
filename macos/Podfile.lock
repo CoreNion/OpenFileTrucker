@@ -59,7 +59,7 @@ SPEC CHECKSUMS:
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
   wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
-  webcrypto: f44963fa2d88f93deea971a9f59f2e21c2301689
+  webcrypto: 53dcd22dc6135dd9417ba913c775a298bb1a9f22
 
 PODFILE CHECKSUM: 0d3963a09fc94f580682bd88480486da345dc3f0
 
