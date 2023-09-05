@@ -14,15 +14,29 @@ import 'dart:io';
 import 'class/file_info.dart';
 
 class ReceiveFile {
+  static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
+  static AesCbcSecretKey? _aesCbcSecretKey;
+
   /// ファイルの受信の処理をする関数
   static Future<StreamController<ReceiveProgress>> receiveFile(
       String ip, int fileIndex, File saveFile, int size) async {
+    if (_aesCbcSecretKey == null) {
+      throw Exception("AES-CBC暗号化用の鍵が設定されていません");
+    }
+
     StreamController<ReceiveProgress> controller = StreamController();
+
+    final sendIV = Uint8List(16);
+    fillRandomBytes(sendIV);
 
     // サーバーにi個目のファイルをファイルを要求
     final socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add(utf8.encode(fileIndex.toString()));
+    socket.add([
+      ...sendIV,
+      ...await _aesCbcSecretKey!
+          .encryptBytes(utf8.encode(fileIndex.toString()), sendIV)
+    ]);
 
     // ファイル受信が完了するまで、進捗を定期的にStreamで流す
     ReceiveProgress latestProg =
@@ -51,11 +65,8 @@ class ReceiveFile {
       }
     };
 
-    final key =
-        await AesCbcSecretKey.importRawKey(utf8.encode("1234567890123456"));
-
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(key.decryptStream(socket, List.filled(16, 1)))
+    receiveSink.addStream(_aesCbcSecretKey!.decryptStream(socket, sendIV))
       ..then((v) async {
         /* 書き込み終了時の処理 (キャンセル関係なく実行) */
         timer.cancel();
@@ -191,14 +202,42 @@ class ReceiveFile {
   /// サーバーにファイル情報を取得する関数
   static Future<FileInfo> getServerFileInfo(String ip) async {
     late FileInfo result;
+    final iv = Uint8List(16);
+    fillRandomBytes(iv);
 
-    // サーバーに接続し、ファイル情報を要求する
-    final socket =
+    // RSAの鍵ペアを作成
+    _pubKeyPair = await RsaOaepPrivateKey.generateKey(
+        2048, BigInt.from(65537), Hash.sha512);
+
+    // サーバーに1回目で接続し、公開鍵を要求する
+    Socket socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add(utf8.encode("first"));
+    socket.add([
+      ...[128, 64, 128, 64, 128],
+      ...await _pubKeyPair!.publicKey.exportSpkiKey()
+    ]);
 
-    await socket.listen((event) {
-      result = FileInfo.mapToInfo(json.decode(utf8.decode(event)));
+    // AES-CBC暗号化用の鍵を受信
+    await socket.listen((event) async {
+      _aesCbcSecretKey = await AesCbcSecretKey.importRawKey(
+          await _pubKeyPair!.privateKey.decryptBytes(event));
+
+      socket.destroy();
+    }).asFuture();
+
+    // ファイル情報を要求する
+    socket =
+        await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
+    socket.add([
+      ...iv,
+      ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("second"), iv)
+    ]);
+    await socket.listen((event) async {
+      final recIV = event.sublist(0, 16);
+      final data = event.sublist(16);
+
+      result = FileInfo.mapToInfo(json.decode(
+          utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV))));
 
       socket.destroy();
     }).asFuture<void>();
