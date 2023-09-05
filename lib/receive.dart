@@ -202,6 +202,7 @@ class ReceiveFile {
   /// サーバーにファイル情報を取得する関数
   static Future<FileInfo> getServerFileInfo(String ip) async {
     late FileInfo result;
+
     final iv = Uint8List(16);
     fillRandomBytes(iv);
 
@@ -218,12 +219,15 @@ class ReceiveFile {
     ]);
 
     // AES-CBC暗号化用の鍵を受信
+    Completer completer = Completer();
     await socket.listen((event) async {
       _aesCbcSecretKey = await AesCbcSecretKey.importRawKey(
           await _pubKeyPair!.privateKey.decryptBytes(event));
 
+      completer.complete();
       socket.destroy();
     }).asFuture();
+    await completer.future;
 
     // ファイル情報を要求する
     socket =
@@ -232,6 +236,9 @@ class ReceiveFile {
       ...iv,
       ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("second"), iv)
     ]);
+
+    // ファイル情報を受信
+    completer = Completer();
     await socket.listen((event) async {
       final recIV = event.sublist(0, 16);
       final data = event.sublist(16);
@@ -239,9 +246,11 @@ class ReceiveFile {
       result = FileInfo.mapToInfo(json.decode(
           utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV))));
 
+      completer.complete();
       socket.destroy();
     }).asFuture<void>();
 
+    await completer.future;
     return result;
   }
 
