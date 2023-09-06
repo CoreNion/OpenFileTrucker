@@ -626,8 +626,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: cc-custom
-      resolved-ref: aff9461adc3089c94bc0ce7ec23f4c96d52ca8a2
+      ref: eee80e3299b26e550a52e07ba601abd879271a1b
+      resolved-ref: eee80e3299b26e550a52e07ba601abd879271a1b
       url: "https://github.com/CoreNion/webcrypto.dart.git"
     source: git
     version: "0.5.4"
