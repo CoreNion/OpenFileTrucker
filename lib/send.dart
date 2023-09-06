@@ -118,7 +118,7 @@ class SendFiles {
   static void _serverListen(
       Socket socket, List<XFile> files, List<Uint8List>? hashs) {
     socket.listen((event) async {
-      if (listEquals(event.sublist(0, 5), [128, 64, 128, 64, 128])) {
+      if (listEquals(event.sublist(0, 5), plainTextHeader)) {
         // 公開鍵を記録
         final data = event.sublist(5);
         pubKey = await RsaOaepPublicKey.importSpkiKey(data, Hash.sha512);

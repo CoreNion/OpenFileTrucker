@@ -213,10 +213,8 @@ class ReceiveFile {
     // サーバーに1回目で接続し、公開鍵を要求する
     Socket socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add([
-      ...[128, 64, 128, 64, 128],
-      ...await _pubKeyPair!.publicKey.exportSpkiKey()
-    ]);
+    socket.add(
+        [...plainTextHeader, ...await _pubKeyPair!.publicKey.exportSpkiKey()]);
 
     // AES-CBC暗号化用の鍵を受信
     Completer completer = Completer();
