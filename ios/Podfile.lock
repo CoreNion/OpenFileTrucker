@@ -34,15 +34,15 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - GoogleDataTransport (9.2.0):
+  - GoogleDataTransport (9.2.3):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleMLKit/BarcodeScanning (3.2.0):
+  - GoogleMLKit/BarcodeScanning (4.0.0):
     - GoogleMLKit/MLKitCore
-    - MLKitBarcodeScanning (~> 2.2.0)
-  - GoogleMLKit/MLKitCore (3.2.0):
-    - MLKitCommon (~> 8.0.0)
+    - MLKitBarcodeScanning (~> 3.0.0)
+  - GoogleMLKit/MLKitCore (4.0.0):
+    - MLKitCommon (~> 9.0.0)
   - GoogleToolboxForMac/DebugUtils (2.3.2):
     - GoogleToolboxForMac/Defines (= 2.3.2)
   - GoogleToolboxForMac/Defines (2.3.2)
@@ -55,40 +55,38 @@ PODS:
     - GoogleToolboxForMac/Defines (= 2.3.2)
     - "GoogleToolboxForMac/NSString+URLArguments (= 2.3.2)"
   - "GoogleToolboxForMac/NSString+URLArguments (2.3.2)"
-  - GoogleUtilities/Environment (7.10.0):
+  - GoogleUtilities/Environment (7.11.1):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.10.0):
+  - GoogleUtilities/Logger (7.11.1):
     - GoogleUtilities/Environment
-  - GoogleUtilities/UserDefaults (7.10.0):
+  - GoogleUtilities/UserDefaults (7.11.1):
     - GoogleUtilities/Logger
   - GoogleUtilitiesComponents (1.1.0):
     - GoogleUtilities/Logger
-  - GTMSessionFetcher/Core (1.7.2)
+  - GTMSessionFetcher/Core (2.3.0)
   - image_gallery_saver (1.5.0):
     - Flutter
-  - MLImage (1.0.0-beta3)
-  - MLKitBarcodeScanning (2.2.0):
-    - MLKitCommon (~> 8.0)
-    - MLKitVision (~> 4.2)
-  - MLKitCommon (8.0.0):
+  - MLImage (1.0.0-beta4)
+  - MLKitBarcodeScanning (3.0.0):
+    - MLKitCommon (~> 9.0)
+    - MLKitVision (~> 5.0)
+  - MLKitCommon (9.0.0):
     - GoogleDataTransport (~> 9.0)
     - GoogleToolboxForMac/Logger (~> 2.1)
     - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
     - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
     - GoogleUtilities/UserDefaults (~> 7.0)
     - GoogleUtilitiesComponents (~> 1.0)
-    - GTMSessionFetcher/Core (~> 1.1)
-    - Protobuf (~> 3.12)
-  - MLKitVision (4.2.0):
+    - GTMSessionFetcher/Core (< 3.0, >= 1.1)
+  - MLKitVision (5.0.0):
     - GoogleToolboxForMac/Logger (~> 2.1)
     - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
-    - GTMSessionFetcher/Core (~> 1.1)
-    - MLImage (= 1.0.0-beta3)
-    - MLKitCommon (~> 8.0)
-    - Protobuf (~> 3.12)
-  - mobile_scanner (0.0.1):
+    - GTMSessionFetcher/Core (< 3.0, >= 1.1)
+    - MLImage (= 1.0.0-beta4)
+    - MLKitCommon (~> 9.0)
+  - mobile_scanner (3.2.0):
     - Flutter
-    - GoogleMLKit/BarcodeScanning (~> 3.2.0)
+    - GoogleMLKit/BarcodeScanning (~> 4.0.0)
   - nanopb (2.30909.0):
     - nanopb/decode (= 2.30909.0)
     - nanopb/encode (= 2.30909.0)
@@ -99,13 +97,12 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - permission_handler_apple (9.0.4):
+  - permission_handler_apple (9.1.1):
     - Flutter
-  - PromisesObjC (2.1.1)
-  - Protobuf (3.21.9)
-  - SDWebImage (5.14.2):
-    - SDWebImage/Core (= 5.14.2)
-  - SDWebImage/Core (5.14.2)
+  - PromisesObjC (2.2.0)
+  - SDWebImage (5.15.8):
+    - SDWebImage/Core (= 5.15.8)
+  - SDWebImage/Core (5.15.8)
   - share_handler_ios (0.0.9):
     - Flutter
     - share_handler_ios/share_handler_ios_models (= 0.0.9)
@@ -114,15 +111,14 @@ PODS:
     - Flutter
     - share_handler_ios_models
   - share_handler_ios_models (0.0.9)
-  - Sodium (0.9.1)
-  - sodium_libs (1.2.0):
-    - Flutter
-    - Sodium
-  - SwiftyGif (5.4.3)
+  - SwiftyGif (5.4.4)
   - url_launcher_ios (0.0.1):
     - Flutter
-  - wakelock (0.0.1):
+  - wakelock_plus (0.0.1):
     - Flutter
+  - webcrypto (0.1.1):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
@@ -130,13 +126,13 @@ DEPENDENCIES:
   - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - share_handler_ios (from `.symlinks/plugins/share_handler_ios/ios`)
   - share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)
-  - sodium_libs (from `.symlinks/plugins/sodium_libs/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - wakelock (from `.symlinks/plugins/wakelock/ios`)
+  - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
+  - webcrypto (from `.symlinks/plugins/webcrypto/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -154,9 +150,7 @@ SPEC REPOS:
     - MLKitVision
     - nanopb
     - PromisesObjC
-    - Protobuf
     - SDWebImage
-    - Sodium
     - SwiftyGif
 
 EXTERNAL SOURCES:
@@ -171,52 +165,50 @@ EXTERNAL SOURCES:
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/ios"
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   share_handler_ios:
     :path: ".symlinks/plugins/share_handler_ios/ios"
   share_handler_ios_models:
     :path: ".symlinks/plugins/share_handler_ios/ios/Models"
-  sodium_libs:
-    :path: ".symlinks/plugins/sodium_libs/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
-  wakelock:
-    :path: ".symlinks/plugins/wakelock/ios"
+  wakelock_plus:
+    :path: ".symlinks/plugins/wakelock_plus/ios"
+  webcrypto:
+    :path: ".symlinks/plugins/webcrypto/darwin"
 
 SPEC CHECKSUMS:
   DKImagePickerController: b512c28220a2b8ac7419f21c491fc8534b7601ac
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   file_picker: ce3938a0df3cc1ef404671531facef740d03f920
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
-  GoogleMLKit: 0017a6a8372e1a182139b9def4d89be5d87ca5a7
+  GoogleDataTransport: f0308f5905a745f94fb91fea9c6cbaf3831cb1bd
+  GoogleMLKit: 2bd0dc6253c4d4f227aad460f69215a504b2980e
   GoogleToolboxForMac: 8bef7c7c5cf7291c687cf5354f39f9db6399ad34
-  GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
+  GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
   GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
-  GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
+  GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
   image_gallery_saver: 259eab68fb271cfd57d599904f7acdc7832e7ef2
-  MLImage: 489dfec109f21da8621b28d476401aaf7a0d4ff4
-  MLKitBarcodeScanning: d92fe1911001ec36870162c5a0eb206f612b7169
-  MLKitCommon: f6da6c5659618c070b50a80db01248ebe2964175
-  MLKitVision: 96c96571190b7f63eddf4a12068ce8a8689e0d2c
-  mobile_scanner: 0cf06f3d5224576aa24ade02a6f73d8b2551c7bf
+  MLImage: 7bb7c4264164ade9bf64f679b40fb29c8f33ee9b
+  MLKitBarcodeScanning: 04e264482c5f3810cb89ebc134ef6b61e67db505
+  MLKitCommon: c1b791c3e667091918d91bda4bba69a91011e390
+  MLKitVision: 8baa5f46ee3352614169b85250574fde38c36f49
+  mobile_scanner: 47056db0c04027ea5f41a716385542da28574662
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
-  package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
-  path_provider_foundation: 37748e03f12783f9de2cb2c4eadfaa25fe6d4852
-  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
-  PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  Protobuf: 02524ec14183fe08fb259741659e79683788158b
-  SDWebImage: b9a731e1d6307f44ca703b3976d18c24ca561e84
+  package_info_plus: fd030dabf36271f146f1f3beacd48f564b0f17f7
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
+  SDWebImage: cb032eba469c54e0000e78bcb0a13cdde0a52798
   share_handler_ios: b652bcd9c52dc0900813c3506b7d35a169b1343b
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
-  Sodium: 23d11554ecd556196d313cf6130d406dfe7ac6da
-  sodium_libs: 3d81718dc8222b2826ac6f5836241f5e0bec5cf8
-  SwiftyGif: 6c3eafd0ce693cad58bb63d2b2fb9bacb8552780
-  url_launcher_ios: ae1517e5e344f5544fb090b079e11f399dfbe4d2
-  wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
+  SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
+  url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
+  wakelock_plus: 8b09852c8876491e4b6d179e17dfe2a0b5f60d47
+  webcrypto: 53dcd22dc6135dd9417ba913c775a298bb1a9f22
 
-PODFILE CHECKSUM: ca7760b970d44d538963eb2b79f42dea95d4b006
+PODFILE CHECKSUM: c3f63bb81b66a9771e661b6439a0116be9d09976
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

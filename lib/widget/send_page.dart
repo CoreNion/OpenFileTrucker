@@ -11,8 +11,8 @@ import 'package:open_file_trucker/send.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_handler/share_handler.dart';
-import 'package:sodium_libs/sodium_libs.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:webcrypto/webcrypto.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -294,11 +294,10 @@ class _SendPageState extends State<SendPage>
                             ),
                           );
 
-                          final sodium = await SodiumInit.init();
                           // 各ファイルのハッシュを計算
                           for (var file in selectedFiles) {
-                            hashs.add(await sodium.crypto.genericHash
-                                .stream(messages: file.openRead()));
+                            hashs.add(await Hash.sha256
+                                .digestStream(file.openRead()));
                           }
 
                           // SnackBarで通知

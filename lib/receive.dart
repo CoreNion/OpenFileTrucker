@@ -7,22 +7,36 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sodium_libs/sodium_libs.dart';
 import 'package:mime/mime.dart';
+import 'package:webcrypto/webcrypto.dart';
 import 'dart:io';
 
 import 'class/file_info.dart';
 
 class ReceiveFile {
+  static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
+  static AesCbcSecretKey? _aesCbcSecretKey;
+
   /// ファイルの受信の処理をする関数
   static Future<StreamController<ReceiveProgress>> receiveFile(
       String ip, int fileIndex, File saveFile, int size) async {
+    if (_aesCbcSecretKey == null) {
+      throw Exception("AES-CBC暗号化用の鍵が設定されていません");
+    }
+
     StreamController<ReceiveProgress> controller = StreamController();
+
+    final sendIV = Uint8List(16);
+    fillRandomBytes(sendIV);
 
     // サーバーにi個目のファイルをファイルを要求
     final socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add(utf8.encode(fileIndex.toString()));
+    socket.add([
+      ...sendIV,
+      ...await _aesCbcSecretKey!
+          .encryptBytes(utf8.encode(fileIndex.toString()), sendIV)
+    ]);
 
     // ファイル受信が完了するまで、進捗を定期的にStreamで流す
     ReceiveProgress latestProg =
@@ -52,7 +66,7 @@ class ReceiveFile {
     };
 
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(socket)
+    receiveSink.addStream(_aesCbcSecretKey!.decryptStream(socket, sendIV))
       ..then((v) async {
         /* 書き込み終了時の処理 (キャンセル関係なく実行) */
         timer.cancel();
@@ -189,17 +203,52 @@ class ReceiveFile {
   static Future<FileInfo> getServerFileInfo(String ip) async {
     late FileInfo result;
 
-    // サーバーに接続し、ファイル情報を要求する
-    final socket =
+    final iv = Uint8List(16);
+    fillRandomBytes(iv);
+
+    // RSAの鍵ペアを作成
+    _pubKeyPair = await RsaOaepPrivateKey.generateKey(
+        2048, BigInt.from(65537), Hash.sha512);
+
+    // サーバーに1回目で接続し、公開鍵を要求する
+    Socket socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add(utf8.encode("first"));
+    socket.add(
+        [...plainTextHeader, ...await _pubKeyPair!.publicKey.exportSpkiKey()]);
 
-    await socket.listen((event) {
-      result = FileInfo.mapToInfo(json.decode(utf8.decode(event)));
+    // AES-CBC暗号化用の鍵を受信
+    Completer completer = Completer();
+    await socket.listen((event) async {
+      _aesCbcSecretKey = await AesCbcSecretKey.importRawKey(
+          await _pubKeyPair!.privateKey.decryptBytes(event));
 
+      completer.complete();
+      socket.destroy();
+    }).asFuture();
+    await completer.future;
+
+    // ファイル情報を要求する
+    socket =
+        await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
+    socket.add([
+      ...iv,
+      ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("second"), iv)
+    ]);
+
+    // ファイル情報を受信
+    completer = Completer();
+    await socket.listen((event) async {
+      final recIV = event.sublist(0, 16);
+      final data = event.sublist(16);
+
+      result = FileInfo.mapToInfo(json.decode(
+          utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV))));
+
+      completer.complete();
       socket.destroy();
     }).asFuture<void>();
 
+    await completer.future;
     return result;
   }
 
@@ -223,15 +272,12 @@ class ReceiveFile {
 
   /// 各ファイルの整合性を確認する関数
   static Future<bool> checkFileHash(String dirPath, FileInfo fileInfo) async {
-    final sodium = await SodiumInit.init();
-
     // 各ファイルのハッシュ値を確認
     for (var i = 0; i < fileInfo.names.length; i++) {
       final Uint8List origHash = fileInfo.hashs![i];
       final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
 
-      final receieHash =
-          await sodium.crypto.genericHash.stream(messages: file.openRead());
+      final receieHash = await Hash.sha256.digestStream(file.openRead());
       if (!(listEquals(origHash, receieHash))) {
         return false;
       }

@@ -47,8 +47,6 @@ dependencies:
   mobile_scanner: ^3.0.0
   dynamic_color: ^1.6.2
   cross_file: ^0.3.3+4
-  sodium: ^2.0.1
-  sodium_libs: ^2.0.0
   image_gallery_saver:
     git:
       url: https://github.com/hui-z/image_gallery_saver.git
@@ -56,6 +54,10 @@ dependencies:
   mime: ^1.0.4
   share_handler: ^0.0.16
   wakelock_plus: ^1.1.1
+  webcrypto:
+    git:
+      url: https://github.com/CoreNion/webcrypto.dart.git
+      ref: eee80e3299b26e550a52e07ba601abd879271a1b
 
 dev_dependencies:
   flutter_test:

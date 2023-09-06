@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
 import 'class/qr_data.dart';
@@ -93,10 +94,15 @@ class SendFiles {
   }
 
   static ServerSocket? _server;
+  static RsaOaepPublicKey? pubKey;
+  static AesCbcSecretKey? _aesCbcSecretKey;
 
   /// ファイル送信用ののサーバーを立ち上げる
   static Future<QrImageView> serverStart(String ip,
       /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
+    // AES-CBC暗号化用の鍵を生成
+    _aesCbcSecretKey = await AesCbcSecretKey.generateKey(256);
+
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
 
@@ -112,28 +118,51 @@ class SendFiles {
   static void _serverListen(
       Socket socket, List<XFile> files, List<Uint8List>? hashs) {
     socket.listen((event) async {
-      String mesg = utf8.decode(event);
-      if (mesg == "first") {
-        // クライアント側にファイル情報を送信
-        List<String> names = <String>[];
-        List<int> sizes = <int>[];
-        for (var i = 0; i < files.length; i++) {
-          names.add(basename(files[i].path));
-          sizes.add(await files[i].length());
-        }
+      if (listEquals(event.sublist(0, 5), plainTextHeader)) {
+        // 公開鍵を記録
+        final data = event.sublist(5);
+        pubKey = await RsaOaepPublicKey.importSpkiKey(data, Hash.sha512);
 
-        socket.add(utf8.encode(json.encode(
-            FileInfo(names: names, sizes: sizes, hashs: hashs).toMap())));
-
-        socket.destroy();
+        // AES-CBC暗号化用の鍵を公開鍵で暗号化し、送信
+        socket.add(
+            await pubKey!.encryptBytes(await _aesCbcSecretKey!.exportRawKey()));
       } else {
-        // n番目のファイルを送信
-        int? fileNumber = int.tryParse(mesg);
-        if (fileNumber != null) {
-          await socket.addStream(files[fileNumber].openRead());
+        // IVを作成/取得
+        final sendIV = Uint8List(16);
+        fillRandomBytes(sendIV);
+        final recIV = event.sublist(0, 16);
+        final data = event.sublist(16);
+
+        final decryptMesg =
+            utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV));
+        if (decryptMesg == "second") {
+          // クライアント側にファイル情報を送信
+          List<String> names = <String>[];
+          List<int> sizes = <int>[];
+          for (var i = 0; i < files.length; i++) {
+            names.add(basename(files[i].path));
+            sizes.add(await files[i].length());
+          }
+
+          socket.add([
+            ...sendIV,
+            ...await _aesCbcSecretKey!.encryptBytes(
+                utf8.encode(json.encode(
+                    FileInfo(names: names, sizes: sizes, hashs: hashs)
+                        .toMap())),
+                sendIV)
+          ]);
           socket.destroy();
         } else {
-          socket.destroy();
+          // n番目のファイルを送信
+          int? fileNumber = int.tryParse(decryptMesg);
+          if (fileNumber != null) {
+            await socket.addStream(_aesCbcSecretKey!
+                .encryptStream(files[fileNumber].openRead(), recIV));
+            socket.destroy();
+          } else {
+            socket.destroy();
+          }
         }
       }
     });
@@ -142,6 +171,8 @@ class SendFiles {
   /// ファイル送信サーバーを閉じる
   static void serverClose() {
     _server?.close();
+    pubKey = null;
+    _aesCbcSecretKey = null;
   }
 }
 

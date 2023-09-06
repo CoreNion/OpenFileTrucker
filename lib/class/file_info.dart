@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+const plainTextHeader = [128, 64, 128, 64, 128];
+
 class FileInfo {
   final List<String> names;
 

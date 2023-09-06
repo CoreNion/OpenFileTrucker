@@ -100,10 +100,5 @@ post_install do |installer|
       ]
 
     end
-
-    # Workaround for https://github.com/jedisct1/swift-sodium/issues/251
-    installer.pods_project.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-    end
   end
 end
