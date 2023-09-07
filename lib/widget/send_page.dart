@@ -14,6 +14,9 @@ import 'package:share_handler/share_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:webcrypto/webcrypto.dart';
 
+import '../class/send_settings.dart';
+import 'send_settings.dart';
+
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
 
@@ -31,12 +34,13 @@ class _SendPageState extends State<SendPage>
   static String firstFileButtonText =
       Platform.isIOS ? "タップしてファイルを選択" : "タップしてファイルを選択\nまたはドラック&ドロップ";
   String selectFileButtonText = firstFileButtonText;
+  SendSettings settings = SendSettings();
+
   String ipText = "";
   String keyText = "";
   Widget qrCode = Container();
   Widget stopServerButton = Container();
   bool serverListen = false;
-  bool checkFileHash = false;
 
   @override
   void initState() {
@@ -210,138 +214,158 @@ class _SendPageState extends State<SendPage>
                     ),
                   )),
             ),
-            SwitchListTile(
-              value: checkFileHash,
-              title: const Text('受信時にファイルの整合性を確認する'),
-              subtitle: const Text("一部端末では利用できない場合があります。"),
-              onChanged: (bool value) => setState(() {
-                checkFileHash = value;
-              }),
-            ),
             Expanded(
               flex: 1,
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                  child: const Text("送信する"),
-                  onPressed: () async {
-                    final nav = Navigator.of(context);
-                    if (serverListen) {
-                      showDialog(
-                          context: context,
-                          builder: (context) => EasyDialog.showSmallInfo(
-                              nav, "エラー", "他のファイルの共有を停止してください。"));
-                    } else if (selectedFiles.isNotEmpty) {
-                      try {
-                        final networks = await SendFiles.getAvailableNetworks();
-                        late String ip;
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                      flex: 8,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                        ),
+                        child: const Text("送信する"),
+                        onPressed: () async {
+                          final nav = Navigator.of(context);
+                          if (serverListen) {
+                            showDialog(
+                                context: context,
+                                builder: (context) => EasyDialog.showSmallInfo(
+                                    nav, "エラー", "他のファイルの共有を停止してください。"));
+                          } else if (selectedFiles.isNotEmpty) {
+                            try {
+                              final networks =
+                                  await SendFiles.getAvailableNetworks();
+                              late String ip;
 
-                        // 利用可能なネットワークが無い場合は終了
-                        if (networks == null) {
-                          showDialog(
-                              context: context,
-                              builder: (context) => EasyDialog.showSmallInfo(
-                                  Navigator.of(context),
-                                  "エラー",
-                                  "WiFiやイーサーネットなどに接続してください。"));
-                          return;
-                        }
+                              // 利用可能なネットワークが無い場合は終了
+                              if (networks == null) {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        EasyDialog.showSmallInfo(
+                                            Navigator.of(context),
+                                            "エラー",
+                                            "WiFiやイーサーネットなどに接続してください。"));
+                                return;
+                              }
 
-                        // ネットワークが2つ以上ある場合はユーザーにネットワークを選択させる
-                        if (networks.length > 1) {
-                          // 選択肢のDialogOptionに追加する
-                          List<SimpleDialogOption> dialogOptions = [];
-                          for (var network in networks) {
-                            dialogOptions.add(SimpleDialogOption(
-                              onPressed: () =>
-                                  Navigator.pop(context, network.ip),
-                              child: Text(
-                                  "${network.interfaceName} ${network.ip}"),
-                            ));
-                          }
-
-                          ip = (await showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return WillPopScope(
-                                  // 戻る無効化
-                                  onWillPop: () => Future.value(false),
-                                  child: SimpleDialog(
-                                    title: const Text("利用するネットワークを選択してください。"),
-                                    children: dialogOptions,
+                              // ネットワークが2つ以上ある場合はユーザーにネットワークを選択させる
+                              if (networks.length > 1) {
+                                // 選択肢のDialogOptionに追加する
+                                List<SimpleDialogOption> dialogOptions = [];
+                                for (var network in networks) {
+                                  dialogOptions.add(SimpleDialogOption(
+                                    onPressed: () =>
+                                        Navigator.pop(context, network.ip),
+                                    child: Text(
+                                        "${network.interfaceName} ${network.ip}"),
                                   ));
-                            },
-                          ))!;
-                        } else {
-                          ip = networks[0].ip;
-                        }
+                                }
 
-                        // スリープ無効化
-                        WakelockPlus.enable();
+                                ip = (await showDialog<String>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return WillPopScope(
+                                        // 戻る無効化
+                                        onWillPop: () => Future.value(false),
+                                        child: SimpleDialog(
+                                          title: const Text(
+                                              "利用するネットワークを選択してください。"),
+                                          children: dialogOptions,
+                                        ));
+                                  },
+                                ))!;
+                              } else {
+                                ip = networks[0].ip;
+                              }
 
-                        List<Uint8List>? hashs = [];
-                        if (checkFileHash) {
-                          // SnackBarで通知
-                          ScaffoldMessenger.of(nav.context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
-                              duration: Duration(days: 100),
-                            ),
-                          );
+                              // スリープ無効化
+                              WakelockPlus.enable();
 
-                          // 各ファイルのハッシュを計算
-                          for (var file in selectedFiles) {
-                            hashs.add(await Hash.sha256
-                                .digestStream(file.openRead()));
+                              List<Uint8List>? hashs = [];
+                              if (settings.checkFileHash) {
+                                // SnackBarで通知
+                                ScaffoldMessenger.of(nav.context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
+                                    duration: Duration(days: 100),
+                                  ),
+                                );
+
+                                // 各ファイルのハッシュを計算
+                                for (var file in selectedFiles) {
+                                  hashs.add(await Hash.sha256
+                                      .digestStream(file.openRead()));
+                                }
+
+                                // SnackBarで通知
+                                ScaffoldMessenger.of(nav.context)
+                                    .removeCurrentSnackBar();
+                              } else {
+                                hashs = null;
+                              }
+
+                              // サーバーの開始
+                              final qr = await SendFiles.serverStart(
+                                  ip, selectedFiles, hashs);
+                              serverListen = true;
+                              qrCode = qr;
+                              ipText = "IP: $ip";
+                              stopServerButton = FloatingActionButton(
+                                onPressed: _stopShareProcess,
+                                tooltip: '共有を停止する',
+                                child: const Icon(Icons.pause),
+                              );
+
+                              // 小画面デバイスの場合、別ページでqrを表示
+                              if (isSmallUI) {
+                                nav.push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      _pushQRPageForSmallScreen(context),
+                                ));
+                              } else {
+                                setState(() {});
+                              }
+                            } catch (e) {
+                              EasyDialog.showErrorDialog(
+                                  e, Navigator.of(context));
+
+                              ScaffoldMessenger.of(nav.context)
+                                  .removeCurrentSnackBar();
+                            }
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) => EasyDialog.showSmallInfo(
+                                    Navigator.of(context),
+                                    "エラー",
+                                    "ファイルを選択してください。"));
                           }
-
-                          // SnackBarで通知
-                          ScaffoldMessenger.of(nav.context)
-                              .removeCurrentSnackBar();
-                        } else {
-                          hashs = null;
-                        }
-
-                        // サーバーの開始
-                        final qr = await SendFiles.serverStart(
-                            ip, selectedFiles, hashs);
-                        serverListen = true;
-                        qrCode = qr;
-                        ipText = "IP: $ip";
-                        stopServerButton = FloatingActionButton(
-                          onPressed: _stopShareProcess,
-                          tooltip: '共有を停止する',
-                          child: const Icon(Icons.pause),
-                        );
-
-                        // 小画面デバイスの場合、別ページでqrを表示
-                        if (isSmallUI) {
-                          nav.push(MaterialPageRoute(
-                            builder: (context) =>
-                                _pushQRPageForSmallScreen(context),
-                          ));
-                        } else {
-                          setState(() {});
-                        }
-                      } catch (e) {
-                        EasyDialog.showErrorDialog(e, Navigator.of(context));
-
-                        ScaffoldMessenger.of(nav.context)
-                            .removeCurrentSnackBar();
-                      }
-                    } else {
-                      showDialog(
-                          context: context,
-                          builder: (context) => EasyDialog.showSmallInfo(
-                              Navigator.of(context), "エラー", "ファイルを選択してください。"));
-                    }
-                  },
-                ),
+                        },
+                      )),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      flex: 2,
+                      child: IconButton.outlined(
+                          onPressed: (() async {
+                            final res = await showDialog(
+                                context: context,
+                                builder: (context) => SendSettingsDialog(
+                                    currentSettings: settings));
+                            if (res != null && mounted) {
+                              setState(() {
+                                settings = res;
+                              });
+                            }
+                          }),
+                          icon: const Icon(Icons.settings)))
+                ],
               ),
             ),
           ]),
