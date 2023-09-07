@@ -5,11 +5,12 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:open_file_trucker/widget/receive_page.dart';
-import 'package:open_file_trucker/widget/send_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+
+import 'page/receive.dart';
+import 'page/send.dart';
 
 void main() {
   runApp(const MyApp());
@@ -81,8 +82,8 @@ class _MyAppState extends State<MyApp> {
                               final ofl = await rootBundle
                                   .loadString("assets/fonts/OFL.txt");
                               LicenseRegistry.addLicense(() {
-                                return Stream<LicenseEntry>.fromIterable(<
-                                    LicenseEntry>[
+                                return Stream<
+                                    LicenseEntry>.fromIterable(<LicenseEntry>[
                                   LicenseEntryWithLineBreaks(
                                       <String>['Noto Sans JP'], ofl)
                                 ]);

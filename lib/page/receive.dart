@@ -175,7 +175,6 @@ class _ReceivePageState extends State<ReceivePage>
   }
 
   Future<void> _startReceive(String ip /*, String key  */) async {
-    int currentIndex = 0;
     late FileInfo fileInfo;
     late StreamController<ReceiveProgress> controller;
 
