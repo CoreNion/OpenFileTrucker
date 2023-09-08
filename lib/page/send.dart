@@ -31,7 +31,7 @@ class _SendPageState extends State<SendPage>
 
   late bool isSmallUI;
   List<XFile> selectedFiles = <XFile>[];
-  String selectFileButtonText = "";
+  String totalSizeText = "0 B";
   SendSettings settings = SendSettings();
 
   String ipText = "";
@@ -124,20 +124,6 @@ class _SendPageState extends State<SendPage>
         body: selectFileArea(), floatingActionButton: stopServerButton);
   }
 
-  /// selectedFilesからファイル選択ボタンに書かれる文章を設定
-  Future<void> _setFileInfo() async {
-    int totalSize = 0;
-    // サイズを取得
-    for (XFile file in selectedFiles) {
-      int fileLength = await file.length();
-      totalSize += fileLength;
-    }
-
-    setState(() {
-      selectFileButtonText = FileSize.getSize(totalSize);
-    });
-  }
-
   /// ファイルを選択する部分のUI
   Widget selectFileArea() {
     return Column(children: <Widget>[
@@ -148,13 +134,11 @@ class _SendPageState extends State<SendPage>
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           IconButton.filled(
               onPressed: () async {
-                await showDialog(
-                    context: context, builder: (context) => _selectFileType());
-                await _setFileInfo();
+                await selectFile();
               },
               icon: const Icon(Icons.add)),
           Text(
-            "${selectedFiles.length}個のファイル   合計: $selectFileButtonText",
+            "${selectedFiles.length}個のファイル   合計: $totalSizeText",
             style: const TextStyle(fontSize: 17),
           ),
         ]),
@@ -163,15 +147,7 @@ class _SendPageState extends State<SendPage>
         flex: 8,
         child: DropTarget(
             onDragDone: (detail) {
-              // ドロップされたファイルの情報を記録
-              final file = detail.files;
-              for (var i = 0; i < file.length; i++) {
-                if (selectedFiles.contains(file[i])) {
-                  continue;
-                }
-                selectedFiles.add(XFile(file[i].path));
-              }
-              _setFileInfo();
+              _setFiles(detail.files);
             },
             child: selectedFiles.isEmpty
                 ? Center(
@@ -179,10 +155,7 @@ class _SendPageState extends State<SendPage>
                       margin: const EdgeInsets.all(20),
                       child: ElevatedButton(
                         onPressed: () async {
-                          await showDialog(
-                              context: context,
-                              builder: (context) => _selectFileType());
-                          await _setFileInfo();
+                          selectFile();
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.surface,
@@ -428,12 +401,6 @@ class _SendPageState extends State<SendPage>
                         color: Colors.blue,
                         fontSize: 35),
                   ),
-                  /*
-            Text(
-              keyText,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.blue),
-            ), */
                 ],
               )
             ],
@@ -471,7 +438,7 @@ class _SendPageState extends State<SendPage>
     selectedFiles.clear();
 
     setState(() {
-      selectFileButtonText = "";
+      totalSizeText = "0 B";
       qrCode = Container();
       ipText = "";
       stopServerButton = Container();
@@ -535,76 +502,80 @@ class _SendPageState extends State<SendPage>
     );
   }
 
-  /// ファイルの種類を選択するダイアログ
-  Widget _selectFileType() {
-    return AlertDialog(
-      title: const Text("データの種類を選択", textAlign: TextAlign.center),
-      actions: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                IconButton(
-                    onPressed: () {
-                      SendFiles.pickFiles().then(_setFiles).catchError((e,
-                              stackTrace) =>
-                          EasyDialog.showErrorDialog(e, Navigator.of(context)));
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.file_copy, size: 70)),
-                const Text("ファイル")
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      if (Platform.isIOS) {
-                        SendFiles.pickFiles(type: FileType.media)
-                            .then(_setFiles)
-                            .catchError((e, stackTrace) =>
-                                EasyDialog.showErrorDialog(
-                                    e, Navigator.of(context)));
-                      }
-                    },
-                    icon: const Icon(Icons.perm_media, size: 70)),
-                const Text("写真/動画")
-              ],
-            )
-          ],
-        )
-      ],
-    );
+  /// ファイル選択ダイアログ経由でのファイル選択を行う
+  Future<void> selectFile() async {
+    late FileType fileType;
+    if (Platform.isIOS) {
+      fileType = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                  title: const Text("データの種類を選択", textAlign: TextAlign.center),
+                  actions: <Widget>[
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Column(children: <Widget>[
+                            IconButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, FileType.any),
+                                icon: const Icon(Icons.file_copy, size: 70)),
+                            const Text("ファイル")
+                          ]),
+                          Column(children: [
+                            IconButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, FileType.any),
+                                icon: const Icon(Icons.perm_media, size: 70)),
+                            const Text("写真/動画")
+                          ])
+                        ])
+                  ]));
+    } else {
+      fileType = FileType.any;
+    }
+
+    final file = await SendFiles.pickFiles(type: fileType);
+    _setFiles(file);
   }
 
-  /// 選択したファイルを設定し、文言を追加する (Listの型はFileかXFileのみ有効)
+  /// 選択したファイルを設定 (Listの型はFileかXFileのみ有効)
   ///
-  /// File型を設定した場合、自動的にXFileに変換されます。
-  void _setFiles(List<dynamic>? val) {
+  /// File型を設定した場合、自動的にXFileに変換
+  Future<void> _setFiles(List<dynamic>? val) async {
     if (val == null || val.isEmpty) {
       return;
     }
 
-    // 過去のファイル情報を消去
-    selectedFiles.clear();
-
-    if (val is List<File>) {
-      // XFileに変換
-      List<XFile> xFiles = List.empty(growable: true);
-      for (File file in val) {
-        xFiles.add(XFile(file.path));
+    // ファイルの重複を確認
+    for (var file in val) {
+      if (selectedFiles.map((e) => e.path).contains(file.path)) {
+        return;
       }
+    }
 
-      selectedFiles = xFiles;
+    // ファイルリストに追加 / 変換
+    if (val is List<File>) {
+      selectedFiles.addAll(val.map((e) => XFile(e.path)));
     } else if (val is List<XFile>) {
-      selectedFiles = val;
+      selectedFiles.addAll(val);
     } else {
       throw ArgumentError.value(val);
     }
 
-    // 文章設定
-    _setFileInfo();
+    await _setFileInfo();
+  }
+
+  /// selectedFilesからファイル選択ボタンに書かれる文章を設定
+  Future<void> _setFileInfo() async {
+    int totalSize = 0;
+    // サイズを取得
+    for (XFile file in selectedFiles) {
+      int fileLength = await file.length();
+      totalSize += fileLength;
+    }
+
+    setState(() {
+      totalSizeText = FileSize.getSize(totalSize);
+    });
   }
 }
