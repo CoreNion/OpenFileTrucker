@@ -6,7 +6,6 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_handler/share_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -28,12 +27,11 @@ class _SendPageState extends State<SendPage>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  late ColorScheme colorScheme;
 
   late bool isSmallUI;
   List<XFile> selectedFiles = <XFile>[];
-  static String firstFileButtonText =
-      Platform.isIOS ? "タップしてファイルを選択" : "タップしてファイルを選択\nまたはドラック&ドロップ";
-  String selectFileButtonText = firstFileButtonText;
+  String selectFileButtonText = "";
   SendSettings settings = SendSettings();
 
   String ipText = "";
@@ -80,6 +78,7 @@ class _SendPageState extends State<SendPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(child: LayoutBuilder(
       builder: (context, constraints) {
@@ -127,249 +126,275 @@ class _SendPageState extends State<SendPage>
 
   /// selectedFilesからファイル選択ボタンに書かれる文章を設定
   Future<void> _setFileInfo() async {
-    String fileInfo = "";
     int totalSize = 0;
-    // ファイル数が多い場合/画面が小さい場合、詳細を省略する
-    bool abbreviation = selectedFiles.length > 5 || isSmallUI;
-
-    // ファイル名とサイズを取得
+    // サイズを取得
     for (XFile file in selectedFiles) {
       int fileLength = await file.length();
       totalSize += fileLength;
-      if (!abbreviation) {
-        fileInfo +=
-            "${p.basename(file.path)} ${FileSize.getSize(fileLength)}\n";
-      }
     }
-
-    if (abbreviation) {
-      fileInfo += "${selectedFiles.length}個のファイル\n";
-    }
-    fileInfo += "合計: ${FileSize.getSize(totalSize)}";
 
     setState(() {
-      selectFileButtonText = "選択されたファイル:\n$fileInfo";
+      selectFileButtonText = FileSize.getSize(totalSize);
     });
   }
 
   /// ファイルを選択する部分のUI
-  Container selectFileArea() {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              flex: 8,
-              child: Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: DropTarget(
-                    onDragDone: (detail) {
-                      // 過去のファイル情報を消去
-                      selectedFiles.clear();
-
-                      // ドロップされたファイルの情報を記録
-                      final file = detail.files;
-                      for (var i = 0; i < file.length; i++) {
-                        selectedFiles.add(XFile(file[i].path));
-                      }
-                      _setFileInfo();
-                    },
-                    child: DottedBorder(
-                      color: Theme.of(context).colorScheme.primary,
-                      strokeWidth: 3,
-                      dashPattern: const [30, 5],
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.transparent,
+  Widget selectFileArea() {
+    return Column(children: <Widget>[
+      Container(
+        color: colorScheme.background,
+        padding: const EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          IconButton.filled(
+              onPressed: () async {
+                await showDialog(
+                    context: context, builder: (context) => _selectFileType());
+                await _setFileInfo();
+              },
+              icon: const Icon(Icons.add)),
+          Text(
+            "${selectedFiles.length}個のファイル   合計: $selectFileButtonText",
+            style: const TextStyle(fontSize: 17),
+          ),
+        ]),
+      ),
+      Expanded(
+        flex: 8,
+        child: DropTarget(
+            onDragDone: (detail) {
+              // ドロップされたファイルの情報を記録
+              final file = detail.files;
+              for (var i = 0; i < file.length; i++) {
+                if (selectedFiles.contains(file[i])) {
+                  continue;
+                }
+                selectedFiles.add(XFile(file[i].path));
+              }
+              _setFileInfo();
+            },
+            child: selectedFiles.isEmpty
+                ? Center(
+                    child: Container(
+                      margin: const EdgeInsets.all(20),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await showDialog(
+                              context: context,
+                              builder: (context) => _selectFileType());
+                          await _setFileInfo();
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.surface,
                             elevation: 0,
-                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            )),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.file_open, size: 100),
+                              Text(
+                                "タップでファイルを追加\nまたはドラック＆ドロップ",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 20),
+                              )
+                            ],
                           ),
-                          child: Text(
-                            selectFileButtonText,
-                            style: TextStyle(
-                                fontSize: 25,
-                                color: Theme.of(context).colorScheme.primary),
-                            textAlign: TextAlign.center,
-                          ),
-                          onPressed: () async {
-                            if (Platform.isIOS) {
-                              // ファイルの種類選択ダイアログを表示
-                              await showDialog(
-                                  context: context,
-                                  builder: (_) => _selectFileType());
-                            } else {
-                              SendFiles.pickFiles().then(_setFiles).catchError(
-                                  (e, stackTrace) => EasyDialog.showErrorDialog(
-                                      e, Navigator.of(context)));
-                            }
-                          },
                         ),
                       ),
                     ),
-                  )),
-            ),
-            Expanded(
-              flex: 1,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                      flex: 8,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
+                  )
+                : ListView.builder(
+                    itemBuilder: (context, index) {
+                      return Dismissible(
+                        key: Key(selectedFiles[index].path),
+                        background: Container(
+                          color: colorScheme.errorContainer,
+                          alignment: Alignment.centerLeft,
+                          child: const Padding(
+                            padding: EdgeInsets.only(left: 20),
+                            child: Icon(Icons.delete, color: Colors.white),
+                          ),
                         ),
-                        child: const Text("送信する"),
-                        onPressed: () async {
-                          final nav = Navigator.of(context);
-                          if (serverListen) {
-                            showDialog(
-                                context: context,
-                                builder: (context) => EasyDialog.showSmallInfo(
-                                    nav, "エラー", "他のファイルの共有を停止してください。"));
-                          } else if (selectedFiles.isNotEmpty) {
-                            try {
-                              final networks =
-                                  await SendFiles.getAvailableNetworks();
-                              late String ip;
+                        onDismissed: (direction) {
+                          setState(() {
+                            selectedFiles.removeAt(index);
+                            _setFileInfo();
+                          });
+                        },
+                        child: ListTile(
+                            title: Text(p.basename(selectedFiles[index].path)),
+                            leading: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    selectedFiles.removeAt(index);
+                                    _setFileInfo();
+                                  });
+                                },
+                                icon: const Icon(Icons.delete))),
+                      );
+                    },
+                    itemCount: selectedFiles.length)),
+      ),
+      Expanded(
+          flex: 1,
+          child: Container(
+            margin: const EdgeInsets.all(7),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                    flex: 8,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      ),
+                      child: const Text("送信する"),
+                      onPressed: () async {
+                        final nav = Navigator.of(context);
+                        if (serverListen) {
+                          showDialog(
+                              context: context,
+                              builder: (context) => EasyDialog.showSmallInfo(
+                                  nav, "エラー", "他のファイルの共有を停止してください。"));
+                        } else if (selectedFiles.isNotEmpty) {
+                          try {
+                            final networks =
+                                await SendFiles.getAvailableNetworks();
+                            late String ip;
 
-                              // 利用可能なネットワークが無い場合は終了
-                              if (networks == null) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        EasyDialog.showSmallInfo(
-                                            Navigator.of(context),
-                                            "エラー",
-                                            "WiFiやイーサーネットなどに接続してください。"));
-                                return;
-                              }
-
-                              // ネットワークが2つ以上ある場合はユーザーにネットワークを選択させる
-                              if (networks.length > 1) {
-                                // 選択肢のDialogOptionに追加する
-                                List<SimpleDialogOption> dialogOptions = [];
-                                for (var network in networks) {
-                                  dialogOptions.add(SimpleDialogOption(
-                                    onPressed: () =>
-                                        Navigator.pop(context, network.ip),
-                                    child: Text(
-                                        "${network.interfaceName} ${network.ip}"),
-                                  ));
-                                }
-
-                                ip = (await showDialog<String>(
+                            // 利用可能なネットワークが無い場合は終了
+                            if (networks == null) {
+                              showDialog(
                                   context: context,
-                                  builder: (BuildContext context) {
-                                    return WillPopScope(
-                                        // 戻る無効化
-                                        onWillPop: () => Future.value(false),
-                                        child: SimpleDialog(
-                                          title: const Text(
-                                              "利用するネットワークを選択してください。"),
-                                          children: dialogOptions,
-                                        ));
-                                  },
-                                ))!;
-                              } else {
-                                ip = networks[0].ip;
+                                  builder: (context) =>
+                                      EasyDialog.showSmallInfo(
+                                          Navigator.of(context),
+                                          "エラー",
+                                          "WiFiやイーサーネットなどに接続してください。"));
+                              return;
+                            }
+
+                            // ネットワークが2つ以上ある場合はユーザーにネットワークを選択させる
+                            if (networks.length > 1) {
+                              // 選択肢のDialogOptionに追加する
+                              List<SimpleDialogOption> dialogOptions = [];
+                              for (var network in networks) {
+                                dialogOptions.add(SimpleDialogOption(
+                                  onPressed: () =>
+                                      Navigator.pop(context, network.ip),
+                                  child: Text(
+                                      "${network.interfaceName} ${network.ip}"),
+                                ));
                               }
 
-                              // スリープ無効化
-                              WakelockPlus.enable();
+                              ip = (await showDialog<String>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return WillPopScope(
+                                      // 戻る無効化
+                                      onWillPop: () => Future.value(false),
+                                      child: SimpleDialog(
+                                        title:
+                                            const Text("利用するネットワークを選択してください。"),
+                                        children: dialogOptions,
+                                      ));
+                                },
+                              ))!;
+                            } else {
+                              ip = networks[0].ip;
+                            }
 
-                              List<Uint8List>? hashs = [];
-                              if (settings.checkFileHash) {
-                                // SnackBarで通知
-                                ScaffoldMessenger.of(nav.context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
-                                    duration: Duration(days: 100),
-                                  ),
-                                );
+                            // スリープ無効化
+                            WakelockPlus.enable();
 
-                                // 各ファイルのハッシュを計算
-                                for (var file in selectedFiles) {
-                                  hashs.add(await Hash.sha256
-                                      .digestStream(file.openRead()));
-                                }
-
-                                // SnackBarで通知
-                                ScaffoldMessenger.of(nav.context)
-                                    .removeCurrentSnackBar();
-                              } else {
-                                hashs = null;
-                              }
-
-                              // サーバーの開始
-                              final qr = await SendFiles.serverStart(
-                                  ip, selectedFiles, hashs);
-                              serverListen = true;
-                              qrCode = qr;
-                              ipText = "IP: $ip";
-                              stopServerButton = FloatingActionButton(
-                                onPressed: _stopShareProcess,
-                                tooltip: '共有を停止する',
-                                child: const Icon(Icons.pause),
+                            List<Uint8List>? hashs = [];
+                            if (settings.checkFileHash) {
+                              // SnackBarで通知
+                              ScaffoldMessenger.of(nav.context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
+                                  duration: Duration(days: 100),
+                                ),
                               );
 
-                              // 小画面デバイスの場合、別ページでqrを表示
-                              if (isSmallUI) {
-                                nav.push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      _pushQRPageForSmallScreen(context),
-                                ));
-                              } else {
-                                setState(() {});
+                              // 各ファイルのハッシュを計算
+                              for (var file in selectedFiles) {
+                                hashs.add(await Hash.sha256
+                                    .digestStream(file.openRead()));
                               }
-                            } catch (e) {
-                              EasyDialog.showErrorDialog(
-                                  e, Navigator.of(context));
 
+                              // SnackBarで通知
                               ScaffoldMessenger.of(nav.context)
                                   .removeCurrentSnackBar();
+                            } else {
+                              hashs = null;
                             }
-                          } else {
-                            showDialog(
-                                context: context,
-                                builder: (context) => EasyDialog.showSmallInfo(
-                                    Navigator.of(context),
-                                    "エラー",
-                                    "ファイルを選択してください。"));
+
+                            // サーバーの開始
+                            final qr = await SendFiles.serverStart(
+                                ip, selectedFiles, hashs);
+                            serverListen = true;
+                            qrCode = qr;
+                            ipText = "IP: $ip";
+                            stopServerButton = FloatingActionButton(
+                              onPressed: _stopShareProcess,
+                              tooltip: '共有を停止する',
+                              child: const Icon(Icons.pause),
+                            );
+
+                            // 小画面デバイスの場合、別ページでqrを表示
+                            if (isSmallUI) {
+                              nav.push(MaterialPageRoute(
+                                builder: (context) =>
+                                    _pushQRPageForSmallScreen(context),
+                              ));
+                            } else {
+                              setState(() {});
+                            }
+                          } catch (e) {
+                            EasyDialog.showErrorDialog(
+                                e, Navigator.of(context));
+
+                            ScaffoldMessenger.of(nav.context)
+                                .removeCurrentSnackBar();
                           }
-                        },
-                      )),
-                  const SizedBox(width: 10),
-                  Expanded(
-                      flex: 2,
-                      child: IconButton.outlined(
-                          onPressed: (() async {
-                            final res = await showDialog(
-                                context: context,
-                                builder: (context) => SendSettingsDialog(
-                                    currentSettings: settings));
-                            if (res != null && mounted) {
-                              setState(() {
-                                settings = res;
-                              });
-                            }
-                          }),
-                          icon: const Icon(Icons.settings)))
-                ],
-              ),
+                        } else {
+                          showDialog(
+                              context: context,
+                              builder: (context) => EasyDialog.showSmallInfo(
+                                  Navigator.of(context),
+                                  "エラー",
+                                  "ファイルを選択してください。"));
+                        }
+                      },
+                    )),
+                const SizedBox(width: 10),
+                Expanded(
+                    flex: 2,
+                    child: IconButton.outlined(
+                        onPressed: (() async {
+                          final res = await showDialog(
+                              context: context,
+                              builder: (context) => SendSettingsDialog(
+                                  currentSettings: settings));
+                          if (res != null && mounted) {
+                            setState(() {
+                              settings = res;
+                            });
+                          }
+                        }),
+                        icon: const Icon(Icons.settings)))
+              ],
             ),
-          ]),
-    );
+          )),
+    ]);
   }
 
   /// QRコードやIPアドレスが書かれる部分のUI
@@ -446,7 +471,7 @@ class _SendPageState extends State<SendPage>
     selectedFiles.clear();
 
     setState(() {
-      selectFileButtonText = firstFileButtonText;
+      selectFileButtonText = "";
       qrCode = Container();
       ipText = "";
       stopServerButton = Container();
