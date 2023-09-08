@@ -57,6 +57,8 @@ class _MyAppState extends State<MyApp> {
           theme: ThemeData(
             colorScheme: lightColorScheme,
             fontFamily: 'Noto Sans JP',
+            appBarTheme: AppBarTheme.of(context)
+                .copyWith(backgroundColor: lightColorScheme.surfaceVariant),
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
