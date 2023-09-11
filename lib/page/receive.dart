@@ -8,6 +8,7 @@ import 'package:open_file_trucker/widget/dialog.dart';
 import 'package:open_file_trucker/receive.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_file_trucker/widget/receive_qr.dart';
+import 'package:responsive_grid/responsive_grid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
@@ -121,74 +122,70 @@ class _ReceivePageState extends State<ReceivePage>
                 key: formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'IP Address',
-                        hintText: 'IPアドレスを入力',
-                        icon: Icon(Icons.connect_without_contact),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '値を入力してください';
-                        } else if (!bypassAdressCheck &&
-                            !RegExp(r"(^(127(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$)|(10(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$)|(192\.168(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}$)|(172\.(?:1[6-9]|2\d|3[0-1])(?:\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}$))")
-                                .hasMatch(value)) {
-                          return "正しいIPアドレスを入力してください。(IPv4 / プライベートIPアドレスのみ入力可能)";
-                        }
-                        return null;
-                      },
-                      onSaved: (newValue) => ip = newValue!,
-                      controller: textEditingController,
-                    ),
-                    /* 
-                    TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Key (任意)',
-                          hintText: 'Keyを入力(設定している場合のみ)',
-                          icon: Icon(Icons.vpn_key)),
-                      obscureText: true,
-                      onSaved: (newValue) => key = newValue!,
-                    ), */
-                    SwitchListTile(
-                      value: bypassAdressCheck,
-                      title: const Text('IPアドレスの確認を行わない'),
-                      subtitle: const Text("IPアドレスの判定に問題がある場合に利用"),
-                      onChanged: (bool value) => setState(() {
-                        bypassAdressCheck = value;
-                      }),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 30),
-                      height: 40,
-                      width: double.infinity,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onPrimary,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
+                    Row(
+                      children: [
+                        Expanded(
+                            child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'IP Address',
+                            hintText: 'IPアドレスを入力',
+                            icon: Icon(Icons.connect_without_contact),
                           ),
-                          child: const Text("ファイルを受信"),
-                          onPressed: () async {
-                            // 値のチェック
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '値を入力してください';
+                            }
+                            return null;
+                          },
+                          onSaved: (newValue) => ip = newValue!,
+                          controller: textEditingController,
+                        )),
+                        IconButton.filled(
+                          onPressed: () {
                             if (formKey.currentState != null) {
                               if (formKey.currentState!.validate()) {
                                 formKey.currentState!.save();
                                 _startReceive(ip);
                               }
                             }
-                          }),
+                          },
+                          icon: const Icon(Icons.send),
+                        )
+                      ],
                     ),
-                    ListView.builder(
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(detectDeviceList[index]),
-                            onTap: () => _startReceive(detectDeviceList[index]),
-                          );
-                        },
-                        shrinkWrap: true,
-                        itemCount: detectDeviceList.length),
-                    Column(children: sucsessWidght),
+                    const SizedBox(height: 10),
+                    const Text("付近のデバイス",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    Expanded(
+                        child: ResponsiveGridList(
+                      desiredItemWidth: 130,
+                      minSpacing: 10,
+                      children: detectDeviceList.map((e) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                _startReceive(e);
+                              },
+                              padding: const EdgeInsets.all(10),
+                              icon: const Icon(
+                                Icons.computer,
+                                size: 90,
+                              ),
+                            ),
+                            Text(
+                              e,
+                              textAlign: TextAlign.center,
+                            )
+                          ],
+                        );
+                      }).toList(),
+                    )),
                   ],
                 ),
               ),
