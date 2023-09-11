@@ -11,6 +11,7 @@ import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
 import 'class/qr_data.dart';
+import 'helper/service.dart';
 
 class SendFiles {
   /// FileTruckerで利用可能なネットワーク一覧を取得
@@ -106,6 +107,8 @@ class SendFiles {
     _server = await ServerSocket.bind(ip, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
 
+    await registerNsd();
+
     return QrImageView(
       data: json.encode(QRCodeData(
         ip: ip, /* key: key */
@@ -173,6 +176,8 @@ class SendFiles {
     _server?.close();
     pubKey = null;
     _aesCbcSecretKey = null;
+
+    unregisterNsd();
   }
 }
 

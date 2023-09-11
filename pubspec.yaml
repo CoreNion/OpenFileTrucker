@@ -58,6 +58,7 @@ dependencies:
     git:
       url: https://github.com/CoreNion/webcrypto.dart.git
       ref: eee80e3299b26e550a52e07ba601abd879271a1b
+  nsd: ^2.3.1
 
 dev_dependencies:
   flutter_test:

@@ -12,6 +12,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
 import '../class/qr_data.dart';
+import '../helper/service.dart';
 
 class ReceivePage extends StatefulWidget {
   const ReceivePage({Key? key}) : super(key: key);
@@ -37,6 +38,18 @@ class _ReceivePageState extends State<ReceivePage>
   bool bypassAdressCheck = false;
 
   TextEditingController textEditingController = TextEditingController();
+  List<String> detectDeviceList = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    startDetectService((service, status) async {
+      setState(() {
+        detectDeviceList.add(service.host!);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +179,15 @@ class _ReceivePageState extends State<ReceivePage>
                             }
                           }),
                     ),
+                    ListView.builder(
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(detectDeviceList[index]),
+                            onTap: () => _startReceive(detectDeviceList[index]),
+                          );
+                        },
+                        shrinkWrap: true,
+                        itemCount: detectDeviceList.length),
                     Column(children: sucsessWidght),
                   ],
                 ),
