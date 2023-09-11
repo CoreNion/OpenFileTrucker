@@ -44,7 +44,6 @@ dependencies:
   flutter_svg: ^2.0.0+1
   package_info_plus: ^4.1.0
   url_launcher: ^6.1.9
-  mobile_scanner: ^3.0.0
   dynamic_color: ^1.6.2
   cross_file: ^0.3.3+4
   image_gallery_saver:

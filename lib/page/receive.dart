@@ -3,17 +3,13 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:open_file_trucker/widget/dialog.dart';
-import 'package:open_file_trucker/receive.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:open_file_trucker/widget/receive_qr.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
-import '../class/qr_data.dart';
 import '../helper/service.dart';
+import '../receive.dart';
+import '../widget/dialog.dart';
 
 class ReceivePage extends StatefulWidget {
   const ReceivePage({Key? key}) : super(key: key);
@@ -58,139 +54,82 @@ class _ReceivePageState extends State<ReceivePage>
     final formKey = GlobalKey<FormState>();
     String ip = "";
 
-    // String key = "";
-
-    late Widget? qrButton;
-    if (Platform.isIOS || Platform.isAndroid || Platform.isMacOS) {
-      qrButton = FloatingActionButton(
-        onPressed: () async {
-          final nav = Navigator.of(context);
-
-          // QR読み取り画面に移管する
-          void popQRScreen() {
-            Navigator.of(context)
-                .push(MaterialPageRoute(
-                    builder: (builder) => const ScanQRCodePage()))
-                .then((result) {
-              if (result is QRCodeData) {
-                // 読み取りが終了したら受信開始
-                _startReceive(result.ip);
-              } else {
-                WakelockPlus.disable();
-              }
-            });
-          }
-
-          // 権限の確認
-          if (Platform.isIOS || Platform.isAndroid) {
-            if (await Permission.camera.request().isGranted) {
-              popQRScreen();
-            } else {
-              EasyDialog.showPermissionAlert(
-                  "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。", nav);
-            }
-          } else if (Platform.isMacOS) {
-            // 権限の取得などに独自実装が必要なOS
-            const platform =
-                MethodChannel('com.corenion.filetrucker/permission');
-            final request =
-                await platform.invokeMethod("requestCameraPermission");
-
-            if (request == null) {
-              EasyDialog.showErrorDialog("権限の要求中にエラーが発生しました。", nav);
-            } else if (request) {
-              popQRScreen();
-            } else {
-              EasyDialog.showSmallInfo(
-                  nav, "権限が必要です", "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。");
-            }
-          }
-        },
-        tooltip: "QRコードを利用する",
-        child: const Icon(Icons.qr_code),
-      );
-    } else {
-      // 非対応端末では表示しない
-      qrButton = null;
-    }
-
     return SafeArea(
         child: Scaffold(
-            body: Container(
-              margin: const EdgeInsets.all(10),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: TextFormField(
-                          decoration: const InputDecoration(
-                            labelText: 'IP Address',
-                            hintText: 'IPアドレスを入力',
-                            icon: Icon(Icons.connect_without_contact),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return '値を入力してください';
-                            }
-                            return null;
-                          },
-                          onSaved: (newValue) => ip = newValue!,
-                          controller: textEditingController,
-                        )),
-                        IconButton.filled(
-                          onPressed: () {
-                            if (formKey.currentState != null) {
-                              if (formKey.currentState!.validate()) {
-                                formKey.currentState!.save();
-                                _startReceive(ip);
-                              }
-                            }
-                          },
-                          icon: const Icon(Icons.send),
-                        )
-                      ],
+      body: Container(
+        margin: const EdgeInsets.all(10),
+        child: Form(
+          key: formKey,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'IP Address',
+                      hintText: 'IPアドレスを入力',
+                      icon: Icon(Icons.connect_without_contact),
                     ),
-                    const SizedBox(height: 10),
-                    const Text("付近のデバイス",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    Expanded(
-                        child: ResponsiveGridList(
-                      desiredItemWidth: 130,
-                      minSpacing: 10,
-                      children: detectDeviceList.map((e) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                _startReceive(e);
-                              },
-                              padding: const EdgeInsets.all(10),
-                              icon: const Icon(
-                                Icons.computer,
-                                size: 90,
-                              ),
-                            ),
-                            Text(
-                              e,
-                              textAlign: TextAlign.center,
-                            )
-                          ],
-                        );
-                      }).toList(),
-                    )),
-                  ],
-                ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '値を入力してください';
+                      }
+                      return null;
+                    },
+                    onSaved: (newValue) => ip = newValue!,
+                    controller: textEditingController,
+                  )),
+                  IconButton.filled(
+                    onPressed: () {
+                      if (formKey.currentState != null) {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState!.save();
+                          _startReceive(ip);
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.send),
+                  )
+                ],
               ),
-            ),
-            floatingActionButton: qrButton));
+              const SizedBox(height: 10),
+              const Text("付近のデバイス",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Expanded(
+                  child: ResponsiveGridList(
+                desiredItemWidth: 130,
+                minSpacing: 10,
+                children: detectDeviceList.map((e) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _startReceive(e);
+                        },
+                        padding: const EdgeInsets.all(10),
+                        icon: const Icon(
+                          Icons.computer,
+                          size: 90,
+                        ),
+                      ),
+                      Text(
+                        e,
+                        textAlign: TextAlign.center,
+                      )
+                    ],
+                  );
+                }).toList(),
+              )),
+            ],
+          ),
+        ),
+      ),
+    ));
   }
 
   Future<void> _startReceive(String ip /*, String key  */) async {
