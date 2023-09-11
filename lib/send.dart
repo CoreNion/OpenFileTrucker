@@ -3,14 +3,11 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
-import 'class/qr_data.dart';
 import 'helper/service.dart';
 
 class SendFiles {
@@ -99,7 +96,7 @@ class SendFiles {
   static AesCbcSecretKey? _aesCbcSecretKey;
 
   /// ファイル送信用ののサーバーを立ち上げる
-  static Future<QrImageView> serverStart(String ip,
+  static Future<void> serverStart(String ip,
       /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
     // AES-CBC暗号化用の鍵を生成
     _aesCbcSecretKey = await AesCbcSecretKey.generateKey(256);
@@ -108,14 +105,6 @@ class SendFiles {
     _server?.listen((event) => _serverListen(event, files, hashs));
 
     await registerNsd();
-
-    return QrImageView(
-      data: json.encode(QRCodeData(
-        ip: ip, /* key: key */
-      ).toJson()),
-      size: 300,
-      backgroundColor: Colors.white,
-    );
   }
 
   static void _serverListen(

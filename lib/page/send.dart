@@ -36,7 +36,6 @@ class _SendPageState extends State<SendPage>
 
   String ipText = "";
   String keyText = "";
-  Widget qrCode = Container();
   Widget stopServerButton = Container();
   bool serverListen = false;
 
@@ -311,10 +310,9 @@ class _SendPageState extends State<SendPage>
                             }
 
                             // サーバーの開始
-                            final qr = await SendFiles.serverStart(
+                            await SendFiles.serverStart(
                                 ip, selectedFiles, hashs);
                             serverListen = true;
-                            qrCode = qr;
                             ipText = "IP: $ip";
                             stopServerButton = FloatingActionButton(
                               onPressed: _stopShareProcess,
@@ -377,41 +375,30 @@ class _SendPageState extends State<SendPage>
           margin: const EdgeInsets.only(left: 10, right: 10),
           alignment: Alignment.center,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Column(
-                children: const <Widget>[
-                  Text(
-                    "送信待機中です",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                        fontSize: 30),
-                  ),
-                  Text("ファイルを受信するには、QRコード読み取るか、IPアドレスを入力してください。"),
-                ],
-              ),
-              qrCode,
-              Column(
                 children: <Widget>[
+                  const Text(
+                    "送信待機中です",
+                    style: TextStyle(color: Colors.red, fontSize: 30),
+                  ),
                   Text(
                     ipText,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                        fontSize: 35),
+                    style: const TextStyle(color: Colors.blue, fontSize: 25),
                   ),
                 ],
-              )
+              ),
             ],
           ));
     } else {
       return Container(
         margin: const EdgeInsets.only(left: 10, right: 10),
         alignment: Alignment.center,
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
+          children: <Widget>[
             Text(
               "現在、ファイルの送受信は行われていません。",
               style: TextStyle(fontSize: 20),
@@ -439,7 +426,6 @@ class _SendPageState extends State<SendPage>
 
     setState(() {
       totalSizeText = "0 B";
-      qrCode = Container();
       ipText = "";
       stopServerButton = Container();
     });
