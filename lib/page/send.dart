@@ -15,6 +15,7 @@ import '../class/send_settings.dart';
 import '../widget/send_settings.dart';
 import '../widget/dialog.dart';
 import '../send.dart';
+import 'sender.dart';
 
 class SendPage extends StatefulWidget {
   const SendPage({Key? key}) : super(key: key);
@@ -100,9 +101,9 @@ class _SendPageState extends State<SendPage>
         body: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Expanded(flex: 5, child: selectFileArea()),
+            Expanded(flex: 6, child: selectFileArea()),
             Expanded(
-                flex: 5,
+                flex: 4,
                 child: Container(
                   decoration: const BoxDecoration(
                     border: Border(
@@ -110,7 +111,7 @@ class _SendPageState extends State<SendPage>
                       color: Colors.grey,
                     )),
                   ),
-                  child: senderInfoArea(),
+                  child: const SenderConfigPage(),
                 ))
           ],
         ),
@@ -322,10 +323,51 @@ class _SendPageState extends State<SendPage>
 
                             // 小画面デバイスの場合、別ページでqrを表示
                             if (isSmallUI) {
-                              nav.push(MaterialPageRoute(
-                                builder: (context) =>
-                                    _pushQRPageForSmallScreen(context),
-                              ));
+                              if (!mounted) return;
+                              await showModalBottomSheet(
+                                  backgroundColor: Colors.transparent,
+                                  useSafeArea: true,
+                                  context: context,
+                                  builder: (context) {
+                                    return Container(
+                                      padding: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom,
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: colorScheme.background,
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(25))),
+                                      child: SizedBox(
+                                        height: 700,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            AppBar(
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                  top: Radius.circular(25),
+                                                ),
+                                              ),
+                                              title: const Text("送信待機中です"),
+                                              automaticallyImplyLeading: false,
+                                              leading: IconButton(
+                                                  onPressed: (() =>
+                                                      Navigator.of(context)
+                                                          .pop()),
+                                                  icon: const Icon(
+                                                      Icons.expand_more)),
+                                            ),
+                                            Expanded(child: SenderConfigPage()),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  });
+                              _stopShareProcess();
                             } else {
                               setState(() {});
                             }
@@ -368,48 +410,6 @@ class _SendPageState extends State<SendPage>
     ]);
   }
 
-  /// QRコードやIPアドレスが書かれる部分のUI
-  Widget senderInfoArea() {
-    if (serverListen) {
-      return Container(
-          margin: const EdgeInsets.only(left: 10, right: 10),
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  const Text(
-                    "送信待機中です",
-                    style: TextStyle(color: Colors.red, fontSize: 30),
-                  ),
-                  Text(
-                    ipText,
-                    style: const TextStyle(color: Colors.blue, fontSize: 25),
-                  ),
-                ],
-              ),
-            ],
-          ));
-    } else {
-      return Container(
-        margin: const EdgeInsets.only(left: 10, right: 10),
-        alignment: Alignment.center,
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "現在、ファイルの送受信は行われていません。",
-              style: TextStyle(fontSize: 20),
-            ),
-            Text("ファイルの送受信が行われる際には、ここに情報が表示されます。")
-          ],
-        ),
-      );
-    }
-  }
-
   /// ファイル共有を停止し、初期状態に戻す関数
   void _stopShareProcess() async {
     SendFiles.serverClose();
@@ -429,42 +429,6 @@ class _SendPageState extends State<SendPage>
       ipText = "";
       stopServerButton = Container();
     });
-  }
-
-  Widget _pushQRPageForSmallScreen(BuildContext context) {
-    return WillPopScope(onWillPop: (() async {
-      await showDialog(context: context, builder: (_) => _stopServerDialog());
-      return false;
-    }), child: LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-            appBar: AppBar(
-              title: RichText(
-                textAlign: TextAlign.start,
-                text: TextSpan(
-                    text: "送信待機中です",
-                    style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyText1!.color,
-                        fontSize: 22),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: "\n${selectedFiles.length.toString()}個のファイル",
-                        style: const TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                    ]),
-              ),
-              leading: IconButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context, builder: (_) => _stopServerDialog());
-                  },
-                  icon: const Icon(Icons.pause)),
-            ),
-            body: senderInfoArea());
-      },
-    ));
   }
 
   Widget _stopServerDialog() {
