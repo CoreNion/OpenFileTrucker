@@ -48,6 +48,8 @@ class _ReceivePageState extends State<ReceivePage>
       });
     });
 
+    registerNsd(ServiceType.receive);
+
     startIncomingServer((name) async {
       return await showDialog(
           context: context,

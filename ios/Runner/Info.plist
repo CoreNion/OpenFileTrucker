@@ -58,6 +58,14 @@
 	<string>画像や動画を利用するには、写真ライブラリへのアクセスの許可が必要です。</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>画像や動画を写真ライブラリに保存するには、写真ライブラリへのアクセスの許可が必要です。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ファイル共有を行うには、ローカルネットワークへのアクセスが必要です。</string>
+	<key>NSBonjourServices</key>
+	<array>
+	  <string>_trucker-send._tcp</string>
+		<string>_trucker-receive._tcp</string>
+	</array>
+
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>LSApplicationQueriesSchemes</key>

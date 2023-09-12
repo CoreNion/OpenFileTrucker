@@ -18,7 +18,7 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
   void initState() {
     super.initState();
 
-    startDetectService(ServiceType.send, (service, status) async {
+    startDetectService(ServiceType.receive, (service, status) async {
       setState(() {
         _readyDevices.add(service.host!);
       });
