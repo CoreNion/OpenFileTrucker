@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 
+import '../helper/service.dart';
+
 class SenderConfigPage extends StatefulWidget {
   const SenderConfigPage({Key? key}) : super(key: key);
 
@@ -9,11 +11,17 @@ class SenderConfigPage extends StatefulWidget {
 }
 
 class _SenderConfigPageState extends State<SenderConfigPage> {
-  final List<String> _readyDevices = ["PC1", "PC2", "PC3", "PC4"];
+  final List<String> _readyDevices = [];
 
   @override
   void initState() {
     super.initState();
+
+    startDetectService(ServiceType.send, (service, status) async {
+      setState(() {
+        _readyDevices.add(service.host!);
+      });
+    });
   }
 
   @override

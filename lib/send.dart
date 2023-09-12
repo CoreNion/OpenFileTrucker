@@ -106,7 +106,7 @@ class SendFiles {
     _server?.listen((event) => _serverListen(event, files, hashs));
 
     if (settings.deviceDetection) {
-      await registerNsd();
+      await registerNsd(ServiceType.send);
     }
   }
 

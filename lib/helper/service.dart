@@ -2,12 +2,20 @@ import 'dart:async';
 
 import 'package:nsd/nsd.dart';
 
+enum ServiceType { send, receive }
+
 Discovery? discovery;
 Registration? registration;
 
-Future<void> startDetectService(
+Future<void> startDetectService(ServiceType mode,
     FutureOr<void> Function(Service, ServiceStatus) onDetect) async {
-  discovery = await startDiscovery('_trucker._tcp');
+  late String type;
+  if (mode == ServiceType.send) {
+    type = '_trucker-send._tcp';
+  } else {
+    type = '_trucker-receive._tcp';
+  }
+  discovery = await startDiscovery(type);
 
   discovery!.addServiceListener((service, status) {
     if (status == ServiceStatus.found && service.name == 'FileTrucker') {
@@ -21,11 +29,18 @@ Future<void> stopDetectService() async {
   await stopDiscovery(discovery!);
 }
 
-Future<void> registerNsd() async {
-  registration = await register(const Service(
+Future<void> registerNsd(ServiceType mode) async {
+  late String type;
+  if (mode == ServiceType.send) {
+    type = '_trucker-send._tcp';
+  } else {
+    type = '_trucker-receive._tcp';
+  }
+
+  registration = await register(Service(
     name: 'FileTrucker',
     port: 4782,
-    type: '_trucker._tcp',
+    type: type,
   ));
 }
 

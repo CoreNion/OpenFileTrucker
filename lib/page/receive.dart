@@ -41,11 +41,13 @@ class _ReceivePageState extends State<ReceivePage>
   void initState() {
     super.initState();
 
-    startDetectService((service, status) async {
+    startDetectService(ServiceType.send, (service, status) async {
       setState(() {
         detectDeviceList.add(service.host!);
       });
     });
+
+    registerNsd(ServiceType.receive);
   }
 
   @override
