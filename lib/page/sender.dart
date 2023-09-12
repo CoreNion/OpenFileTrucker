@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 
+import '../helper/incoming.dart';
 import '../helper/service.dart';
 
 class SenderConfigPage extends StatefulWidget {
@@ -49,7 +50,16 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final res = await sendRequest(e, "MacBook Air");
+                        if (!res) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("リクエストが拒否されました"),
+                            ),
+                          );
+                        }
+                      },
                       padding: const EdgeInsets.all(10),
                       icon: const Icon(
                         Icons.computer,

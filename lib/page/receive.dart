@@ -8,6 +8,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
 import '../helper/service.dart';
+import '../helper/incoming.dart';
 import '../receive.dart';
 import '../widget/dialog.dart';
 
@@ -46,6 +47,27 @@ class _ReceivePageState extends State<ReceivePage>
         detectDeviceList.add(service.host!);
       });
     });
+
+    startIncomingServer((name) async {
+      return await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("ファイルの受信"),
+              content: Text("「$name」からのファイルの受信を許可しますか？"),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text("はい")),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text("いいえ")),
+              ],
+            );
+          });
+    }, ((remote) async {
+      await _startReceive(remote);
+    }));
 
     registerNsd(ServiceType.receive);
   }
