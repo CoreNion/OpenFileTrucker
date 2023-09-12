@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_handler/share_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:webcrypto/webcrypto.dart';
 
 import '../class/send_settings.dart';
 import '../widget/send_settings.dart';
 import '../widget/dialog.dart';
+import '../helper/hash.dart';
 import '../send.dart';
 import 'sender.dart';
 
@@ -255,7 +255,7 @@ class _SendPageState extends State<SendPage>
                             // スリープ無効化
                             WakelockPlus.enable();
 
-                            List<Uint8List>? hashs = [];
+                            List<Uint8List>? hashs;
                             if (settings.checkFileHash) {
                               // SnackBarで通知
                               ScaffoldMessenger.of(nav.context).showSnackBar(
@@ -265,18 +265,11 @@ class _SendPageState extends State<SendPage>
                                   duration: Duration(days: 100),
                                 ),
                               );
-
-                              // 各ファイルのハッシュを計算
-                              for (var file in selectedFiles) {
-                                hashs.add(await Hash.sha256
-                                    .digestStream(file.openRead()));
-                              }
+                              hashs = await calcFileHash(selectedFiles);
 
                               // SnackBarで通知
                               ScaffoldMessenger.of(nav.context)
                                   .removeCurrentSnackBar();
-                            } else {
-                              hashs = null;
                             }
 
                             // サーバーの開始
@@ -398,27 +391,6 @@ class _SendPageState extends State<SendPage>
       ipText = "";
       stopServerButton = Container();
     });
-  }
-
-  Widget _stopServerDialog() {
-    return AlertDialog(
-      title: const Text("確認"),
-      content: const Text("共有を停止してもよろしいですか？"),
-      actions: <Widget>[
-        TextButton(
-          child: const Text("はい"),
-          onPressed: () {
-            _stopShareProcess();
-            // AlertDialogの分のcontextもあるので二回前の階層に戻る
-            Navigator.of(context)
-              ..pop()
-              ..pop();
-          },
-        ),
-        TextButton(
-            onPressed: () => Navigator.pop(context), child: const Text("いいえ"))
-      ],
-    );
   }
 
   /// ファイル選択ダイアログ経由でのファイル選択を行う
