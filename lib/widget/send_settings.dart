@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../class/send_settings.dart';
+import '../send.dart';
+import 'dialog.dart';
 
 class SendSettingsDialog extends StatefulWidget {
   final SendSettings? currentSettings;
@@ -56,6 +58,53 @@ class _SendSettingsDialogState extends State<SendSettingsDialog> {
               settings.deviceDetection = value;
             }),
           ),
+          ListTile(
+              title: const Text("Bindアドレス"),
+              trailing: Text(settings.bindAdress,
+                  style: const TextStyle(fontSize: 18)),
+              onTap: () async {
+                final nets = await SendFiles.getAvailableNetworks();
+                if (!mounted) return;
+
+                if (nets == null || nets.isEmpty) {
+                  return showDialog(
+                      context: context,
+                      builder: (context) => EasyDialog.showSmallInfo(
+                          Navigator.of(context),
+                          "エラー",
+                          "WiFiやイーサーネットなどに接続してください。"));
+                }
+
+                // 選択肢のDialogOptionに追加する
+                List<SimpleDialogOption> dialogOptions = [
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(context, "0.0.0.0"),
+                    child: const Text("0.0.0.0"),
+                  )
+                ];
+                for (var network in nets) {
+                  dialogOptions.add(SimpleDialogOption(
+                    onPressed: () => Navigator.pop(context, network.ip),
+                    child: Text("${network.interfaceName} ${network.ip}"),
+                  ));
+                }
+
+                final res = await showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return SimpleDialog(
+                      title: const Text("利用するネットワークを選択してください。"),
+                      children: dialogOptions,
+                    );
+                  },
+                );
+
+                if (res != null) {
+                  setState(() {
+                    settings.bindAdress = res;
+                  });
+                }
+              })
         ],
       ),
       actions: <Widget>[

@@ -1,3 +1,4 @@
+/// 送信設定
 class SendSettings {
   /// ファイルのハッシュ値をチェックするかどうか
   bool checkFileHash = true;
@@ -7,4 +8,7 @@ class SendSettings {
 
   /// デバイス検知を行うかどうか
   bool deviceDetection = true;
+
+  /// Bindアドレス
+  String bindAdress = "0.0.0.0";
 }

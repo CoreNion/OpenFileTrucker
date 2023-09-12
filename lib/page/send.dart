@@ -239,7 +239,6 @@ class _SendPageState extends State<SendPage>
                           try {
                             final networks =
                                 await SendFiles.getAvailableNetworks();
-                            late String ip;
 
                             // 利用可能なネットワークが無い場合は終了
                             if (networks == null) {
@@ -251,36 +250,6 @@ class _SendPageState extends State<SendPage>
                                           "エラー",
                                           "WiFiやイーサーネットなどに接続してください。"));
                               return;
-                            }
-
-                            // ネットワークが2つ以上ある場合はユーザーにネットワークを選択させる
-                            if (networks.length > 1) {
-                              // 選択肢のDialogOptionに追加する
-                              List<SimpleDialogOption> dialogOptions = [];
-                              for (var network in networks) {
-                                dialogOptions.add(SimpleDialogOption(
-                                  onPressed: () =>
-                                      Navigator.pop(context, network.ip),
-                                  child: Text(
-                                      "${network.interfaceName} ${network.ip}"),
-                                ));
-                              }
-
-                              ip = (await showDialog<String>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return WillPopScope(
-                                      // 戻る無効化
-                                      onWillPop: () => Future.value(false),
-                                      child: SimpleDialog(
-                                        title:
-                                            const Text("利用するネットワークを選択してください。"),
-                                        children: dialogOptions,
-                                      ));
-                                },
-                              ))!;
-                            } else {
-                              ip = networks[0].ip;
                             }
 
                             // スリープ無効化
@@ -312,9 +281,9 @@ class _SendPageState extends State<SendPage>
 
                             // サーバーの開始
                             await SendFiles.serverStart(
-                                ip, selectedFiles, hashs);
+                                settings, selectedFiles, hashs);
                             serverListen = true;
-                            ipText = "IP: $ip";
+                            ipText = "IP: ${settings.bindAdress}";
                             stopServerButton = FloatingActionButton(
                               onPressed: _stopShareProcess,
                               tooltip: '共有を停止する',

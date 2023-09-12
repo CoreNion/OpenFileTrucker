@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
+import 'class/send_settings.dart';
 import 'helper/service.dart';
 
 class SendFiles {
@@ -96,15 +97,17 @@ class SendFiles {
   static AesCbcSecretKey? _aesCbcSecretKey;
 
   /// ファイル送信用ののサーバーを立ち上げる
-  static Future<void> serverStart(String ip,
-      /* String key, */ List<XFile> files, List<Uint8List>? hashs) async {
+  static Future<void> serverStart(
+      SendSettings settings, List<XFile> files, List<Uint8List>? hashs) async {
     // AES-CBC暗号化用の鍵を生成
     _aesCbcSecretKey = await AesCbcSecretKey.generateKey(256);
 
-    _server = await ServerSocket.bind(ip, 4782);
+    _server = await ServerSocket.bind(settings.bindAdress, 4782);
     _server?.listen((event) => _serverListen(event, files, hashs));
 
-    await registerNsd();
+    if (settings.deviceDetection) {
+      await registerNsd();
+    }
   }
 
   static void _serverListen(
