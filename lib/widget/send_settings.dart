@@ -47,6 +47,15 @@ class _SendSettingsDialogState extends State<SendSettingsDialog> {
               settings.encryptMode = value;
             }),
           ),
+          SwitchListTile(
+            value: settings.deviceDetection,
+            title: const Text('デバイス検知を有効化'),
+            subtitle: const Text(
+                "他の端末に、この端末がファイルの送信待機状態であることを知らせます。\n待機状態を隠したい場合は無効化してください。"),
+            onChanged: (bool value) => setState(() {
+              settings.deviceDetection = value;
+            }),
+          ),
         ],
       ),
       actions: <Widget>[
