@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
@@ -54,6 +55,8 @@ class _MyAppState extends State<MyApp> {
 
       return MaterialApp(
           title: 'Open FileTrucker',
+          builder: BotToastInit(), //1. call BotToastInit
+          navigatorObservers: [BotToastNavigatorObserver()],
           theme: ThemeData(
             colorScheme: lightColorScheme,
             fontFamily: 'Noto Sans JP',

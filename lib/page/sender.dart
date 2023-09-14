@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:responsive_grid/responsive_grid.dart';
+import 'package:bot_toast/bot_toast.dart';
 
 import '../class/receiver.dart';
 import '../helper/incoming.dart';
@@ -63,18 +66,20 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
                                   _readyDevices[index].progress = null;
                                 });
                                 final res = await sendRequest(
-                                    _readyDevices[index].host, "MacBook Air");
+                                    _readyDevices[index].host,
+                                    Platform.localHostname);
                                 if (!res && mounted) {
                                   setState(() {
                                     _readyDevices[index].progress = 1;
                                     _readyDevices[index].status =
                                         ReceiverStatus.rejected;
                                   });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("リクエストが拒否されました"),
-                                    ),
-                                  );
+                                  BotToast.showSimpleNotification(
+                                      title: "リクエストが拒否されました",
+                                      subTitle:
+                                          "拒否された端末: ${_readyDevices[index].name}",
+                                      backgroundColor: colorScheme.onError);
+                                  return;
                                 }
 
                                 setState(() {
