@@ -104,7 +104,71 @@ class _SendSettingsDialogState extends State<SendSettingsDialog> {
                     settings.bindAdress = res;
                   });
                 }
-              })
+              }),
+          ListTile(
+            title: const Text("デバイス名"),
+            trailing: Text(settings.name, style: const TextStyle(fontSize: 18)),
+            onTap: () async {
+              late String name;
+              final res = await showDialog(
+                context: context,
+                builder: (context) {
+                  final formKey = GlobalKey<FormState>();
+
+                  return Container(
+                    margin: const EdgeInsets.all(10),
+                    child: SimpleDialog(
+                      title: const Text("デバイス名を入力してください。"),
+                      children: [
+                        Form(
+                          key: formKey,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextFormField(
+                              initialValue: settings.name,
+                              decoration: const InputDecoration(
+                                labelText: 'デバイス名',
+                              ),
+                              validator: (value) {
+                                if (value?.isEmpty ?? true) {
+                                  return 'デバイス名を入力してください。';
+                                }
+                                name = value!;
+                                return null;
+                              },
+                            ),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("キャンセル"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  formKey.currentState!.save();
+                                  Navigator.pop(context, settings.name);
+                                }
+                              },
+                              child: const Text("決定"),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  );
+                },
+              );
+              if (res == null) return;
+
+              setState(() {
+                settings.name = name;
+              });
+            },
+          )
         ],
       ),
       actions: <Widget>[

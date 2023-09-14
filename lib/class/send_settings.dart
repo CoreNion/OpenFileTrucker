@@ -1,3 +1,5 @@
+import 'dart:io';
+
 /// 送信設定
 class SendSettings {
   /// ファイルのハッシュ値をチェックするかどうか
@@ -11,4 +13,7 @@ class SendSettings {
 
   /// Bindアドレス
   String bindAdress = "0.0.0.0";
+
+  /// デバイス名
+  String name = Platform.localHostname;
 }

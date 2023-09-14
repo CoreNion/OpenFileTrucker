@@ -7,6 +7,7 @@ import 'package:responsive_grid/responsive_grid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
+import '../class/receiver.dart';
 import '../helper/service.dart';
 import '../helper/incoming.dart';
 import '../receive.dart';
@@ -36,7 +37,7 @@ class _ReceivePageState extends State<ReceivePage>
   bool bypassAdressCheck = false;
 
   TextEditingController textEditingController = TextEditingController();
-  List<String> detectDeviceList = [];
+  List<ReceiveReadyDevice> detectDeviceList = [];
 
   @override
   void initState() {
@@ -44,11 +45,12 @@ class _ReceivePageState extends State<ReceivePage>
 
     startDetectService(ServiceType.send, (service, status) async {
       setState(() {
-        detectDeviceList.add(service.host!);
+        detectDeviceList.add(ReceiveReadyDevice(
+            service.name!, service.host!, 0, ReceiverStatus.ready));
       });
     });
 
-    registerNsd(ServiceType.receive);
+    registerNsd(ServiceType.receive, Platform.localHostname);
 
     startIncomingServer((name) async {
       return await showDialog(
@@ -71,7 +73,7 @@ class _ReceivePageState extends State<ReceivePage>
       await _startReceive(remote);
     }));
 
-    registerNsd(ServiceType.receive);
+    registerNsd(ServiceType.receive, Platform.localHostname);
   }
 
   @override
@@ -135,7 +137,7 @@ class _ReceivePageState extends State<ReceivePage>
                     children: [
                       IconButton(
                         onPressed: () {
-                          _startReceive(e);
+                          _startReceive(e.host);
                         },
                         padding: const EdgeInsets.all(10),
                         icon: const Icon(
@@ -144,7 +146,7 @@ class _ReceivePageState extends State<ReceivePage>
                         ),
                       ),
                       Text(
-                        e,
+                        e.name,
                         textAlign: TextAlign.center,
                       )
                     ],

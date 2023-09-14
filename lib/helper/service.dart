@@ -18,7 +18,7 @@ Future<void> startDetectService(ServiceType mode,
   discovery = await startDiscovery(type);
 
   discovery!.addServiceListener((service, status) {
-    if (status == ServiceStatus.found && service.name == 'FileTrucker') {
+    if (status == ServiceStatus.found) {
       onDetect(service, status);
     }
   });
@@ -29,7 +29,7 @@ Future<void> stopDetectService() async {
   await stopDiscovery(discovery!);
 }
 
-Future<void> registerNsd(ServiceType mode) async {
+Future<void> registerNsd(ServiceType mode, String name) async {
   late String type;
   if (mode == ServiceType.send) {
     type = '_trucker-send._tcp';
@@ -38,7 +38,7 @@ Future<void> registerNsd(ServiceType mode) async {
   }
 
   registration = await register(Service(
-    name: 'FileTrucker',
+    name: name,
     port: 4782,
     type: type,
   ));
