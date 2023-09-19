@@ -13,6 +13,7 @@ import '../helper/service.dart';
 import '../helper/incoming.dart';
 import '../receive.dart';
 import '../widget/dialog.dart';
+import '../widget/service.dart';
 
 class ReceivePage extends StatefulWidget {
   const ReceivePage({Key? key}) : super(key: key);
@@ -116,34 +117,7 @@ class _ReceivePageState extends State<ReceivePage>
               const Text("付近のデバイス",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Expanded(
-                  child: ResponsiveGridList(
-                desiredItemWidth: 130,
-                minSpacing: 10,
-                children: _truckerDevices.map((e) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          _startReceive(e.host);
-                        },
-                        padding: const EdgeInsets.all(10),
-                        icon: const Icon(
-                          Icons.computer,
-                          size: 90,
-                        ),
-                      ),
-                      Text(
-                        e.name,
-                        textAlign: TextAlign.center,
-                      )
-                    ],
-                  );
-                }).toList(),
-              )),
+              const Expanded(child: TruckerDevicesList(isSender: false)),
             ],
           ),
         ),
