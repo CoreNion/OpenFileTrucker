@@ -1,6 +1,6 @@
-enum ReceiverStatus {
+enum TruckerStatus {
   /// 受信待機中
-  ready,
+  receiveReady,
 
   /// 受信中
   receiving,
@@ -8,15 +8,24 @@ enum ReceiverStatus {
   /// 受信完了
   received,
 
-  /// 受信拒否
+  /// 送信待機中
+  sendReady,
+
+  /// 送信中
+  sending,
+
+  /// 送信完了
+  sent,
+
+  /// 拒否
   rejected,
 
-  /// 受信失敗
+  /// 失敗
   failed,
 }
 
 /// 受信可能なデバイスの情報
-class ReceiveReadyDevice {
+class TruckerDevice {
   /// デバイス名
   final String name;
 
@@ -24,12 +33,12 @@ class ReceiveReadyDevice {
   final String host;
 
   /// 進捗
-  double? progress = 0;
+  double? progress;
 
   /// 状態
-  ReceiverStatus status = ReceiverStatus.ready;
+  TruckerStatus status;
 
-  ReceiveReadyDevice(this.name, this.host, this.progress, this.status);
+  TruckerDevice(this.name, this.host, this.progress, this.status);
 
   @override
   String toString() {

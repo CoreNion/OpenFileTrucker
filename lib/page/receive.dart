@@ -8,7 +8,7 @@ import 'package:responsive_grid/responsive_grid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
-import '../class/receiver.dart';
+import '../class/trucker_device.dart';
 import '../helper/service.dart';
 import '../helper/incoming.dart';
 import '../receive.dart';
@@ -26,19 +26,11 @@ class _ReceivePageState extends State<ReceivePage>
   @override
   bool get wantKeepAlive => true;
 
-  List<Widget> sucsessWidght = Platform.isAndroid
-      ? <Widget>[
-          const Text(
-            "Androidでは、選択が可能なフォルダーでもファイルを保存できない場合があります。\n特に指定が無い場合、「ダウンロード」フォルダーにFileTrucker用のフォルダーを作成し、ファイルを保存することがおすすめです。",
-            textAlign: TextAlign.center,
-          )
-        ]
-      : <Widget>[];
+  /// IPアドレス入力欄のコントローラー
+  final TextEditingController _textEditingController = TextEditingController();
 
-  bool bypassAdressCheck = false;
-
-  TextEditingController textEditingController = TextEditingController();
-  List<ReceiveReadyDevice> detectDeviceList = [];
+  /// FileTruckerのデバイスのリスト
+  final List<TruckerDevice> _truckerDevices = [];
 
   @override
   void initState() {
@@ -46,8 +38,8 @@ class _ReceivePageState extends State<ReceivePage>
 
     startDetectService(ServiceType.send, (service, status) async {
       setState(() {
-        detectDeviceList.add(ReceiveReadyDevice(
-            service.name!, service.host!, 0, ReceiverStatus.ready));
+        _truckerDevices.add(TruckerDevice(
+            service.name!, service.host!, 0, TruckerStatus.sendReady));
       });
     });
 
@@ -73,8 +65,6 @@ class _ReceivePageState extends State<ReceivePage>
     }, ((remote) async {
       await _startReceive(remote);
     }));
-
-    registerNsd(ServiceType.receive, Platform.localHostname);
   }
 
   @override
@@ -107,7 +97,7 @@ class _ReceivePageState extends State<ReceivePage>
                       return null;
                     },
                     onSaved: (newValue) => ip = newValue!,
-                    controller: textEditingController,
+                    controller: _textEditingController,
                   )),
                   IconButton.filled(
                     onPressed: () {
@@ -130,7 +120,7 @@ class _ReceivePageState extends State<ReceivePage>
                   child: ResponsiveGridList(
                 desiredItemWidth: 130,
                 minSpacing: 10,
-                children: detectDeviceList.map((e) {
+                children: _truckerDevices.map((e) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -365,18 +355,5 @@ class _ReceivePageState extends State<ReceivePage>
 
     // 終了処理
     endProcess();
-    // 結果のメッセージを削除し、新しいメッセージを表示
-    setState(() {
-      sucsessWidght.clear();
-      sucsessWidght.add(const Text("ファイルの受信が完了しました",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 25, color: Colors.red, fontWeight: FontWeight.bold)));
-      if (Platform.isIOS) {
-        sucsessWidght.add(const Text(
-            '\niOSではファイルは、FileTrucker用のフォルダーに格納されています。\n「ファイル」アプリなどから閲覧/操作したり、他のアプリでのファイル選択時にこのアプリのフォルダーを閲覧することによって、利用可能です。',
-            textAlign: TextAlign.start));
-      }
-    });
   }
 }

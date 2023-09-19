@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 import 'package:bot_toast/bot_toast.dart';
 
-import '../class/receiver.dart';
+import '../class/trucker_device.dart';
 import '../helper/incoming.dart';
 import '../helper/service.dart';
 
@@ -16,7 +16,8 @@ class SenderConfigPage extends StatefulWidget {
 }
 
 class _SenderConfigPageState extends State<SenderConfigPage> {
-  final List<ReceiveReadyDevice> _readyDevices = [];
+  /// FileTruckerデバイスのリスト
+  final List<TruckerDevice> _truckerDevices = [];
 
   @override
   void initState() {
@@ -24,8 +25,8 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
 
     startDetectService(ServiceType.receive, (service, status) async {
       setState(() {
-        _readyDevices.add(ReceiveReadyDevice(
-            service.name!, service.host!, 0, ReceiverStatus.ready));
+        _truckerDevices.add(TruckerDevice(
+            service.name!, service.host!, 0, TruckerStatus.receiveReady));
       });
     });
   }
@@ -50,7 +51,7 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
           Expanded(
             child: ResponsiveGridList(
                 desiredItemWidth: 150,
-                children: _readyDevices.asMap().entries.map(
+                children: _truckerDevices.asMap().entries.map(
                   (e) {
                     final index = e.key;
                     return Column(
@@ -63,29 +64,29 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
                             IconButton(
                               onPressed: () async {
                                 setState(() {
-                                  _readyDevices[index].progress = null;
+                                  _truckerDevices[index].progress = null;
                                 });
                                 final res = await sendRequest(
-                                    _readyDevices[index].host,
+                                    _truckerDevices[index].host,
                                     Platform.localHostname);
                                 if (!res && mounted) {
                                   setState(() {
-                                    _readyDevices[index].progress = 1;
-                                    _readyDevices[index].status =
-                                        ReceiverStatus.rejected;
+                                    _truckerDevices[index].progress = 1;
+                                    _truckerDevices[index].status =
+                                        TruckerStatus.rejected;
                                   });
                                   BotToast.showSimpleNotification(
                                       title: "リクエストが拒否されました",
                                       subTitle:
-                                          "拒否された端末: ${_readyDevices[index].name}",
+                                          "拒否された端末: ${_truckerDevices[index].name}",
                                       backgroundColor: colorScheme.onError);
                                   return;
                                 }
 
                                 setState(() {
-                                  _readyDevices[index].progress = 1;
-                                  _readyDevices[index].status =
-                                      ReceiverStatus.received;
+                                  _truckerDevices[index].progress = 1;
+                                  _truckerDevices[index].status =
+                                      TruckerStatus.received;
                                 });
                               },
                               padding: const EdgeInsets.all(10),
@@ -99,14 +100,14 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
                                     height: 120,
                                     width: 120,
                                     child: CircularProgressIndicator(
-                                        value: _readyDevices[index].progress,
+                                        value: _truckerDevices[index].progress,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          _readyDevices[index].status ==
-                                                  ReceiverStatus.ready
+                                          _truckerDevices[index].status ==
+                                                  TruckerStatus.receiveReady
                                               ? colorScheme.primary
-                                              : _readyDevices[index].status ==
-                                                      ReceiverStatus.rejected
+                                              : _truckerDevices[index].status ==
+                                                      TruckerStatus.rejected
                                                   ? colorScheme.error
                                                   : colorScheme.secondary,
                                         ),
@@ -114,7 +115,7 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
                           ],
                         ),
                         Text(
-                          _readyDevices[index].name,
+                          _truckerDevices[index].name,
                           textAlign: TextAlign.center,
                         )
                       ],
