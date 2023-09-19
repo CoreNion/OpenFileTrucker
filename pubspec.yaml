@@ -59,6 +59,7 @@ dependencies:
   nsd: ^2.3.1
   responsive_grid: ^2.4.4
   bot_toast: ^4.1.1
+  loading_indicator: ^3.1.1
 
 dev_dependencies:
   flutter_test:

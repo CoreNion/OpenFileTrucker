@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 import '../class/file_info.dart';
 import '../class/trucker_device.dart';
@@ -33,7 +34,7 @@ class _TruckerDevicesListState extends State<TruckerDevicesList> {
   void initState() {
     super.initState();
 
-    /// 検知サービスを開始
+    // 検知サービスを開始
     startDetectService(widget.isSender ? ServiceType.receive : ServiceType.send,
         (service, status) async {
       setState(() {
@@ -100,7 +101,27 @@ class _TruckerDevicesListState extends State<TruckerDevicesList> {
                 );
               },
             ).toList())
-        : const Center(child: Text("デバイスを探しています..."));
+        : Container(
+            margin: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Expanded(
+                    flex: 3,
+                    child: Text(
+                      "デバイスを探しています...",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20),
+                    )),
+                Expanded(
+                    flex: 7,
+                    child: LoadingIndicator(
+                      strokeWidth: 0.1,
+                      indicatorType: Indicator.ballScale,
+                      colors: [_colorScheme.primary.withOpacity(1.0)],
+                    ))
+              ],
+            ));
   }
 
   /// リクエストが要求されたときの処理
