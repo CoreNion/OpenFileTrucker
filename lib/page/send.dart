@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
@@ -257,19 +258,21 @@ class _SendPageState extends State<SendPage>
 
                             List<Uint8List>? hashs;
                             if (settings.checkFileHash) {
-                              // SnackBarで通知
-                              ScaffoldMessenger.of(nav.context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      "ファイルのハッシュを取得中です...\nファイルの大きさなどによっては、時間がかかる場合があります。"),
-                                  duration: Duration(days: 100),
-                                ),
+                              // トーストでで通知
+                              BotToast.showNotification(
+                                leading: (cancelFunc) =>
+                                    const CircularProgressIndicator(),
+                                title: (_) => const Text("ファイルのハッシュを計算中です..."),
+                                subtitle: (cancelFunc) {
+                                  return const Text(
+                                      "ファイルの大きさなどによっては、時間がかかる場合があります。");
+                                },
+                                duration: const Duration(days: 99999999),
                               );
                               hashs = await calcFileHash(selectedFiles);
 
-                              // SnackBarで通知
-                              ScaffoldMessenger.of(nav.context)
-                                  .removeCurrentSnackBar();
+                              // トーストを消す
+                              BotToast.cleanAll();
                             }
 
                             // サーバーの開始
@@ -337,8 +340,7 @@ class _SendPageState extends State<SendPage>
                             EasyDialog.showErrorDialog(
                                 e, Navigator.of(context));
 
-                            ScaffoldMessenger.of(nav.context)
-                                .removeCurrentSnackBar();
+                            BotToast.cleanAll();
                           }
                         } else {
                           showDialog(

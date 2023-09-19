@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
@@ -202,11 +203,8 @@ class _ReceivePageState extends State<ReceivePage>
                               controller.close();
 
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("ファイルの受信はキャンセルされました。"),
-                                  duration: Duration(seconds: 3),
-                                ),
+                              BotToast.showSimpleNotification(
+                                title: "ファイルの受信がキャンセルされました",
                               );
                             })
                       ]
