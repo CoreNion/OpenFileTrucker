@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cross_file/cross_file.dart';
@@ -9,6 +10,8 @@ import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
 import 'class/send_settings.dart';
+import 'class/trucker_device.dart';
+import 'helper/incoming.dart';
 import 'helper/service.dart';
 
 class SendFiles {
@@ -111,7 +114,14 @@ class SendFiles {
   }
 
   static void _serverListen(
-      Socket socket, List<XFile> files, List<Uint8List>? hashs) {
+      Socket socket, List<XFile> files, List<Uint8List>? hashs) async {
+    // ファイルの総容量を計算
+    int totalSize = 0;
+    for (var i = 0; i < files.length; i++) {
+      totalSize += await files[i].length();
+    }
+    int byteCount = 0;
+
     socket.listen((event) async {
       if (listEquals(event.sublist(0, 5), plainTextHeader)) {
         // 公開鍵を記録
@@ -130,7 +140,12 @@ class SendFiles {
 
         final decryptMesg =
             utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV));
-        if (decryptMesg == "second") {
+
+        // UUIDを取得
+        final uuid = decryptMesg.substring(0, 36);
+        final mesg = decryptMesg.substring(36);
+
+        if (mesg.contains("second")) {
           // クライアント側にファイル情報を送信
           List<String> names = <String>[];
           List<int> sizes = <int>[];
@@ -149,11 +164,33 @@ class SendFiles {
           ]);
           socket.destroy();
         } else {
+          final byRequest = viaServiceDevice.keys.contains(uuid);
+
           // n番目のファイルを送信
-          int? fileNumber = int.tryParse(decryptMesg);
+          int? fileNumber = int.tryParse(mesg);
           if (fileNumber != null) {
-            await socket.addStream(_aesCbcSecretKey!
-                .encryptStream(files[fileNumber].openRead(), recIV));
+            await socket.addStream(_aesCbcSecretKey!.encryptStream(
+                files[fileNumber].openRead().transform(
+                  StreamTransformer.fromHandlers(handleData: (data, sink) {
+                    if (byRequest) {
+                      byteCount += data.length;
+                      viaServiceDevice[uuid]?.progress = byteCount / totalSize;
+                      refreshUserInfo();
+                    }
+                    sink.add(data);
+                  }),
+                ),
+                recIV));
+            socket.destroy();
+
+            if (fileNumber == files.length - 1) {
+              // 全ファイルの送信が完了した場合
+              if (byRequest) {
+                viaServiceDevice[uuid]?.progress = 1;
+                viaServiceDevice[uuid]?.status = TruckerStatus.sendReady;
+                refreshUserInfo();
+              }
+            }
             socket.destroy();
           } else {
             socket.destroy();

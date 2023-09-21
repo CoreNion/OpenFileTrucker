@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../class/trucker_device.dart';
+
 ServerSocket? _serverSocket;
 Socket? _socket;
 
@@ -37,6 +39,9 @@ Future<void> stopIncomingServer() async {
   if (_serverSocket == null) return;
   await _serverSocket!.close();
 }
+
+/// サービス経由で通信しているデバイスのリスト
+final Map<String, TruckerDevice> viaServiceDevice = {};
 
 /// ファイルの送信リクエストを送信
 Future<bool> sendRequest(String host, String name) async {

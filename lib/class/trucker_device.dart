@@ -29,6 +29,9 @@ class TruckerDevice {
   /// デバイス名
   final String name;
 
+  /// UUID
+  final String uuid;
+
   /// ホスト名
   final String host;
 
@@ -38,7 +41,7 @@ class TruckerDevice {
   /// 状態
   TruckerStatus status;
 
-  TruckerDevice(this.name, this.host, this.progress, this.status);
+  TruckerDevice(this.name, this.host, this.progress, this.status, this.uuid);
 
   @override
   String toString() {

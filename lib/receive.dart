@@ -12,6 +12,7 @@ import 'package:webcrypto/webcrypto.dart';
 import 'dart:io';
 
 import 'class/file_info.dart';
+import 'helper/service.dart';
 
 class ReceiveFile {
   static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
@@ -35,7 +36,7 @@ class ReceiveFile {
     socket.add([
       ...sendIV,
       ...await _aesCbcSecretKey!
-          .encryptBytes(utf8.encode(fileIndex.toString()), sendIV)
+          .encryptBytes(utf8.encode("$uuid${fileIndex.toString()}"), sendIV)
     ]);
 
     // ファイル受信が完了するまで、進捗を定期的にStreamで流す
@@ -232,7 +233,7 @@ class ReceiveFile {
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
     socket.add([
       ...iv,
-      ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("second"), iv)
+      ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("${uuid}second"), iv),
     ]);
 
     // ファイル情報を受信

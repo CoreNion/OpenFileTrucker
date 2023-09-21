@@ -4,7 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:responsive_grid/responsive_grid.dart';
+import 'package:uuid/uuid.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
@@ -40,7 +40,11 @@ class _ReceivePageState extends State<ReceivePage>
     startDetectService(ServiceType.send, (service, status) async {
       setState(() {
         _truckerDevices.add(TruckerDevice(
-            service.name!, service.host!, 0, TruckerStatus.sendReady));
+            service.name!.substring(37),
+            service.host!,
+            0,
+            TruckerStatus.sendReady,
+            service.name!.substring(0, 36)));
       });
     });
 
@@ -64,7 +68,7 @@ class _ReceivePageState extends State<ReceivePage>
             );
           });
     }, ((remote) async {
-      await _startReceive(remote);
+      await _startReceive(remote, true);
     }));
   }
 
@@ -105,7 +109,7 @@ class _ReceivePageState extends State<ReceivePage>
                       if (formKey.currentState != null) {
                         if (formKey.currentState!.validate()) {
                           formKey.currentState!.save();
-                          _startReceive(ip);
+                          _startReceive(ip, false);
                         }
                       }
                     },
@@ -125,7 +129,7 @@ class _ReceivePageState extends State<ReceivePage>
     ));
   }
 
-  Future<void> _startReceive(String ip /*, String key  */) async {
+  Future<void> _startReceive(String ip, bool byRequest) async {
     late FileInfo fileInfo;
     late StreamController<ReceiveProgress> controller;
 

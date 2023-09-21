@@ -1,11 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:responsive_grid/responsive_grid.dart';
-import 'package:bot_toast/bot_toast.dart';
+import 'package:open_file_trucker/helper/service.dart';
 
-import '../class/trucker_device.dart';
-import '../helper/incoming.dart';
 import '../widget/service.dart';
 
 class SenderConfigPage extends StatefulWidget {
@@ -16,6 +11,8 @@ class SenderConfigPage extends StatefulWidget {
 }
 
 class _SenderConfigPageState extends State<SenderConfigPage> {
+  GlobalKey _key = GlobalKey<State<TruckerDevicesList>>();
+
   @override
   void initState() {
     super.initState();
@@ -38,8 +35,11 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
               style: TextStyle(fontSize: 20, color: colorScheme.primary),
             ),
           ),
-          const Expanded(
-            child: TruckerDevicesList(isSender: true),
+          Expanded(
+            child: TruckerDevicesList(
+              isSender: true,
+              key: _key,
+            ),
           ),
         ],
       ),

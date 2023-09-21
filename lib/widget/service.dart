@@ -26,7 +26,7 @@ class TruckerDevicesList extends StatefulWidget {
 
 class _TruckerDevicesListState extends State<TruckerDevicesList> {
   /// FileTruckerデバイスのリスト
-  final List<TruckerDevice> _truckerDevices = [];
+  List<TruckerDevice> _truckerDevices = [];
 
   ColorScheme _colorScheme = const ColorScheme.light();
 
@@ -34,17 +34,39 @@ class _TruckerDevicesListState extends State<TruckerDevicesList> {
   void initState() {
     super.initState();
 
+    refreshUserInfo = () {
+      if (viaServiceDevice.containsKey(_truckerDevices[0].uuid)) {
+        final device = viaServiceDevice[_truckerDevices[0].uuid]!;
+        viaServiceDevice.remove(_truckerDevices[0].uuid);
+
+        setState(() {
+          _truckerDevices = [
+            ..._truckerDevices,
+            TruckerDevice(
+              device.name,
+              device.host,
+              device.progress,
+              device.status,
+              device.uuid,
+            )
+          ];
+        });
+      }
+    };
+
     // 検知サービスを開始
     startDetectService(widget.isSender ? ServiceType.receive : ServiceType.send,
         (service, status) async {
       setState(() {
         _truckerDevices.add(TruckerDevice(
-            service.name!,
-            service.host!,
-            0,
-            widget.isSender
-                ? TruckerStatus.receiveReady
-                : TruckerStatus.sendReady));
+          service.name!.substring(37),
+          service.host!,
+          0,
+          widget.isSender
+              ? TruckerStatus.receiveReady
+              : TruckerStatus.sendReady,
+          service.name!.substring(0, 36),
+        ));
       });
     });
   }
@@ -134,6 +156,10 @@ class _TruckerDevicesListState extends State<TruckerDevicesList> {
     final remote = _truckerDevices[index].host;
 
     if (widget.isSender) {
+      // サービス経由で通信しているデバイスリストに追加
+      viaServiceDevice.addEntries(
+          {MapEntry(_truckerDevices[index].uuid, _truckerDevices[index])});
+
       // サーバー側にリクエストを送信
       final res = await sendRequest(remote, Platform.localHostname);
       if (!res && mounted) {
