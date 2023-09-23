@@ -1,25 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:open_file_trucker/helper/service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../helper/service.dart';
 import '../widget/service.dart';
 
-class SenderConfigPage extends StatefulWidget {
+class SenderConfigPage extends ConsumerWidget {
   const SenderConfigPage({Key? key}) : super(key: key);
 
   @override
-  State<SenderConfigPage> createState() => _SenderConfigPageState();
-}
-
-class _SenderConfigPageState extends State<SenderConfigPage> {
-  GlobalKey _key = GlobalKey<State<TruckerDevicesList>>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -35,10 +24,9 @@ class _SenderConfigPageState extends State<SenderConfigPage> {
               style: TextStyle(fontSize: 20, color: colorScheme.primary),
             ),
           ),
-          Expanded(
+          const Expanded(
             child: TruckerDevicesList(
-              isSender: true,
-              key: _key,
+              ServiceType.receive,
             ),
           ),
         ],

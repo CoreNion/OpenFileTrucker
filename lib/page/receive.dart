@@ -37,14 +37,9 @@ class _ReceivePageState extends State<ReceivePage>
   void initState() {
     super.initState();
 
-    startDetectService(ServiceType.send, (service, status) async {
+    scanTruckerService(ServiceType.send).listen((event) {
       setState(() {
-        _truckerDevices.add(TruckerDevice(
-            service.name!.substring(37),
-            service.host!,
-            0,
-            TruckerStatus.sendReady,
-            service.name!.substring(0, 36)));
+        _truckerDevices.add(event);
       });
     });
 
@@ -121,7 +116,7 @@ class _ReceivePageState extends State<ReceivePage>
               const Text("付近のデバイス",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const Expanded(child: TruckerDevicesList(isSender: false)),
+              const Expanded(child: TruckerDevicesList(ServiceType.receive)),
             ],
           ),
         ),

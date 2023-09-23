@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:nsd/nsd.dart';
 import 'package:uuid/uuid.dart';
 
+import '../class/trucker_device.dart';
+
 enum ServiceType { send, receive }
 
 Discovery? discovery;
@@ -11,21 +13,32 @@ final uuid = const Uuid().v4();
 
 void Function() refreshUserInfo = () {};
 
-Future<void> startDetectService(ServiceType mode,
-    FutureOr<void> Function(Service, ServiceStatus) onDetect) async {
+/// Truckerな端末をスキャンし、発見次第Streamで流す
+Stream<TruckerDevice> scanTruckerService(ServiceType mode) async* {
   late String type;
   if (mode == ServiceType.send) {
     type = '_trucker-send._tcp';
   } else {
     type = '_trucker-receive._tcp';
   }
-  discovery = await startDiscovery(type);
+  discovery = await startDiscovery(type, ipLookupType: IpLookupType.v4);
 
+  final streamController = StreamController<TruckerDevice>();
   discovery!.addServiceListener((service, status) {
     if (status == ServiceStatus.found) {
-      onDetect(service, status);
+      streamController.add(TruckerDevice(
+        service.name!.substring(37),
+        service.addresses!.first.address,
+        0,
+        mode == ServiceType.send
+            ? TruckerStatus.receiveReady
+            : TruckerStatus.sendReady,
+        service.name!.substring(0, 36),
+      ));
     }
   });
+
+  yield* streamController.stream;
 }
 
 Future<void> stopDetectService() async {
