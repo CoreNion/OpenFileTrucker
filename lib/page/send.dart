@@ -1,45 +1,23 @@
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:bot_toast/bot_toast.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:desktop_drop/desktop_drop.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
-import '../class/send_settings.dart';
-import '../widget/send_settings.dart';
-import '../widget/dialog.dart';
-import '../helper/hash.dart';
-import '../send.dart';
+import '../provider/send_provider.dart';
+import '../widget/send_select.dart';
 import 'sender.dart';
 
-class SendPage extends StatefulWidget {
+class SendPage extends ConsumerStatefulWidget {
   const SendPage({Key? key}) : super(key: key);
 
   @override
-  State<SendPage> createState() => _SendPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SendPageState();
 }
 
-class _SendPageState extends State<SendPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _SendPageState extends ConsumerState<SendPage> {
   late ColorScheme colorScheme;
-
-  late bool isSmallUI;
-  List<XFile> selectedFiles = <XFile>[];
-  String totalSizeText = "0 B";
-  SendSettings settings = SendSettings();
-
-  String ipText = "";
-  String keyText = "";
-  Widget stopServerButton = Container();
-  bool serverListen = false;
 
   @override
   void initState() {
@@ -63,7 +41,7 @@ class _SendPageState extends State<SendPage>
         for (var i = 0; i < sharedMedia.attachments!.length; i++) {
           files.add(XFile(sharedMedia.attachments![i]!.path));
         }
-        _setFiles(files);
+        ref.read(selectedFilesProvider.notifier).state = files;
       }
     }
 
@@ -78,397 +56,29 @@ class _SendPageState extends State<SendPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(child: LayoutBuilder(
       builder: (context, constraints) {
         // サイズごとにUIを変える
-        final pageWidth = constraints.maxWidth;
-        if (pageWidth >= 800) {
-          isSmallUI = false;
-          return largeUI();
-        } else {
-          isSmallUI = true;
-          return smallUI();
-        }
+        return Scaffold(
+            body: constraints.maxWidth >= 800
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      const Expanded(flex: 6, child: SelectFiles()),
+                      Expanded(
+                          flex: 4,
+                          child: Container(
+                              decoration: const BoxDecoration(
+                                  border: Border(
+                                      left: BorderSide(color: Colors.grey))),
+                              child: const SenderConfigPage()))
+                    ],
+                  )
+                : const SelectFiles(),
+            floatingActionButton: ref.watch(actionButtonProvider));
       },
     ));
-  }
-
-  /// 大きな画面やウィンドウに最適化された送信ページのUI
-  Scaffold largeUI() {
-    return Scaffold(
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Expanded(flex: 6, child: selectFileArea()),
-            Expanded(
-                flex: 4,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    border: Border(
-                        left: BorderSide(
-                      color: Colors.grey,
-                    )),
-                  ),
-                  child: const SenderConfigPage(),
-                ))
-          ],
-        ),
-        floatingActionButton: stopServerButton);
-  }
-
-  /// 小さな画面やウィンドウに最適化された送信ページのUI
-  Scaffold smallUI() {
-    return Scaffold(
-        body: selectFileArea(), floatingActionButton: stopServerButton);
-  }
-
-  /// ファイルを選択する部分のUI
-  Widget selectFileArea() {
-    return Column(children: <Widget>[
-      Container(
-        color: colorScheme.background,
-        padding: const EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          IconButton.filled(
-              onPressed: () async {
-                await selectFile();
-              },
-              icon: const Icon(Icons.add)),
-          Text(
-            "${selectedFiles.length}個のファイル   合計: $totalSizeText",
-            style: const TextStyle(fontSize: 17),
-          ),
-        ]),
-      ),
-      Expanded(
-        flex: 8,
-        child: DropTarget(
-            onDragDone: (detail) {
-              _setFiles(detail.files);
-            },
-            child: selectedFiles.isEmpty
-                ? Center(
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          selectFile();
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.surface,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            )),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          child: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.file_open, size: 100),
-                              Text(
-                                "タップでファイルを追加\nまたはドラック＆ドロップ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 20),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    itemBuilder: (context, index) {
-                      return Dismissible(
-                        key: Key(selectedFiles[index].path),
-                        background: Container(
-                          color: colorScheme.errorContainer,
-                          alignment: Alignment.centerLeft,
-                          child: const Padding(
-                            padding: EdgeInsets.only(left: 20),
-                            child: Icon(Icons.delete, color: Colors.white),
-                          ),
-                        ),
-                        onDismissed: (direction) {
-                          setState(() {
-                            selectedFiles.removeAt(index);
-                            _setFileInfo();
-                          });
-                        },
-                        child: ListTile(
-                            title: Text(p.basename(selectedFiles[index].path)),
-                            leading: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    selectedFiles.removeAt(index);
-                                    _setFileInfo();
-                                  });
-                                },
-                                icon: const Icon(Icons.delete))),
-                      );
-                    },
-                    itemCount: selectedFiles.length)),
-      ),
-      Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(7),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                    flex: 8,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                      child: const Text("送信する"),
-                      onPressed: () async {
-                        final nav = Navigator.of(context);
-                        if (serverListen) {
-                          showDialog(
-                              context: context,
-                              builder: (context) => EasyDialog.showSmallInfo(
-                                  nav, "エラー", "他のファイルの共有を停止してください。"));
-                        } else if (selectedFiles.isNotEmpty) {
-                          try {
-                            final networks =
-                                await SendFiles.getAvailableNetworks();
-
-                            // 利用可能なネットワークが無い場合は終了
-                            if (networks == null) {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      EasyDialog.showSmallInfo(
-                                          Navigator.of(context),
-                                          "エラー",
-                                          "WiFiやイーサーネットなどに接続してください。"));
-                              return;
-                            }
-
-                            // スリープ無効化
-                            WakelockPlus.enable();
-
-                            List<Uint8List>? hashs;
-                            if (settings.checkFileHash) {
-                              // トーストでで通知
-                              BotToast.showNotification(
-                                leading: (cancelFunc) =>
-                                    const CircularProgressIndicator(),
-                                title: (_) => const Text("ファイルのハッシュを計算中です..."),
-                                subtitle: (cancelFunc) {
-                                  return const Text(
-                                      "ファイルの大きさなどによっては、時間がかかる場合があります。");
-                                },
-                                duration: const Duration(days: 99999999),
-                              );
-                              hashs = await calcFileHash(selectedFiles);
-
-                              // トーストを消す
-                              BotToast.cleanAll();
-                            }
-
-                            // サーバーの開始
-                            await SendFiles.serverStart(
-                                settings, selectedFiles, hashs);
-                            serverListen = true;
-                            ipText = "IP: ${settings.bindAdress}";
-                            stopServerButton = FloatingActionButton(
-                              onPressed: _stopShareProcess,
-                              tooltip: '共有を停止する',
-                              child: const Icon(Icons.pause),
-                            );
-
-                            // 小画面デバイスの場合、別ページでqrを表示
-                            if (isSmallUI) {
-                              if (!mounted) return;
-                              await showModalBottomSheet(
-                                  backgroundColor: Colors.transparent,
-                                  useSafeArea: true,
-                                  context: context,
-                                  builder: (context) {
-                                    return Container(
-                                      padding: EdgeInsets.only(
-                                        bottom: MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colorScheme.background,
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(25))),
-                                      child: SizedBox(
-                                        height: 700,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            AppBar(
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                  top: Radius.circular(25),
-                                                ),
-                                              ),
-                                              title: const Text("送信待機中です"),
-                                              automaticallyImplyLeading: false,
-                                              leading: IconButton(
-                                                  onPressed: (() =>
-                                                      Navigator.of(context)
-                                                          .pop()),
-                                                  icon: const Icon(
-                                                      Icons.expand_more)),
-                                            ),
-                                            Expanded(child: SenderConfigPage()),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  });
-                              _stopShareProcess();
-                            } else {
-                              setState(() {});
-                            }
-                          } catch (e) {
-                            EasyDialog.showErrorDialog(
-                                e, Navigator.of(context));
-
-                            BotToast.cleanAll();
-                          }
-                        } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) => EasyDialog.showSmallInfo(
-                                  Navigator.of(context),
-                                  "エラー",
-                                  "ファイルを選択してください。"));
-                        }
-                      },
-                    )),
-                const SizedBox(width: 10),
-                Expanded(
-                    flex: 2,
-                    child: IconButton.outlined(
-                        onPressed: (() async {
-                          final res = await showDialog(
-                              context: context,
-                              builder: (context) => SendSettingsDialog(
-                                  currentSettings: settings));
-                          if (res != null && mounted) {
-                            setState(() {
-                              settings = res;
-                            });
-                          }
-                        }),
-                        icon: const Icon(Icons.settings)))
-              ],
-            ),
-          )),
-    ]);
-  }
-
-  /// ファイル共有を停止し、初期状態に戻す関数
-  void _stopShareProcess() async {
-    SendFiles.serverClose();
-
-    if (Platform.isIOS || Platform.isAndroid) {
-      // キャッシュ削除
-      await FilePicker.platform.clearTemporaryFiles();
-    }
-
-    // スリープ有効化
-    WakelockPlus.disable();
-    serverListen = false;
-    selectedFiles.clear();
-
-    setState(() {
-      totalSizeText = "0 B";
-      ipText = "";
-      stopServerButton = Container();
-    });
-  }
-
-  /// ファイル選択ダイアログ経由でのファイル選択を行う
-  Future<void> selectFile() async {
-    late FileType fileType;
-    if (Platform.isIOS) {
-      fileType = await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                  title: const Text("データの種類を選択", textAlign: TextAlign.center),
-                  actions: <Widget>[
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Column(children: <Widget>[
-                            IconButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, FileType.any),
-                                icon: const Icon(Icons.file_copy, size: 70)),
-                            const Text("ファイル")
-                          ]),
-                          Column(children: [
-                            IconButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, FileType.any),
-                                icon: const Icon(Icons.perm_media, size: 70)),
-                            const Text("写真/動画")
-                          ])
-                        ])
-                  ]));
-    } else {
-      fileType = FileType.any;
-    }
-
-    final file = await SendFiles.pickFiles(type: fileType);
-    _setFiles(file);
-  }
-
-  /// 選択したファイルを設定 (Listの型はFileかXFileのみ有効)
-  ///
-  /// File型を設定した場合、自動的にXFileに変換
-  Future<void> _setFiles(List<dynamic>? val) async {
-    if (val == null || val.isEmpty) {
-      return;
-    }
-
-    // ファイルの重複を確認
-    for (var file in val) {
-      if (selectedFiles.map((e) => e.path).contains(file.path)) {
-        return;
-      }
-    }
-
-    // ファイルリストに追加 / 変換
-    if (val is List<File>) {
-      selectedFiles.addAll(val.map((e) => XFile(e.path)));
-    } else if (val is List<XFile>) {
-      selectedFiles.addAll(val);
-    } else {
-      throw ArgumentError.value(val);
-    }
-
-    await _setFileInfo();
-  }
-
-  /// selectedFilesからファイル選択ボタンに書かれる文章を設定
-  Future<void> _setFileInfo() async {
-    int totalSize = 0;
-    // サイズを取得
-    for (XFile file in selectedFiles) {
-      int fileLength = await file.length();
-      totalSize += fileLength;
-    }
-
-    setState(() {
-      totalSizeText = FileSize.getSize(totalSize);
-    });
   }
 }

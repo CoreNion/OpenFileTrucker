@@ -13,6 +13,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
+import 'provider/send_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,10 @@ void main() async {
     ]);
   });
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(ProviderScope(
+    observers: [ServerStateListener()],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends ConsumerWidget {

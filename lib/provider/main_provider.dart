@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,3 +11,8 @@ final isDarkProvider = StateProvider<bool>((ref) {
 
 /// 現在のページインデックス
 final currentPageIndexProvider = StateProvider<int>((ref) => 0);
+
+/// 小さい画面かどうか
+final isSmallUIProvider = Provider<bool>((ref) {
+  return PlatformDispatcher.instance.views.first.physicalSize.width < 800;
+});
