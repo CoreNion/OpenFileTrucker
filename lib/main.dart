@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
+import 'helper/service.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
@@ -27,6 +29,9 @@ void main() async {
       LicenseEntryWithLineBreaks(<String>['Noto Sans JP'], ofl)
     ]);
   });
+
+  // 受信用のmDNSサービスを登録
+  await registerNsd(ServiceType.receive, Platform.localHostname);
 
   runApp(ProviderScope(
     observers: [ServerStateListener()],
@@ -78,73 +83,83 @@ class MyApp extends ConsumerWidget {
           useMaterial3: true,
         ),
         themeMode: ref.watch(isDarkProvider) ? ThemeMode.dark : ThemeMode.light,
-        home: Builder(
-          builder: (context) => Scaffold(
-            appBar: AppBar(
-              title: const Text("Open FileTrucker"),
-              actions: <Widget>[
-                IconButton(
-                    icon: const Icon(Icons.brightness_6),
-                    onPressed: () => ref.read(isDarkProvider.notifier).state =
-                        !ref.watch(isDarkProvider)),
-                IconButton(
-                    icon: const Icon(Icons.info),
-                    onPressed: () async {
-                      showAboutDialog(
-                          context: context,
-                          applicationIcon: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              child: SvgPicture.asset(
-                                'assets/FileTrucker.svg',
-                                width: 60,
-                                height: 60,
-                              )),
-                          applicationName: 'Open FileTrucker',
-                          applicationVersion: "Version:${packageInfo.version}",
-                          applicationLegalese: 'Copyright (c) 2023 CoreNion\n',
-                          children: <Widget>[
-                            if (await canLaunchUrl(siteUri)) ...{
-                              TextButton(
-                                child: const Text('公式サイト'),
-                                onPressed: () async => await launchUrl(siteUri),
-                              ),
-                              TextButton(
-                                  style: TextButton.styleFrom(
-                                      foregroundColor: Colors.blue),
-                                  onPressed: () async => await launchUrl(Uri.parse(
-                                      "https://github.com/CoreNion/OpenFileTrucker")),
-                                  child: const Text('GitHub')),
-                            }
-                          ]);
-                    }),
-              ],
-            ),
-            bottomNavigationBar: NavigationBar(
-              onDestinationSelected: (int index) {
-                ref.read(currentPageIndexProvider.notifier).state = index;
-              },
-              selectedIndex: ref.watch(currentPageIndexProvider),
-              destinations: const <Widget>[
-                NavigationDestination(
-                  icon: Icon(Icons.send_outlined),
-                  selectedIcon: Icon(Icons.send),
-                  label: '送信',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.download_outlined),
-                  selectedIcon: Icon(Icons.download),
-                  label: '受信',
-                ),
-              ],
-            ),
-            body: IndexedStack(
-                index: ref.watch(currentPageIndexProvider),
-                children: const <Widget>[
-                  SendPage(),
-                  ReceivePage(),
-                ]),
-          ),
+        home: LayoutBuilder(
+          builder: (context, constraints) {
+            // 小さい画面かどうかを判定
+            Future(() => ref.read(isSmallUIProvider.notifier).state =
+                constraints.maxWidth < 800);
+
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text("Open FileTrucker"),
+                actions: <Widget>[
+                  IconButton(
+                      icon: const Icon(Icons.brightness_6),
+                      onPressed: () => ref.read(isDarkProvider.notifier).state =
+                          !ref.watch(isDarkProvider)),
+                  IconButton(
+                      icon: const Icon(Icons.info),
+                      onPressed: () async {
+                        showAboutDialog(
+                            context: context,
+                            applicationIcon: ClipRRect(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                child: SvgPicture.asset(
+                                  'assets/FileTrucker.svg',
+                                  width: 60,
+                                  height: 60,
+                                )),
+                            applicationName: 'Open FileTrucker',
+                            applicationVersion:
+                                "Version:${packageInfo.version}",
+                            applicationLegalese:
+                                'Copyright (c) 2023 CoreNion\n',
+                            children: <Widget>[
+                              if (await canLaunchUrl(siteUri)) ...{
+                                TextButton(
+                                  child: const Text('公式サイト'),
+                                  onPressed: () async =>
+                                      await launchUrl(siteUri),
+                                ),
+                                TextButton(
+                                    style: TextButton.styleFrom(
+                                        foregroundColor: Colors.blue),
+                                    onPressed: () async => await launchUrl(
+                                        Uri.parse(
+                                            "https://github.com/CoreNion/OpenFileTrucker")),
+                                    child: const Text('GitHub')),
+                              }
+                            ]);
+                      }),
+                ],
+              ),
+              bottomNavigationBar: NavigationBar(
+                onDestinationSelected: (int index) {
+                  ref.read(currentPageIndexProvider.notifier).state = index;
+                },
+                selectedIndex: ref.watch(currentPageIndexProvider),
+                destinations: const <Widget>[
+                  NavigationDestination(
+                    icon: Icon(Icons.send_outlined),
+                    selectedIcon: Icon(Icons.send),
+                    label: '送信',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.download_outlined),
+                    selectedIcon: Icon(Icons.download),
+                    label: '受信',
+                  ),
+                ],
+              ),
+              body: IndexedStack(
+                  index: ref.watch(currentPageIndexProvider),
+                  children: const <Widget>[
+                    SendPage(),
+                    ReceivePage(),
+                  ]),
+            );
+          },
         ),
       );
     }));

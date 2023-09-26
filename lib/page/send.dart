@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_handler/share_handler.dart';
 
+import '../provider/main_provider.dart';
 import '../provider/send_provider.dart';
 import '../widget/send_select.dart';
 import 'sender.dart';
@@ -58,27 +59,26 @@ class _SendPageState extends ConsumerState<SendPage> {
   Widget build(BuildContext context) {
     colorScheme = Theme.of(context).colorScheme;
 
-    return SafeArea(child: LayoutBuilder(
-      builder: (context, constraints) {
-        // サイズごとにUIを変える
-        return Scaffold(
-            body: constraints.maxWidth >= 800
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      const Expanded(flex: 6, child: SelectFiles()),
-                      Expanded(
-                          flex: 4,
-                          child: Container(
-                              decoration: const BoxDecoration(
-                                  border: Border(
-                                      left: BorderSide(color: Colors.grey))),
-                              child: const SenderConfigPage()))
-                    ],
-                  )
-                : const SelectFiles(),
-            floatingActionButton: ref.watch(actionButtonProvider));
-      },
-    ));
+    return SafeArea(
+      child: Scaffold(
+        body: !(ref.watch(isSmallUIProvider))
+            // サイズごとにUIを変える
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  const Expanded(flex: 6, child: SelectFiles()),
+                  Expanded(
+                      flex: 4,
+                      child: Container(
+                          decoration: const BoxDecoration(
+                              border:
+                                  Border(left: BorderSide(color: Colors.grey))),
+                          child: const SenderConfigPage()))
+                ],
+              )
+            : const SelectFiles(),
+        floatingActionButton: ref.watch(actionButtonProvider),
+      ),
+    );
   }
 }

@@ -13,6 +13,6 @@ final isDarkProvider = StateProvider<bool>((ref) {
 final currentPageIndexProvider = StateProvider<int>((ref) => 0);
 
 /// 小さい画面かどうか
-final isSmallUIProvider = Provider<bool>((ref) {
+final isSmallUIProvider = StateProvider<bool>((ref) {
   return PlatformDispatcher.instance.views.first.physicalSize.width < 800;
 });
