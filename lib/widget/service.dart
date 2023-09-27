@@ -78,7 +78,7 @@ class TruckerDevicesList extends ConsumerWidget {
 
                           final remote = allDevices[index].host;
 
-                          if (scanType == ServiceType.send) {
+                          if (scanType == ServiceType.receive) {
                             // サービス経由で通信しているデバイスリストに追加
                             viaServiceDevice.addEntries({
                               MapEntry(
