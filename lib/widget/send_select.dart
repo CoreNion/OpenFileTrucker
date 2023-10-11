@@ -38,7 +38,7 @@ class SelectFiles extends ConsumerWidget {
     return Column(children: <Widget>[
       Container(
         color: colorScheme.background,
-        padding: const EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           IconButton.filled(
@@ -50,9 +50,21 @@ class SelectFiles extends ConsumerWidget {
                 refleshFilesList();
               },
               icon: const Icon(Icons.add)),
-          Text(
-            "${selectedFiles.length}個のファイル   ${totalSize.hasValue ? totalSize.asData?.value : ''}",
-            style: const TextStyle(fontSize: 17),
+          Row(
+            children: [
+              Text(
+                "${selectedFiles.length}個のファイル   ${totalSize.hasValue ? totalSize.asData?.value : ''}",
+                style: const TextStyle(fontSize: 17),
+              ),
+              const SizedBox(width: 10),
+              IconButton.outlined(
+                  onPressed: (() async {
+                    await showDialog(
+                        context: context,
+                        builder: (context) => const SendSettingsDialog());
+                  }),
+                  icon: const Icon(Icons.settings))
+            ],
           ),
         ]),
       ),
@@ -126,136 +138,105 @@ class SelectFiles extends ConsumerWidget {
                     },
                     itemCount: selectedFiles.length)),
       ),
-      Expanded(
-          flex: 1,
-          child: Container(
-            margin: const EdgeInsets.all(7),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                    flex: 8,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                      child: const Text("送信する"),
-                      onPressed: () async {
-                        if (serverListen) {
-                          EasyDialog.showSmallToast(
-                              ref, "エラー", "他のファイルの共有を停止してください。");
-                        } else if (selectedFiles.isNotEmpty) {
-                          try {
-                            final networks =
-                                await SendFiles.getAvailableNetworks();
+      Container(
+        height: 50,
+        width: double.infinity,
+        margin: const EdgeInsets.all(7),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          child: const Text("送信する"),
+          onPressed: () async {
+            if (serverListen) {
+              EasyDialog.showSmallToast(ref, "エラー", "他のファイルの共有を停止してください。");
+            } else if (selectedFiles.isNotEmpty) {
+              try {
+                final networks = await SendFiles.getAvailableNetworks();
 
-                            // 利用可能なネットワークが無い場合は終了
-                            if (networks == null) {
-                              BotToast.showSimpleNotification(
-                                  title: "利用可能なネットワークがありません",
-                                  subTitle: "WiFiやイーサーネットなどに接続してください。",
-                                  backgroundColor: colorScheme.onError,
-                                  duration: const Duration(seconds: 5));
-                              return;
-                            }
+                // 利用可能なネットワークが無い場合は終了
+                if (networks == null) {
+                  BotToast.showSimpleNotification(
+                      title: "利用可能なネットワークがありません",
+                      subTitle: "WiFiやイーサーネットなどに接続してください。",
+                      backgroundColor: colorScheme.onError,
+                      duration: const Duration(seconds: 5));
+                  return;
+                }
 
-                            List<Uint8List>? hashs;
-                            if (settings.checkFileHash) {
-                              // トーストでで通知
-                              BotToast.showNotification(
-                                leading: (cancelFunc) =>
-                                    const CircularProgressIndicator(),
-                                title: (_) => const Text("ファイルのハッシュを計算中です..."),
-                                subtitle: (cancelFunc) {
-                                  return const Text(
-                                      "ファイルの大きさなどによっては、時間がかかる場合があります。");
-                                },
-                                duration: const Duration(days: 99999999),
-                              );
-                              hashs = await calcFileHash(selectedFiles);
+                List<Uint8List>? hashs;
+                if (settings.checkFileHash) {
+                  // トーストでで通知
+                  BotToast.showNotification(
+                    leading: (cancelFunc) => const CircularProgressIndicator(),
+                    title: (_) => const Text("ファイルのハッシュを計算中です..."),
+                    subtitle: (cancelFunc) {
+                      return const Text("ファイルの大きさなどによっては、時間がかかる場合があります。");
+                    },
+                    duration: const Duration(days: 99999999),
+                  );
+                  hashs = await calcFileHash(selectedFiles);
 
-                              // トーストを消す
-                              BotToast.cleanAll();
-                            }
+                  // トーストを消す
+                  BotToast.cleanAll();
+                }
 
-                            // サーバーの開始
-                            await SendFiles.serverStart(
-                                settings, selectedFiles, hashs);
-                            ref.read(serverStateProvider.notifier).state = true;
+                // サーバーの開始
+                await SendFiles.serverStart(settings, selectedFiles, hashs);
+                ref.read(serverStateProvider.notifier).state = true;
 
-                            // 小画面デバイスの場合、別ページで送信待機を表示
-                            if (isSmallUi) {
-                              await showModalBottomSheet(
-                                  backgroundColor: Colors.transparent,
-                                  useSafeArea: true,
-                                  context: context,
-                                  builder: (context) {
-                                    return Container(
-                                      padding: EdgeInsets.only(
-                                        bottom: MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colorScheme.background,
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(25))),
-                                      child: SizedBox(
-                                        height: 700,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            AppBar(
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                  top: Radius.circular(25),
-                                                ),
-                                              ),
-                                              title: const Text("送信待機中です"),
-                                              automaticallyImplyLeading: false,
-                                              leading: IconButton(
-                                                  onPressed: (() =>
-                                                      Navigator.of(context)
-                                                          .pop()),
-                                                  icon: const Icon(
-                                                      Icons.expand_more)),
-                                            ),
-                                            const Expanded(
-                                                child: SenderConfigPage()),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            }
-                          } catch (e) {
-                            EasyDialog.showErrorNoti(e, ref);
+                // 小画面デバイスの場合、別ページで送信待機を表示
+                if (isSmallUi) {
+                  await showModalBottomSheet(
+                      backgroundColor: Colors.transparent,
+                      useSafeArea: true,
+                      context: context,
+                      builder: (context) {
+                        return Container(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          decoration: BoxDecoration(
+                              color: colorScheme.background,
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(25))),
+                          child: SizedBox(
+                            height: 700,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppBar(
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(25),
+                                    ),
+                                  ),
+                                  title: const Text("送信待機中です"),
+                                  automaticallyImplyLeading: false,
+                                  leading: IconButton(
+                                      onPressed: (() =>
+                                          Navigator.of(context).pop()),
+                                      icon: const Icon(Icons.expand_more)),
+                                ),
+                                const Expanded(child: SenderConfigPage()),
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                }
+              } catch (e) {
+                EasyDialog.showErrorNoti(e, ref);
 
-                            BotToast.cleanAll();
-                          }
-                        } else {
-                          EasyDialog.showSmallToast(
-                              ref, "エラー", "ファイルを選択してください。");
-                        }
-                      },
-                    )),
-                const SizedBox(width: 10),
-                Expanded(
-                    flex: 2,
-                    child: IconButton.outlined(
-                        onPressed: (() async {
-                          await showDialog(
-                              context: context,
-                              builder: (context) => const SendSettingsDialog());
-                        }),
-                        icon: const Icon(Icons.settings)))
-              ],
-            ),
-          )),
+                BotToast.cleanAll();
+              }
+            } else {
+              EasyDialog.showSmallToast(ref, "エラー", "ファイルを選択してください。");
+            }
+          },
+        ),
+      ),
     ]);
   }
 
