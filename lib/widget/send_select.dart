@@ -185,7 +185,7 @@ class SelectFiles extends ConsumerWidget {
                                 settings, selectedFiles, hashs);
                             ref.read(serverStateProvider.notifier).state = true;
 
-                            // 小画面デバイスの場合、別ページでqrを表示
+                            // 小画面デバイスの場合、別ページで送信待機を表示
                             if (isSmallUi) {
                               await showModalBottomSheet(
                                   backgroundColor: Colors.transparent,
@@ -224,7 +224,8 @@ class SelectFiles extends ConsumerWidget {
                                                   icon: const Icon(
                                                       Icons.expand_more)),
                                             ),
-                                            Expanded(child: SenderConfigPage()),
+                                            const Expanded(
+                                                child: SenderConfigPage()),
                                           ],
                                         ),
                                       ),
@@ -247,13 +248,9 @@ class SelectFiles extends ConsumerWidget {
                     flex: 2,
                     child: IconButton.outlined(
                         onPressed: (() async {
-                          final res = await showDialog(
+                          await showDialog(
                               context: context,
-                              builder: (context) => SendSettingsDialog(
-                                  currentSettings: settings));
-                          if (res != null) {
-                            ref.read(sendSettingsProvider.notifier).state = res;
-                          }
+                              builder: (context) => const SendSettingsDialog());
                         }),
                         icon: const Icon(Icons.settings)))
               ],
