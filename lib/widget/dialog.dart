@@ -1,27 +1,26 @@
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webcrypto/webcrypto.dart';
 
+import '../provider/main_provider.dart';
+
 class EasyDialog {
   /// 小規模なダイアログを表示する
-  static Widget showSmallInfo(
-      NavigatorState nav, String title, String content) {
-    return AlertDialog(
-      title: Text(title),
-      content: Text(content),
-      actions: <Widget>[
-        TextButton(
-          child: const Text("OK"),
-          onPressed: () => nav.pop(),
-        )
-      ],
-    );
+  static CancelFunc showSmallToast(
+      WidgetRef ref, String title, String content) {
+    return BotToast.showSimpleNotification(
+        title: title,
+        subTitle: content,
+        backgroundColor: ref.watch(colorSchemeProvider).onError,
+        duration: const Duration(seconds: 10));
   }
 
   /// エラーのダイアログを表示する
-  static Future<void> showErrorDialog(e, NavigatorState nav) {
+  static CancelFunc showErrorNoti(e, WidgetRef ref) {
     late String errorTitle;
     late String errorMessage;
     String exceptionMessage = "";
@@ -50,20 +49,11 @@ class EasyDialog {
       exceptionMessage = "詳細:\n$e";
     }
 
-    return showDialog(
-        context: nav.context,
-        builder: (builder) {
-          return AlertDialog(
-            title: Text(errorTitle),
-            content: Text(errorMessage + exceptionMessage),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("閉じる"),
-                onPressed: () => nav.pop(),
-              )
-            ],
-          );
-        });
+    return BotToast.showSimpleNotification(
+        title: errorTitle,
+        subTitle: errorMessage + exceptionMessage,
+        backgroundColor: ref.watch(colorSchemeProvider).onError,
+        duration: const Duration(seconds: 10));
   }
 
   /// 権限が必要であることを伝えるダイアログを表示する

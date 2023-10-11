@@ -143,12 +143,9 @@ class SelectFiles extends ConsumerWidget {
                       ),
                       child: const Text("送信する"),
                       onPressed: () async {
-                        final nav = Navigator.of(context);
                         if (serverListen) {
-                          showDialog(
-                              context: context,
-                              builder: (context) => EasyDialog.showSmallInfo(
-                                  nav, "エラー", "他のファイルの共有を停止してください。"));
+                          EasyDialog.showSmallToast(
+                              ref, "エラー", "他のファイルの共有を停止してください。");
                         } else if (selectedFiles.isNotEmpty) {
                           try {
                             final networks =
@@ -156,13 +153,11 @@ class SelectFiles extends ConsumerWidget {
 
                             // 利用可能なネットワークが無い場合は終了
                             if (networks == null) {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      EasyDialog.showSmallInfo(
-                                          Navigator.of(context),
-                                          "エラー",
-                                          "WiFiやイーサーネットなどに接続してください。"));
+                              BotToast.showSimpleNotification(
+                                  title: "利用可能なネットワークがありません",
+                                  subTitle: "WiFiやイーサーネットなどに接続してください。",
+                                  backgroundColor: colorScheme.onError,
+                                  duration: const Duration(seconds: 5));
                               return;
                             }
 
@@ -237,18 +232,13 @@ class SelectFiles extends ConsumerWidget {
                                   });
                             }
                           } catch (e) {
-                            EasyDialog.showErrorDialog(
-                                e, Navigator.of(context));
+                            EasyDialog.showErrorNoti(e, ref);
 
                             BotToast.cleanAll();
                           }
                         } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) => EasyDialog.showSmallInfo(
-                                  Navigator.of(context),
-                                  "エラー",
-                                  "ファイルを選択してください。"));
+                          EasyDialog.showSmallToast(
+                              ref, "エラー", "ファイルを選択してください。");
                         }
                       },
                     )),

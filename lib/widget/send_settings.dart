@@ -67,12 +67,9 @@ class _SendSettingsDialogState extends State<SendSettingsDialog> {
                 if (!mounted) return;
 
                 if (nets == null || nets.isEmpty) {
-                  return showDialog(
-                      context: context,
-                      builder: (context) => EasyDialog.showSmallInfo(
-                          Navigator.of(context),
-                          "エラー",
-                          "WiFiやイーサーネットなどに接続してください。"));
+                  EasyDialog.showSmallToast(
+                      ref, "エラー", "WiFiやイーサーネットなどに接続してください。");
+                  return;
                 }
 
                 // 選択肢のDialogOptionに追加する
