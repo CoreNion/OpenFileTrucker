@@ -11,10 +11,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
+import 'helper/incoming.dart';
 import 'helper/service.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
+import 'provider/receive_provider.dart';
 import 'provider/send_provider.dart';
 
 void main() async {
@@ -39,13 +41,45 @@ void main() async {
   ));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   static late PackageInfo packageInfo;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    // スキャン経由の受信用のサービスを登録
+    startIncomingServer((name) async {
+      final completer = Completer<bool>();
+
+      BotToast.showNotification(
+        title: (_) => Text("$nameからの受信リクエスト"),
+        subtitle: (_) => const Text("許諾するにはタップ"),
+        leading: (_) => const Icon(Icons.file_download),
+        duration: const Duration(days: 999),
+        onTap: () {
+          BotToast.cleanAll();
+          completer.complete(true);
+        },
+      );
+      return await completer.future;
+    }, ((remote) async {
+      // 受信ページに移動
+      ref.read(currentPageIndexProvider.notifier).state = 1;
+      // 受信リストに追加
+      await startManualReceive(remote, ref);
+    }));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       ColorScheme lightColorScheme;
       ColorScheme darkColorScheme;
@@ -88,6 +122,9 @@ class MyApp extends ConsumerWidget {
             // 小さい画面かどうかを判定
             Future(() => ref.read(isSmallUIProvider.notifier).state =
                 constraints.maxWidth < 800);
+            // ColorSchemeを更新
+            Future(() => ref.read(colorSchemeProvider.notifier).state =
+                ref.watch(isDarkProvider) ? darkColorScheme : lightColorScheme);
 
             return Scaffold(
               appBar: AppBar(
@@ -112,7 +149,7 @@ class MyApp extends ConsumerWidget {
                                 )),
                             applicationName: 'Open FileTrucker',
                             applicationVersion:
-                                "Version:${packageInfo.version}",
+                                "Version:${MyApp.packageInfo.version}",
                             applicationLegalese:
                                 'Copyright (c) 2023 CoreNion\n',
                             children: <Widget>[

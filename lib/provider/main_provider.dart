@@ -9,6 +9,13 @@ final isDarkProvider = StateProvider<bool>((ref) {
       Brightness.dark;
 });
 
+/// 現在のColorScheme
+final colorSchemeProvider = StateProvider<ColorScheme>((ref) {
+  return ref.watch(isDarkProvider)
+      ? const ColorScheme.dark()
+      : const ColorScheme.light();
+});
+
 /// 現在のページインデックス
 final currentPageIndexProvider = StateProvider<int>((ref) => 0);
 
