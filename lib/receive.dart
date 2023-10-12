@@ -20,7 +20,7 @@ class ReceiveFile {
 
   /// ファイルの受信の処理をする関数
   static Future<StreamController<ReceiveProgress>> receiveFile(
-      String ip, int fileIndex, File saveFile, int size) async {
+      String ip, int fileIndex, File saveFile, FileInfo fileInfo) async {
     if (_aesCbcSecretKey == null) {
       throw Exception("AES-CBC暗号化用の鍵が設定されていません");
     }
@@ -45,7 +45,7 @@ class ReceiveFile {
     final timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       final currentFileSize = saveFile.lengthSync();
 
-      latestProg = _refreshProgress(latestProg, size, currentFileSize);
+      latestProg = _refreshProgress(latestProg, fileInfo.size, currentFileSize);
       controller.sink.add(latestProg);
     });
 
@@ -116,7 +116,7 @@ class ReceiveFile {
 
   /// FileInfoにあるファイルを全て受信する関数
   static Future<StreamController<ReceiveProgress>> receiveAllFiles(
-      String ip, FileInfo fileInfo, String dirPath) async {
+      String ip, List<FileInfo> fileInfos, String dirPath) async {
     StreamController<ReceiveProgress> controller = StreamController();
     late StreamController<ReceiveProgress> singleController;
 
@@ -128,19 +128,19 @@ class ReceiveFile {
     bool receiveDone = false;
 
     // 全ファイルの合計のサイズを計算
-    final totalFileSize =
-        fileInfo.sizes.reduce((value, element) => value + element);
+    final totalFileSize = fileInfos.fold<int>(
+        0, (previousValue, element) => previousValue + element.size);
 
     // 受信タスクを非同期実行
     Future.sync(() async {
       // 各ファイルを受信
-      for (var i = 0; i < fileInfo.names.length; i++) {
+      for (var i = 0; i < fileInfos.length; i++) {
         singleController = await ReceiveFile.receiveFile(
-            ip, i, File(p.join(dirPath, fileInfo.names[i])), fileInfo.sizes[i]);
+            ip, i, File(p.join(dirPath, fileInfos[i].name)), fileInfos[i]);
 
         singleController.stream.listen((progress) {
           // 各値を最新の値に更新
-          if (!(fileInfo.names.length == 1)) {
+          if (!(fileInfos.length == 1)) {
             currentTotalSize = currentTotalSize + progress.receiveSpeed;
             totalProgress = (currentTotalSize / totalFileSize).toDouble();
           } else {
@@ -175,8 +175,8 @@ class ReceiveFile {
         await singleController.close();
 
         // ファイルが残っている場合は削除
-        for (String fileName in fileInfo.names) {
-          final file = File(p.join(dirPath, fileName));
+        for (var i = 0; i < fileInfos.length; i++) {
+          final file = File(p.join(dirPath, fileInfos[i].name));
           if (file.existsSync()) {
             file.deleteSync();
           }
@@ -189,9 +189,9 @@ class ReceiveFile {
   }
 
   /// 画像/動画のみかを確認する関数
-  static bool checkMediaOnly(FileInfo fileInfo) {
-    return fileInfo.names.every((name) {
-      final mine = lookupMimeType(name);
+  static bool checkMediaOnly(List<FileInfo> fileInfos) {
+    return fileInfos.every((f) {
+      final mine = lookupMimeType(f.name);
       if (mine != null) {
         return mine.contains(RegExp(r"image|video"));
       } else {
@@ -201,8 +201,8 @@ class ReceiveFile {
   }
 
   /// サーバーにファイル情報を取得する関数
-  static Future<FileInfo> getServerFileInfo(String ip) async {
-    late FileInfo result;
+  static Future<List<FileInfo>> getServerFileInfo(String ip) async {
+    List<FileInfo> result = [];
 
     final iv = Uint8List(16);
     fillRandomBytes(iv);
@@ -242,8 +242,13 @@ class ReceiveFile {
       final recIV = event.sublist(0, 16);
       final data = event.sublist(16);
 
-      result = FileInfo.mapToInfo(json.decode(
-          utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV))));
+      final js = json.decode(
+              utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV)))
+          as List<dynamic>;
+      for (var element in js) {
+        final map = element as Map<String, dynamic>;
+        result.add(FileInfo.mapToInfo(map));
+      }
 
       completer.complete();
       socket.destroy();
@@ -272,11 +277,12 @@ class ReceiveFile {
   }
 
   /// 各ファイルの整合性を確認する関数
-  static Future<bool> checkFileHash(String dirPath, FileInfo fileInfo) async {
+  static Future<bool> checkFileHash(
+      String dirPath, List<FileInfo> fileInfos) async {
     // 各ファイルのハッシュ値を確認
-    for (var i = 0; i < fileInfo.names.length; i++) {
-      final Uint8List origHash = fileInfo.hashs![i];
-      final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
+    for (var i = 0; i < fileInfos.length; i++) {
+      final Uint8List origHash = fileInfos[i].hash!;
+      final XFile file = XFile(p.join(dirPath, fileInfos[i].name));
 
       final receieHash = await Hash.sha256.digestStream(file.openRead());
       if (!(listEquals(origHash, receieHash))) {
@@ -289,13 +295,13 @@ class ReceiveFile {
 
   /// 画像ライブラリに保存する関数
   static Future<bool> savePhotoLibrary(
-      String dirPath, FileInfo fileInfo) async {
+      String dirPath, List<FileInfo> fileInfos) async {
     if (await Permission.photosAddOnly.request().isDenied) {
       return false;
     }
 
-    for (var i = 0; i < fileInfo.names.length; i++) {
-      final XFile file = XFile(p.join(dirPath, fileInfo.names[i]));
+    for (var i = 0; i < fileInfos.length; i++) {
+      final XFile file = XFile(p.join(dirPath, fileInfos[i].name));
 
       await ImageGallerySaver.saveFile(file.path);
     }

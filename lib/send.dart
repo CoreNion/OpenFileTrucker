@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:webcrypto/webcrypto.dart';
 
@@ -99,29 +98,33 @@ class SendFiles {
   static RsaOaepPublicKey? pubKey;
   static AesCbcSecretKey? _aesCbcSecretKey;
 
+  static List<FileInfo>? fileInfo;
+  static List<XFile> files = [];
+  static int _totalSize = 0;
+
   /// ファイル送信用ののサーバーを立ち上げる
-  static Future<void> serverStart(
-      SendSettings settings, List<XFile> files, List<Uint8List>? hashs) async {
+  static Future<void> serverStart(SendSettings settings) async {
+    if (fileInfo == null || files.isEmpty) {
+      throw Exception("ファイル情報がありません");
+    }
+
+    for (var element in fileInfo!) {
+      _totalSize += element.size;
+    }
+
     // AES-CBC暗号化用の鍵を生成
     _aesCbcSecretKey = await AesCbcSecretKey.generateKey(256);
 
     _server = await ServerSocket.bind(settings.bindAdress, 4782);
-    _server?.listen((event) => _serverListen(event, files, hashs));
+    _server?.listen((event) => _serverListen(event));
 
     if (settings.deviceDetection) {
       await registerNsd(ServiceType.send, settings.name);
     }
   }
 
-  static void _serverListen(
-      Socket socket, List<XFile> files, List<Uint8List>? hashs) async {
-    // ファイルの総容量を計算
-    int totalSize = 0;
-    for (var i = 0; i < files.length; i++) {
-      totalSize += await files[i].length();
-    }
+  static void _serverListen(Socket socket) async {
     int byteCount = 0;
-
     socket.listen((event) async {
       if (listEquals(event.sublist(0, 5), plainTextHeader)) {
         // 公開鍵を記録
@@ -147,20 +150,10 @@ class SendFiles {
 
         if (mesg.contains("second")) {
           // クライアント側にファイル情報を送信
-          List<String> names = <String>[];
-          List<int> sizes = <int>[];
-          for (var i = 0; i < files.length; i++) {
-            names.add(basename(files[i].path));
-            sizes.add(await files[i].length());
-          }
-
           socket.add([
             ...sendIV,
-            ...await _aesCbcSecretKey!.encryptBytes(
-                utf8.encode(json.encode(
-                    FileInfo(names: names, sizes: sizes, hashs: hashs)
-                        .toMap())),
-                sendIV)
+            ...await _aesCbcSecretKey!
+                .encryptBytes(utf8.encode(json.encode(fileInfo)), sendIV)
           ]);
           socket.destroy();
         } else {
@@ -174,7 +167,7 @@ class SendFiles {
                   StreamTransformer.fromHandlers(handleData: (data, sink) {
                     if (byRequest) {
                       byteCount += data.length;
-                      viaServiceDevice[uuid]?.progress = byteCount / totalSize;
+                      viaServiceDevice[uuid]?.progress = byteCount / _totalSize;
                       refreshUserInfo();
                     }
                     sink.add(data);

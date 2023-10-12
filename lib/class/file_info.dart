@@ -1,39 +1,29 @@
 import 'dart:typed_data';
 
+/// 平文であることを示すヘッダー
 const plainTextHeader = [128, 64, 128, 64, 128];
 
+/// ファイル情報を表すクラス
 class FileInfo {
-  final List<String> names;
+  /// ファイル名
+  final String name;
 
-  final List<int> sizes;
+  /// ファイルサイズ
+  final int size;
 
-  final List<Uint8List>? hashs;
+  /// ファイルのハッシュ値
+  final Uint8List? hash;
 
-  FileInfo({required this.names, required this.sizes, this.hashs});
+  FileInfo({required this.name, required this.size, this.hash});
 
-  Map<String, dynamic> toMap() {
-    return {'nameList': names, 'lengthList': sizes, 'hashList': hashs};
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'size': size, 'hash': hash};
   }
 
   static FileInfo mapToInfo(Map<String, dynamic> map) {
-    late List<String> names;
-    late List<int> sizes;
-    late List<Uint8List>? hashs;
-
-    names = map["nameList"].cast<String>();
-    sizes = map["lengthList"].cast<int>();
-
-    // cast<List<Uint8List>>が効かないのでmapを介す
-    final List<dynamic>? dynamics = map["hashList"] as List<dynamic>?;
-    if (dynamics != null) {
-      hashs = dynamics
-          .map((subList) =>
-              Uint8List.fromList((subList as List<dynamic>).cast<int>()))
-          .toList();
-    } else {
-      hashs = null;
-    }
-
-    return FileInfo(names: names, sizes: sizes, hashs: hashs);
+    return FileInfo(
+        name: map['name'],
+        size: map['size'],
+        hash: Uint8List.fromList(map['hash'].cast<int>()));
   }
 }

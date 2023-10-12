@@ -30,9 +30,9 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   final index = allDevices.indexOf(device);
 
   // ファイル情報を取得
-  FileInfo fileInfo;
+  List<FileInfo> fileInfos;
   try {
-    fileInfo = await ReceiveFile.getServerFileInfo(device.host);
+    fileInfos = await ReceiveFile.getServerFileInfo(device.host);
   } catch (e) {
     BotToast.showSimpleNotification(
         title: "送信元に接続できませんでした。",
@@ -73,7 +73,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
 
   // 各ファイルを受信する
   final controller =
-      await ReceiveFile.receiveAllFiles(device.host, fileInfo, dirPath);
+      await ReceiveFile.receiveAllFiles(device.host, fileInfos, dirPath);
 
   // 進捗を適宜更新する
   final stream = controller.stream;
