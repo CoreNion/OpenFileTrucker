@@ -10,6 +10,7 @@ import '../class/trucker_device.dart';
 import '../helper/incoming.dart';
 import '../helper/service.dart';
 import '../provider/receive_provider.dart';
+import '../provider/send_provider.dart';
 import '../provider/service_provider.dart';
 
 class TruckerDevicesList extends ConsumerWidget {
@@ -67,6 +68,14 @@ class TruckerDevicesList extends ConsumerWidget {
                     children: [
                       IconButton(
                         onPressed: () async {
+                          if (scanType == ServiceType.receive &&
+                              !ref.watch(serverStateProvider)) {
+                            BotToast.showSimpleNotification(
+                                title: "ファイルを選択してください",
+                                backgroundColor: colorScheme.onError);
+                            return;
+                          }
+
                           // progressをnullにして、ローディングをくるくるさせる
                           allDevices[index].progress = null;
                           ref.read(truckerDevicesProvider.notifier).state = [
