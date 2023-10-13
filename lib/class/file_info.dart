@@ -21,9 +21,10 @@ class FileInfo {
   }
 
   static FileInfo mapToInfo(Map<String, dynamic> map) {
+    final hash = map['hash'];
     return FileInfo(
         name: map['name'],
         size: map['size'],
-        hash: Uint8List.fromList(map['hash'].cast<int>()));
+        hash: hash != null ? Uint8List.fromList(hash.cast<int>()) : null);
   }
 }

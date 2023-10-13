@@ -36,7 +36,7 @@ void main() async {
   await registerNsd(ServiceType.receive, Platform.localHostname);
 
   runApp(ProviderScope(
-    observers: [ServerStateListener()],
+    observers: [ServerStateListener(), SelectedFilesListener()],
     child: const MyApp(),
   ));
 }

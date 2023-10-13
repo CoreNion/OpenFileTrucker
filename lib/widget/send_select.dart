@@ -198,7 +198,6 @@ class SelectFiles extends ConsumerWidget {
                       }));
                       SendFiles.files = selectedFiles;
 
-                      await SendFiles.serverStart(settings);
                       ref.read(serverStateProvider.notifier).state = true;
 
                       // 小画面デバイスの場合、別ページで送信待機を表示

@@ -6,13 +6,46 @@ import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:path/path.dart' as p;
 
+import '../class/file_info.dart';
 import '../class/send_settings.dart';
 import '../send.dart';
 import 'main_provider.dart';
 
 /// 選択されたファイルのリスト
 final selectedFilesProvider = StateProvider<List<XFile>>((ref) => []);
+
+/// ファイルが増減した時に、バックのファイルリストも更新する
+class SelectedFilesListener extends ProviderObserver {
+  @override
+  void didUpdateProvider(
+    ProviderBase<Object?> provider,
+    Object? previousValue,
+    Object? newValue,
+    ProviderContainer container,
+  ) async {
+    if (provider == selectedFilesProvider &&
+        !container.read(isSmallUIProvider)) {
+      final newList = newValue as List<XFile>;
+
+      // ファイル情報を更新
+      SendFiles.files = newList;
+      SendFiles.fileInfo = await Future.wait(SendFiles.files.map((e) async {
+        return FileInfo(
+            name: p.basename(e.path), size: await e.length(), hash: null);
+      }));
+
+      // ファイルが0ならサーバーを停止
+      if (newList.isEmpty) {
+        container.read(serverStateProvider.notifier).state = false;
+      } else {
+        // ファイルが1以上ならサーバーを起動
+        container.read(serverStateProvider.notifier).state = true;
+      }
+    }
+  }
+}
 
 /// 選択されたファイルの合計サイズ
 final totalSizeProvider = FutureProvider<String>((ref) async {
@@ -45,8 +78,10 @@ class ServerStateListener extends ProviderObserver {
     ProviderContainer container,
   ) async {
     if (provider == serverStateProvider) {
+      // サーバーを起動
       if (newValue == true) {
         WakelockPlus.enable();
+        await SendFiles.serverStart(container.read(sendSettingsProvider));
       } else {
         SendFiles.serverClose();
 
