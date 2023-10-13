@@ -203,6 +203,7 @@ class SelectFiles extends ConsumerWidget {
 
                       // 小画面デバイスの場合、別ページで送信待機を表示
                       if (isSmallUi) {
+                        if (!context.mounted) return;
                         await showModalBottomSheet(
                             backgroundColor: Colors.transparent,
                             useSafeArea: true,
@@ -242,6 +243,8 @@ class SelectFiles extends ConsumerWidget {
                                 ),
                               );
                             });
+
+                        ref.watch(serverStateProvider.notifier).state = false;
                       }
                     } catch (e) {
                       EasyDialog.showErrorNoti(e, ref);
