@@ -2,7 +2,7 @@ namespace FileTruckerU;
 
 public class App : Application
 {
-    protected Window? MainWindow { get; private set; }
+    protected internal static Window? MainWindow { get; private set; }
     protected IHost? Host { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

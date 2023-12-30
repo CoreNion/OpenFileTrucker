@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +12,8 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Storage.Pickers;
+using Microsoft.UI;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -26,5 +28,29 @@ namespace FileTruckerU.Pages
 		{
 			this.InitializeComponent();
 		}
-	}
+
+        private async void PickFiles(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            // Init file picker for Windows
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hWnd);
+
+            picker.FileTypeFilter.Add("*");
+            var storageFiles = await picker.PickMultipleFilesAsync();
+
+            if (storageFiles != null && storageFiles.Any())
+            {
+                foreach (var file in storageFiles)
+                {
+                    FileNames.Text += (file.Name + Environment.NewLine );
+                }
+            }
+            else
+            {
+                FileNames.Text = "No files selected";
+            }
+        }
+    }
 }

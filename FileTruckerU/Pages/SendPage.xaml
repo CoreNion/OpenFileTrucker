@@ -8,7 +8,9 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-  <Grid>
-    <TextBlock Text="Send" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-  </Grid>
+  <StackPanel>
+    <TextBlock Text="Send" FontSize="50" />
+    <Button Content="Pick File" Click="PickFiles"/>
+    <TextBlock x:Name="FileNames" />
+  </StackPanel>
 </Page>
