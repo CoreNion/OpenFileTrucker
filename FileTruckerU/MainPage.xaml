@@ -4,11 +4,11 @@
       xmlns:local="using:FileTruckerU"
       xmlns:utu="using:Uno.Toolkit.UI"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-  <StackPanel utu:SafeArea.Insets="VisibleBounds"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center">
-    <TextBlock AutomationProperties.AutomationId="HelloTextBlock"
-          Text="Hello Uno Platform"
-          HorizontalAlignment="Center" />
-  </StackPanel>
+  <NavigationView SelectionChanged="NavigationView_SelectionChanged">
+    <NavigationView.MenuItems>
+      <NavigationViewItem Content="Receive" Icon="Download" Tag="Receive"/>
+      <NavigationViewItem Content="Send" Icon="Upload" Tag="Send"/>
+    </NavigationView.MenuItems>
+    <Frame x:Name="ContentFrame" />
+  </NavigationView>
 </Page>

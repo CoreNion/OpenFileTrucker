@@ -63,4 +63,14 @@
     <EmbeddedResource Include="appsettings.*.json" DependentUpon="appsettings.json" />
     <UpToDateCheckInput Include="**\*.xaml" Exclude="bin\**\*.xaml;obj\**\*.xaml" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Pages\ReceivePage.xaml" />
+    <None Remove="Pages\SendPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Pages\ReceivePage.xaml" />
+    <UpToDateCheckInput Remove="Pages\SendPage.xaml" />
+  </ItemGroup>
 </Project>
