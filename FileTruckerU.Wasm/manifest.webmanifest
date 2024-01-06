@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "FileTruckerU",
+  "display": "standalone",
+  "name": "FileTruckerU",
+  "short_name": "FileTruckerU",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

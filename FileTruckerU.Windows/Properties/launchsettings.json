@@ -1,0 +1,10 @@
+{
+	"profiles": {
+		"FileTruckerU.Windows (Unpackaged)": {
+			"commandName": "Project"
+		},
+		"FileTruckerU.Windows (Package)": {
+			"commandName": "MsixPackage"
+		}
+	}
+}
