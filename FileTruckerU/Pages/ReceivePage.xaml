@@ -8,7 +8,10 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-  <Grid>
-    <TextBlock Text="Receive" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-  </Grid>
+  <StackPanel>
+    <TextBlock Text="Receive" FontSize="50" />
+    <TextBox TextWrapping="NoWrap" AcceptsReturn="False" Text="Enter IP Adress" x:Name="IpAddress" />
+    <Button Content="Receive" Click="OnReceive" />
+    <TextBlock Text="Status:" x:Name="truckerStatus" />
+  </StackPanel>
 </Page>
