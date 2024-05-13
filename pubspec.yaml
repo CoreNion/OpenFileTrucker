@@ -33,15 +33,15 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  file_picker: ^5.2.5
+  file_picker: ^8.0.3
   path_provider: ^2.0.12
-  permission_handler: ^10.2.0
+  permission_handler: ^11.3.1
   dotted_border: ^2.0.0+3
   file_sizes: ^1.0.6
   desktop_drop: ^0.4.1
   path: ^1.8.1
   flutter_svg: ^2.0.0+1
-  package_info_plus: ^4.1.0
+  package_info_plus: ^8.0.0
   url_launcher: ^6.1.9
   dynamic_color: ^1.6.2
   cross_file: ^0.3.3+4
@@ -55,12 +55,12 @@ dependencies:
   webcrypto:
     git:
       url: https://github.com/CoreNion/webcrypto.dart.git
-      ref: 774bd115b4d943ff1ba91cdfd2b3a8c3512c42a2
-  nsd: ^2.3.1
+      ref: 75fa7167ba28c300b2c669876fda9f5eeae4deae
+  nsd: ^3.0.0
   responsive_grid: ^2.4.4
   bot_toast: ^4.1.1
   loading_indicator: ^3.1.1
-  uuid: ^3.0.7
+  uuid: ^4.4.0
   flutter_riverpod: ^2.4.0
   riverpod_annotation: ^2.1.5
 
@@ -73,10 +73,10 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.1
+  flutter_lints: ^4.0.0
   riverpod_generator: ^2.3.2
   build_runner: ^2.4.6
-  custom_lint: ^0.5.3
+  custom_lint: ^0.6.4
   riverpod_lint: ^2.1.0
 
 # For information on the generic Dart part of this file, see the
