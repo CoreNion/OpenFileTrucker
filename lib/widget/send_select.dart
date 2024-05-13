@@ -282,7 +282,7 @@ class SelectFiles extends ConsumerWidget {
                 ]),
                 Column(children: [
                   IconButton(
-                      onPressed: () => Navigator.pop(context, FileType.any),
+                      onPressed: () => Navigator.pop(context, FileType.media),
                       icon: const Icon(Icons.perm_media, size: 70)),
                   const Text("写真/動画")
                 ])
