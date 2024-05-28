@@ -74,10 +74,6 @@ class SendFiles {
   static Future<List<File>?> pickFiles({FileType type = FileType.any}) async {
     List<File> files = <File>[];
 
-    if (Platform.isAndroid && await Permission.storage.request().isDenied) {
-      return null;
-    }
-
     var res = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         dialogTitle: "送信するファイルを選択",
