@@ -108,7 +108,7 @@ class ServerStateListener extends ProviderObserver {
 final actionButtonProvider = Provider<FloatingActionButton?>((ref) {
   final serverState = ref.watch(serverStateProvider);
 
-  if (serverState && !ref.watch(isSmallUIProvider)) {
+  if (serverState) {
     return FloatingActionButton(
       onPressed: () {
         ref.read(serverStateProvider.notifier).state = false;

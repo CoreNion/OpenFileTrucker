@@ -139,18 +139,17 @@ class SelectFiles extends ConsumerWidget {
                     },
                     itemCount: selectedFiles.length)),
       ),
-      isSmallUi
-          ? Container(
-              height: 50,
-              width: double.infinity,
-              margin: const EdgeInsets.all(7),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                child: const Text("送信する"),
-                onPressed: () async {
+      Container(
+        height: 50,
+        width: double.infinity,
+        margin: const EdgeInsets.all(7),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: !serverListen && selectedFiles.isNotEmpty
+              ? () async {
                   if (serverListen) {
                     EasyDialog.showSmallToast(
                         ref, "エラー", "他のファイルの共有を停止してください。");
@@ -254,10 +253,11 @@ class SelectFiles extends ConsumerWidget {
                   } else {
                     EasyDialog.showSmallToast(ref, "エラー", "ファイルを選択してください。");
                   }
-                },
-              ),
-            )
-          : Container(),
+                }
+              : null,
+          child: const Text("送信する"),
+        ),
+      )
     ]);
   }
 
