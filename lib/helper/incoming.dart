@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'service.dart';
+
 import '../class/trucker_device.dart';
 
 ServerSocket? _serverSocket;
@@ -9,6 +11,9 @@ Socket? _socket;
 /// ファイルの送信リクエストを受け付けるサーバーを起動
 Future<void> startIncomingServer(Future<bool> Function(String name) incoming,
     Future<void> Function(String remote) onAccept) async {
+  // 受信用のmDNSサービスを登録
+  await registerNsd(ServiceType.receive, Platform.localHostname);
+
   _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, 4783);
   _serverSocket!.listen((socket) {
     socket.listen((event) async {

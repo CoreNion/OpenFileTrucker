@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/foundation.dart';
@@ -12,7 +11,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
 import 'helper/incoming.dart';
-import 'helper/service.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
@@ -31,9 +29,6 @@ void main() async {
       LicenseEntryWithLineBreaks(<String>['Noto Sans JP'], ofl)
     ]);
   });
-
-  // 受信用のmDNSサービスを登録
-  await registerNsd(ServiceType.receive, Platform.localHostname);
 
   runApp(ProviderScope(
     observers: [ServerStateListener(), SelectedFilesListener()],
