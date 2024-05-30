@@ -9,6 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:path/path.dart' as p;
 
 import '../class/file_info.dart';
+import '../class/qr_data.dart';
 import '../class/send_settings.dart';
 import '../send.dart';
 import 'main_provider.dart';
@@ -65,6 +66,9 @@ final totalSizeProvider = FutureProvider<String>((ref) async {
 final sendSettingsProvider =
     StateProvider<SendSettings>((ref) => SendSettings());
 
+/// QRコードのデータ
+final sendQRData = StateProvider<QRCodeData?>((ref) => null);
+
 /// サーバーの起動状態
 final serverStateProvider = StateProvider<bool>((ref) => false);
 
@@ -82,8 +86,12 @@ class ServerStateListener extends ProviderObserver {
       if (newValue == true) {
         WakelockPlus.enable();
         await SendFiles.serverStart(container.read(sendSettingsProvider));
+        // TODO: 適切なIPアドレスの取得/切り替えの実装
+        container.read(sendQRData.notifier).state =
+            QRCodeData(ip: "192.168.0.100");
       } else {
         SendFiles.serverClose();
+        container.read(sendQRData.notifier).state = null;
 
         // キャッシュ削除
         if (Platform.isIOS || Platform.isAndroid) {

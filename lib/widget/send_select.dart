@@ -204,6 +204,7 @@ class SelectFiles extends ConsumerWidget {
                       if (isSmallUi) {
                         if (!context.mounted) return;
                         await showModalBottomSheet(
+                            isScrollControlled: true,
                             backgroundColor: Colors.transparent,
                             useSafeArea: true,
                             context: context,
@@ -218,7 +219,7 @@ class SelectFiles extends ConsumerWidget {
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(25))),
                                 child: SizedBox(
-                                  height: 700,
+                                  height: 600,
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:webcrypto/webcrypto.dart';
 
 import 'class/file_info.dart';
