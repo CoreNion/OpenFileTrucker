@@ -88,7 +88,7 @@ class ReceivePage extends ConsumerWidget {
           const Text("付近のデバイス",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const Expanded(child: TruckerDevicesList(ServiceType.receive)),
+          const Expanded(child: TruckerDevicesList(ServiceType.send)),
         ],
       ),
     )));
