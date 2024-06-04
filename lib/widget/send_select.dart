@@ -236,7 +236,7 @@ class SelectFiles extends ConsumerWidget {
                                             icon:
                                                 const Icon(Icons.expand_more)),
                                       ),
-                                      const Expanded(child: SenderConfigPage()),
+                                      const SenderConfigPage(),
                                     ],
                                   ),
                                 ),

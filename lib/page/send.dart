@@ -59,26 +59,20 @@ class _SendPageState extends ConsumerState<SendPage> {
   Widget build(BuildContext context) {
     colorScheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: Scaffold(
-        body: !(ref.watch(isSmallUIProvider))
-            // サイズごとにUIを変える
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  const Expanded(flex: 6, child: SelectFiles()),
-                  Expanded(
-                      flex: 4,
-                      child: Container(
-                          decoration: const BoxDecoration(
-                              border:
-                                  Border(left: BorderSide(color: Colors.grey))),
-                          child: const SenderConfigPage()))
-                ],
-              )
-            : const SelectFiles(),
-        floatingActionButton: ref.watch(actionButtonProvider),
-      ),
-    );
+    return !(ref.watch(isSmallUIProvider))
+        // サイズごとにUIを変える
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              const Expanded(flex: 6, child: SelectFiles()),
+              Expanded(
+                  flex: 4,
+                  child: Container(
+                      decoration: const BoxDecoration(
+                          border: Border(left: BorderSide(color: Colors.grey))),
+                      child: const Expanded(child: SenderConfigPage())))
+            ],
+          )
+        : const SelectFiles();
   }
 }

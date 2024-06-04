@@ -25,24 +25,21 @@ class TruckerDevicesList extends ConsumerWidget {
 
     return scanDevices.when(loading: () {
       return Container(
-          margin: const EdgeInsets.all(10),
+          margin: const EdgeInsets.all(5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text(
-                    "デバイスを探しています...",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
-              Expanded(
-                  flex: 7,
-                  child: LoadingIndicator(
-                    strokeWidth: 0.1,
-                    indicatorType: Indicator.ballScale,
-                    colors: [colorScheme.primary.withOpacity(1.0)],
-                  ))
+              const Text(
+                "デバイスを探しています...",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20),
+              ),
+              LoadingIndicator(
+                strokeWidth: 0.1,
+                indicatorType: Indicator.ballScale,
+                colors: [colorScheme.primary.withOpacity(1.0)],
+              )
             ],
           ));
     }, error: (e, s) {
@@ -54,12 +51,13 @@ class TruckerDevicesList extends ConsumerWidget {
       );
     }, data: (devices) {
       return scanType == ServiceType.receive
-          ? ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: allDevices.length,
-              padding: const EdgeInsets.all(10),
-              itemBuilder: (BuildContext context, int index) =>
-                  TruckerDeviceWidget(scanType, index))
+          ? SizedBox(
+              height: 160,
+              child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: allDevices.length,
+                  itemBuilder: (BuildContext context, int index) =>
+                      TruckerDeviceWidget(scanType, index)))
           : SingleChildScrollView(
               child: Wrap(
                   children: List.generate(allDevices.length,
@@ -81,7 +79,7 @@ class TruckerDeviceWidget extends ConsumerWidget {
     final allDevices = ref.watch(truckerDevicesProvider);
 
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(left: 10, right: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,

@@ -72,6 +72,16 @@ final sendQRData = StateProvider<QRCodeData?>((ref) => null);
 /// サーバーの起動状態
 final serverStateProvider = StateProvider<bool>((ref) => false);
 
+/// 利用可能なネットワークのリスト
+final availableNetworksProvider =
+    FutureProvider<List<TruckerNetworkInfo>?>((ref) {
+  return SendFiles.getAvailableNetworks();
+});
+
+/// 選択されたネットワーク
+final selectedNetworkProvider = StateProvider<TruckerNetworkInfo>(
+    (ref) => TruckerNetworkInfo(ip: "0.0.0.0", interfaceName: '0.0.0.0'));
+
 /// サーバーの起動状態を変更する
 class ServerStateListener extends ProviderObserver {
   @override
@@ -86,9 +96,10 @@ class ServerStateListener extends ProviderObserver {
       if (newValue == true) {
         WakelockPlus.enable();
         await SendFiles.serverStart(container.read(sendSettingsProvider));
+
         // TODO: 適切なIPアドレスの取得/切り替えの実装
         container.read(sendQRData.notifier).state =
-            QRCodeData(ip: "192.168.0.100");
+            QRCodeData(ip: (await SendFiles.getAvailableNetworks())![0].ip);
       } else {
         SendFiles.serverClose();
         container.read(sendQRData.notifier).state = null;
@@ -100,6 +111,10 @@ class ServerStateListener extends ProviderObserver {
 
         WakelockPlus.disable();
       }
+    } else if (provider == selectedNetworkProvider) {
+      // 使用するネットワークが変更されたらQRコードを更新
+      container.read(sendQRData.notifier).state =
+          QRCodeData(ip: (newValue as TruckerNetworkInfo).ip);
     }
   }
 }

@@ -190,6 +190,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                     SendPage(),
                     ReceivePage(),
                   ]),
+              floatingActionButton: ref.watch(actionButtonProvider),
             );
           },
         ),
