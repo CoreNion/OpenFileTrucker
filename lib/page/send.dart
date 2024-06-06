@@ -70,7 +70,7 @@ class _SendPageState extends ConsumerState<SendPage> {
                   child: Container(
                       decoration: const BoxDecoration(
                           border: Border(left: BorderSide(color: Colors.grey))),
-                      child: const Expanded(child: SenderConfigPage())))
+                      child: const SenderConfigPage()))
             ],
           )
         : const SelectFiles();
