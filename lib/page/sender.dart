@@ -15,6 +15,8 @@ class SenderConfigPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final qrIP = ref.watch(selectedNetworkProvider);
+    final availableNetworks = ref.watch(availableNetworksProvider);
 
     return Column(
       children: [
@@ -48,10 +50,8 @@ class SenderConfigPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   DropdownButton(
-                      value: ref.watch(availableNetworksProvider).value![0],
-                      items: ref
-                          .watch(availableNetworksProvider)
-                          .value!
+                      value: qrIP,
+                      items: availableNetworks.value!
                           .map((e) => DropdownMenuItem(
                                 value: e,
                                 child: Text("${e.interfaceName} ${e.ip}"),
