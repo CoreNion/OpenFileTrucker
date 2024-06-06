@@ -30,16 +30,18 @@ class TruckerDevicesList extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
+              SizedBox(
+                height: 170,
+                child: LoadingIndicator(
+                  indicatorType: Indicator.ballScale,
+                  colors: [colorScheme.primary.withOpacity(1.0)],
+                ),
+              ),
               const Text(
                 "デバイスを探しています...",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 20),
               ),
-              LoadingIndicator(
-                strokeWidth: 0.1,
-                indicatorType: Indicator.ballScale,
-                colors: [colorScheme.primary.withOpacity(1.0)],
-              )
             ],
           ));
     }, error: (e, s) {
