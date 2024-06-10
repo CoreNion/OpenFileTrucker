@@ -65,6 +65,7 @@ dependencies:
   riverpod_annotation: ^2.1.5
   mobile_scanner: ^5.1.1
   pretty_qr_code: ^3.3.0
+  multicast_dns: ^0.3.2+6
 
 dev_dependencies:
   flutter_test:

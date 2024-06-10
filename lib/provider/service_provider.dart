@@ -15,6 +15,12 @@ final scanDeviceProvider =
     final allDevices = ref.read(truckerDevicesProvider.notifier);
 
     await for (final device in scanTruckerService(serviceType)) {
+      if (allDevices.state.map((e) => e.uuid).contains(device.uuid) &&
+          allDevices.state.firstWhere((e) => e.uuid == device.uuid).status ==
+              device.status) {
+        continue;
+      }
+
       allDevices.state = [
         ...allDevices.state,
         device,
