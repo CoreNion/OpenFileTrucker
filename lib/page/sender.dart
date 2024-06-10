@@ -25,7 +25,7 @@ class SenderConfigPage extends ConsumerWidget {
           "送信可能なデバイス...",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const TruckerDevicesList(
+        TruckerDevicesList(
           ServiceType.receive,
         ),
         ref.watch(sendQRData) != null

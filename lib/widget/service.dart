@@ -15,7 +15,9 @@ import '../provider/service_provider.dart';
 class TruckerDevicesList extends ConsumerWidget {
   final ServiceType scanType;
 
-  const TruckerDevicesList(this.scanType, {Key? key}) : super(key: key);
+  TruckerDevicesList(this.scanType, {Key? key}) : super(key: key);
+
+  final scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,11 +57,15 @@ class TruckerDevicesList extends ConsumerWidget {
       return scanType == ServiceType.receive
           ? SizedBox(
               height: 160,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: allDevices.length,
-                  itemBuilder: (BuildContext context, int index) =>
-                      TruckerDeviceWidget(scanType, index)))
+              child: Scrollbar(
+                  controller: scrollController,
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                      controller: scrollController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: allDevices.length,
+                      itemBuilder: (BuildContext context, int index) =>
+                          TruckerDeviceWidget(scanType, index))))
           : SingleChildScrollView(
               child: Wrap(
                   children: List.generate(allDevices.length,
