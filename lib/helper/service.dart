@@ -35,7 +35,9 @@ Stream<TruckerDevice> scanTruckerService(ServiceType mode) async* {
     // WindowsなどでreusePortをtrueにするとエラーが発生するため設定を変更
     // https://github.com/flutter/flutter/issues/106881
     return RawDatagramSocket.bind(host, port,
-        reuseAddress: true, reusePort: false, ttl: ttl!);
+        reuseAddress: true,
+        reusePort: Platform.isWindows ? false : true,
+        ttl: ttl!);
   });
 
   // MDnsClientのスタート
@@ -60,7 +62,6 @@ Stream<TruckerDevice> scanTruckerService(ServiceType mode) async* {
       await for (final SrvResourceRecord srv
           in client.lookup<SrvResourceRecord>(
               ResourceRecordQuery.service(ptr.domainName))) {
-        print(ptr);
         // ドメイン名を取得
         final domainName = ptr.domainName;
 
