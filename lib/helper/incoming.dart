@@ -12,7 +12,9 @@ Socket? _socket;
 Future<void> startIncomingServer(Future<bool> Function(String name) incoming,
     Future<void> Function(String remote) onAccept) async {
   // 受信用のmDNSサービスを登録
-  await registerNsd(ServiceType.receive, Platform.localHostname);
+  if (!Platform.isLinux) {
+    await registerNsd(ServiceType.receive, Platform.localHostname);
+  }
 
   _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, 4783);
   _serverSocket!.listen((socket) {
