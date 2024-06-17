@@ -99,8 +99,8 @@ class ServerStateListener extends ProviderObserver {
         WakelockPlus.enable();
         await SendFiles.serverStart(container.read(sendSettingsProvider));
 
-        container.read(sendQRData.notifier).state =
-            QRCodeData(ip: (await SendFiles.getAvailableNetworks())![0].ip);
+        container.read(sendQRData.notifier).state = QRCodeData(
+            ip: container.read(availableNetworksProvider).value![0].ip);
       } else {
         SendFiles.serverClose();
         container.read(sendQRData.notifier).state = null;

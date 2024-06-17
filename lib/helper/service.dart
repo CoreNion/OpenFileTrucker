@@ -36,7 +36,7 @@ Stream<TruckerDevice> scanTruckerService(ServiceType mode) async* {
     // https://github.com/flutter/flutter/issues/106881
     return RawDatagramSocket.bind(host, port,
         reuseAddress: true,
-        reusePort: Platform.isWindows ? false : true,
+        reusePort: Platform.isWindows || Platform.isAndroid ? false : true,
         ttl: ttl!);
   });
 
