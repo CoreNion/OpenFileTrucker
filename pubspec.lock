@@ -41,6 +41,54 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  bonsoir:
+    dependency: "direct main"
+    description:
+      name: bonsoir
+      sha256: "9703ca3ce201c7ab6cd278ae5a530a125959687f59c2b97822f88a8db5bef106"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.9"
+  bonsoir_android:
+    dependency: transitive
+    description:
+      name: bonsoir_android
+      sha256: "19583ae34a5e5743fa2c16619e4ec699b35ae5e6cece59b99b1cf21c1b4ed618"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.4"
+  bonsoir_darwin:
+    dependency: transitive
+    description:
+      name: bonsoir_darwin
+      sha256: "985c4c38b4cbfa57ed5870e724a7e17aa080ee7f49d03b43e6d08781511505c6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.2"
+  bonsoir_linux:
+    dependency: transitive
+    description:
+      name: bonsoir_linux
+      sha256: "65554b20bc169c68c311eb31fab46ccdd8ee3d3dd89a2d57c338f4cbf6ceb00d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.2"
+  bonsoir_platform_interface:
+    dependency: transitive
+    description:
+      name: bonsoir_platform_interface
+      sha256: "4ee898bec0b5a63f04f82b06da9896ae8475f32a33b6fa395bea56399daeb9f0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.2"
+  bonsoir_windows:
+    dependency: transitive
+    description:
+      name: bonsoir_windows
+      sha256: abbc90b73ac39e823b0c127da43b91d8906dcc530fc0cec4e169cf0d8c4404b1
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.4"
   boolean_selector:
     dependency: transitive
     description:
@@ -545,70 +593,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.1"
-  multicast_dns:
-    dependency: "direct main"
-    description:
-      name: multicast_dns
-      sha256: "316cc47a958d4bd3c67bd238fe8b44fdfb6133bad89cb191c0c3bd3edb14e296"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.2+6"
-  nested:
-    dependency: transitive
-    description:
-      name: nested
-      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
-  nsd:
-    dependency: "direct main"
-    description:
-      name: nsd
-      sha256: b20c4e7b11b40085163c2736c27e3d450c3970512ddab7ea5f144586fb0105d3
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
-  nsd_android:
-    dependency: transitive
-    description:
-      name: nsd_android
-      sha256: "9e2c1d31a36c9b7f5bad6329f3d9e07c7f09e7a7394aa2f54db701516ac149eb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
-  nsd_ios:
-    dependency: transitive
-    description:
-      name: nsd_ios
-      sha256: "43b53bdcf0cedf7c481125e6a7e4a88c745de2e48a205404be3b4e91d77798b5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
-  nsd_macos:
-    dependency: transitive
-    description:
-      name: nsd_macos
-      sha256: db1a07f4baf358b9d72ff9eb308c83419c60a57ef8c6d1e0369075825b835b43
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
-  nsd_platform_interface:
-    dependency: transitive
-    description:
-      name: nsd_platform_interface
-      sha256: "726bba1b93e18a37252623fd6490bafe6f3d7c225bff50421b7eeb7c47704d4b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
-  nsd_windows:
-    dependency: transitive
-    description:
-      name: nsd_windows
-      sha256: "78910ac981ae0ab975cf4c30895512576220aed3dd57c3378a05eebe8e13ff88"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   package_config:
     dependency: transitive
     description:
@@ -793,14 +777,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.0"
-  provider:
-    dependency: transitive
-    description:
-      name: provider
-      sha256: c8a055ee5ce3fd98d6fc872478b03823ffdb448699c6ebdbbc71d59b596fd48c
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.2"
   pub_semver:
     dependency: transitive
     description:

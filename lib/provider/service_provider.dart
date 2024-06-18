@@ -13,8 +13,9 @@ final scanDeviceProvider =
     StreamProvider.family<List<TruckerDevice>, ServiceType>(
   (ref, serviceType) async* {
     final allDevices = ref.read(truckerDevicesProvider.notifier);
+    final scanStream = await scanTruckerService(serviceType);
 
-    await for (final device in scanTruckerService(serviceType)) {
+    await for (final device in scanStream) {
       if (allDevices.state.map((e) => e.uuid).contains(device.uuid) &&
           allDevices.state.firstWhere((e) => e.uuid == device.uuid).status ==
               device.status) {

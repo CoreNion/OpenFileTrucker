@@ -1,96 +1,92 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:multicast_dns/multicast_dns.dart';
-import 'package:nsd/nsd.dart';
+import 'package:bonsoir/bonsoir.dart';
 import 'package:uuid/uuid.dart';
 
 import '../class/trucker_device.dart';
 
 enum ServiceType { send, receive }
 
-bool discovery = false;
+BonsoirBroadcast? sendBroadcast;
+BonsoirDiscovery? sendDiscovery;
+BonsoirBroadcast? receiveBroadcast;
+BonsoirDiscovery? receiveDiscovery;
 
-Registration? registration;
 final uuid = const Uuid().v4();
 
 void Function() refreshUserInfo = () {};
 
 /// Truckerな端末をスキャンし、発見次第Streamで流す
-Stream<TruckerDevice> scanTruckerService(ServiceType mode) async* {
-  if (discovery) return;
-  discovery = true;
-
-  late String type;
+Future<Stream<TruckerDevice>> scanTruckerService(ServiceType mode) async {
+  late BonsoirDiscovery discovery;
   if (mode == ServiceType.send) {
-    type = '_trucker-send._tcp';
+    sendDiscovery = BonsoirDiscovery(
+      type: '_trucker-send._tcp',
+    );
+    discovery = sendDiscovery!;
   } else {
-    type = '_trucker-receive._tcp';
+    receiveDiscovery = BonsoirDiscovery(
+      type: '_trucker-receive._tcp',
+    );
+    discovery = receiveDiscovery!;
   }
 
-  // MDnsClientのインスタンスを生成
-  final MDnsClient client = MDnsClient(rawDatagramSocketFactory:
-      (dynamic host, int port,
-          {bool? reuseAddress, bool? reusePort, int? ttl}) {
-    // WindowsなどでreusePortをtrueにするとエラーが発生するため設定を変更
-    // https://github.com/flutter/flutter/issues/106881
-    return RawDatagramSocket.bind(host, port,
-        reuseAddress: true,
-        reusePort: Platform.isWindows || Platform.isAndroid ? false : true,
-        ttl: ttl!);
-  });
+  // スキャン開始
+  await discovery.ready;
+  await discovery.start();
 
-  // MDnsClientのスタート
-  await client.start(
-    // LinkLocalのアドレスによる不具合を回避
-    // https://github.com/flutter/flutter/issues/106881
-    interfacesFactory: (type) async {
-      final interfaces = await NetworkInterface.list(
-        includeLinkLocal: false,
-        type: type,
-        includeLoopback: false,
-      );
-      return interfaces;
-    },
+  return discovery.eventStream!.transform(
+    StreamTransformer.fromHandlers(
+      handleData: (BonsoirDiscoveryEvent event, EventSink<TruckerDevice> sink) {
+        if (event.type == BonsoirDiscoveryEventType.discoveryServiceFound) {
+          // 名前解決
+          event.service!.resolve(discovery.serviceResolver);
+        } else if (event.type ==
+            BonsoirDiscoveryEventType.discoveryServiceResolved) {
+          // 解決済みサービスとみなす
+          final service = event.service! as ResolvedBonsoirService;
+          // 万が一ホスト名がnullの場合は無視
+          if (service.host == null) return;
+
+          // [UUID]:[端末名]から端末名を取得
+          final serviceName = service.name;
+          final infos = serviceName.split(':');
+
+          // 発見した端末をTruckerDeviceに変換
+          final device = TruckerDevice(
+            infos[1],
+            service.host!,
+            0,
+            mode == ServiceType.send
+                ? TruckerStatus.receiveReady
+                : TruckerStatus.sendReady,
+            infos[0],
+          );
+
+          // Streamに流す
+          sink.add(device);
+        }
+      },
+    ),
   );
+}
 
-  // TO DO: streamがキャンセルされた時に処理を止める
-  while (discovery) {
-    // サービスの検索
-    await for (final PtrResourceRecord ptr in client
-        .lookup<PtrResourceRecord>(ResourceRecordQuery.serverPointer(type))) {
-      await for (final SrvResourceRecord srv
-          in client.lookup<SrvResourceRecord>(
-              ResourceRecordQuery.service(ptr.domainName))) {
-        // ドメイン名を取得
-        final domainName = ptr.domainName;
-
-        // [UUID]:[端末名].[サービス名]から端末名を取得
-        final regExp = RegExp(r'(?<=:)(.*?)(?=\.)');
-        Match? match = regExp.firstMatch(domainName);
-
-        yield TruckerDevice(
-          match?.group(0) ?? 'デバイス名不明',
-          srv.target,
-          0,
-          mode == ServiceType.send
-              ? TruckerStatus.receiveReady
-              : TruckerStatus.sendReady,
-          domainName.substring(0, 36),
-        );
-      }
-    }
+void stopDetectService(ServiceType mode) {
+  if (mode == ServiceType.send) {
+    sendDiscovery?.stop();
+  } else {
+    receiveDiscovery?.stop();
   }
 }
 
-void stopDetectService() {
-  discovery = false;
-}
-
+/// 名前解決サービスに登録する
+/// [mode] 登録するサービスの種類
+/// [name] 端末名
 Future<String> registerNsd(ServiceType mode, String name) async {
   // 名前にUUIDを追加
   final mName = "$uuid:$name";
 
+  // 送信/受信のタイプを指定
   late String type;
   if (mode == ServiceType.send) {
     type = '_trucker-send._tcp';
@@ -98,16 +94,32 @@ Future<String> registerNsd(ServiceType mode, String name) async {
     type = '_trucker-receive._tcp';
   }
 
-  registration = await register(Service(
+  // BonsoirServiceを作成
+  BonsoirService service = BonsoirService(
     name: mName,
     port: 4782,
     type: type,
-  ));
+  );
+
+  // タイプに応じて、BonsoirBroadcastを作成
+  if (mode == ServiceType.send) {
+    sendBroadcast = BonsoirBroadcast(service: service);
+    await sendBroadcast!.ready;
+    await sendBroadcast!.start();
+  } else {
+    receiveBroadcast = BonsoirBroadcast(service: service);
+    await receiveBroadcast!.ready;
+    await receiveBroadcast!.start();
+  }
 
   return uuid;
 }
 
-Future<void> unregisterNsd() async {
-  if (registration == null) return;
-  await unregister(registration!);
+/// 名前解決サービスの登録を解除
+Future<void> unregisterNsd(ServiceType mode) async {
+  if (mode == ServiceType.send) {
+    await sendBroadcast?.stop();
+  } else {
+    await receiveBroadcast?.stop();
+  }
 }

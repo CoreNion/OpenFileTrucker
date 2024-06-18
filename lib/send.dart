@@ -194,7 +194,7 @@ class SendFiles {
     pubKey = null;
     _aesCbcSecretKey = null;
 
-    unregisterNsd();
+    unregisterNsd(ServiceType.send);
   }
 }
 
