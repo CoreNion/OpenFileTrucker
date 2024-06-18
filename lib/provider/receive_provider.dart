@@ -15,19 +15,19 @@ import 'service_provider.dart';
 
 /// 指定されたIPアドレスからファイルを受信する
 Future<void> startManualReceive(String ip, WidgetRef ref) async {
-  final allDevices = ref.watch(truckerDevicesProvider);
+  final sendDevices = ref.watch(tSendDevicesProvider);
   final device = TruckerDevice(ip, ip, null, TruckerStatus.sendReady, uuid);
 
   // 受信リストに追加
-  ref.read(truckerDevicesProvider.notifier).state = [...allDevices, device];
+  ref.read(tSendDevicesProvider.notifier).state = [...sendDevices, device];
   startReceive(device, ref);
 }
 
 /// 指定されたデバイスからファイルを受信する
 Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   final colorScheme = ref.watch(colorSchemeProvider);
-  final allDevices = ref.watch(truckerDevicesProvider);
-  final index = allDevices.indexOf(device);
+  final sendDevices = ref.watch(tSendDevicesProvider);
+  final index = sendDevices.indexOf(device);
 
   // ファイル情報を取得
   List<FileInfo> fileInfos;
@@ -39,19 +39,20 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
         subTitle: e.toString(),
         backgroundColor: colorScheme.onError);
 
-    allDevices[index].progress = 1;
-    allDevices[index].status = TruckerStatus.failed;
-    ref.read(truckerDevicesProvider.notifier).state = [...allDevices];
+    // エラー扱いにする
+    sendDevices[index].progress = 1;
+    sendDevices[index].status = TruckerStatus.failed;
+    ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
     return;
   }
 
   // 保存場所を取得 (何も入力されない場合は終了)
   final dirPath = await ReceiveFile.getSavePath();
   if (dirPath == null) {
-    allDevices[index].progress = 0;
-    allDevices[index].status = TruckerStatus.sendReady;
+    sendDevices[index].progress = 0;
+    sendDevices[index].status = TruckerStatus.sendReady;
 
-    ref.read(truckerDevicesProvider.notifier).state = [...allDevices];
+    ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
     return;
   }
 
@@ -66,9 +67,9 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
 
     BotToast.showSimpleNotification(
         title: "ファイルの受信が完了しました！", backgroundColor: colorScheme.onPrimary);
-    allDevices[index].progress = 1;
-    allDevices[index].status = TruckerStatus.received;
-    ref.read(truckerDevicesProvider.notifier).state = [...allDevices];
+    sendDevices[index].progress = 1;
+    sendDevices[index].status = TruckerStatus.received;
+    ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
   }
 
   // 各ファイルを受信する
@@ -78,8 +79,8 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   // 進捗を適宜更新する
   final stream = controller.stream;
   stream.listen((newProgress) {
-    allDevices[index].progress = newProgress.totalProgress;
-    ref.read(truckerDevicesProvider.notifier).state = [...allDevices];
+    sendDevices[index].progress = newProgress.totalProgress;
+    ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
   }, onError: (e) {
     endProcess();
 

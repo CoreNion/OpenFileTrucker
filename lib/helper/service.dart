@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:bonsoir/bonsoir.dart';
 import 'package:uuid/uuid.dart';
 
@@ -17,27 +18,45 @@ final uuid = const Uuid().v4();
 void Function() refreshUserInfo = () {};
 
 /// Truckerな端末をスキャンし、発見次第Streamで流す
-Future<Stream<TruckerDevice>> scanTruckerService(ServiceType mode) async {
-  late BonsoirDiscovery discovery;
-  if (mode == ServiceType.send) {
-    sendDiscovery = BonsoirDiscovery(
-      type: '_trucker-send._tcp',
-    );
-    discovery = sendDiscovery!;
-  } else {
-    receiveDiscovery = BonsoirDiscovery(
-      type: '_trucker-receive._tcp',
-    );
-    discovery = receiveDiscovery!;
-  }
+Future<Stream<TruckerDevice>> scanTruckerService() async {
+  // それぞれのBonsoirDiscoveryを作成
+  sendDiscovery = BonsoirDiscovery(
+    type: '_trucker-send._tcp',
+  );
+  receiveDiscovery = BonsoirDiscovery(
+    type: '_trucker-receive._tcp',
+  );
 
   // スキャン開始
-  await discovery.ready;
-  await discovery.start();
+  await sendDiscovery!.ready;
+  await sendDiscovery!.start();
+  await receiveDiscovery!.ready;
+  await receiveDiscovery!.start();
 
-  return discovery.eventStream!.transform(
+  if (sendDiscovery!.eventStream == null ||
+      receiveDiscovery!.eventStream == null) {
+    throw Exception("Discovery Stream is null");
+  }
+
+  // 送信検知と受信検知のストリームををマージ
+  final rsStream = StreamGroup.merge([
+    sendDiscovery!.eventStream!,
+    receiveDiscovery!.eventStream!,
+  ]);
+
+  // ストリームをTruckerDeviceに変換して返す
+  return rsStream.transform(
     StreamTransformer.fromHandlers(
       handleData: (BonsoirDiscoveryEvent event, EventSink<TruckerDevice> sink) {
+        if (event.service == null) return;
+        // 送信か受信かを判定
+        final type = event.service!.type == '_trucker-send._tcp'
+            ? ServiceType.send
+            : ServiceType.receive;
+        // それぞれのDiscoveryを取得
+        final discovery =
+            type == ServiceType.send ? sendDiscovery! : receiveDiscovery!;
+
         if (event.type == BonsoirDiscoveryEventType.discoveryServiceFound) {
           // 名前解決
           event.service!.resolve(discovery.serviceResolver);
@@ -57,7 +76,7 @@ Future<Stream<TruckerDevice>> scanTruckerService(ServiceType mode) async {
             infos[1],
             service.host!,
             0,
-            mode == ServiceType.send
+            type == ServiceType.send
                 ? TruckerStatus.receiveReady
                 : TruckerStatus.sendReady,
             infos[0],

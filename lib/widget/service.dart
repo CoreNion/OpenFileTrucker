@@ -22,55 +22,47 @@ class TruckerDevicesList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final scanDevices = ref.watch(scanDeviceProvider(scanType));
-    final allDevices = ref.watch(truckerDevicesProvider);
+    final list = scanType == ServiceType.send
+        ? ref.watch(tSendDevicesProvider)
+        : ref.watch(tReceiveDevicesProvider);
 
-    return scanDevices.when(loading: () {
-      return Container(
-          margin: const EdgeInsets.all(5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 170,
-                child: LoadingIndicator(
-                  indicatorType: Indicator.ballScale,
-                  colors: [colorScheme.primary.withOpacity(1.0)],
+    return list.isEmpty
+        ? Container(
+            margin: const EdgeInsets.all(5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 170,
+                  child: LoadingIndicator(
+                    indicatorType: Indicator.ballScale,
+                    colors: [colorScheme.primary.withOpacity(1.0)],
+                  ),
                 ),
-              ),
-              const Text(
-                "デバイスを探しています...",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20),
-              ),
-            ],
-          ));
-    }, error: (e, s) {
-      return Center(
-        child: Text(
-          "エラーが発生しました\n$e",
-          textAlign: TextAlign.center,
-        ),
-      );
-    }, data: (devices) {
-      return scanType == ServiceType.receive
-          ? SizedBox(
-              height: 160,
-              child: Scrollbar(
-                  controller: scrollController,
-                  thumbVisibility: true,
-                  child: ListView.builder(
-                      controller: scrollController,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: allDevices.length,
-                      itemBuilder: (BuildContext context, int index) =>
-                          TruckerDeviceWidget(scanType, index))))
-          : SingleChildScrollView(
-              child: Wrap(
-                  children: List.generate(allDevices.length,
-                      (index) => TruckerDeviceWidget(scanType, index))));
-    });
+                const Text(
+                  "デバイスを探しています...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20),
+                ),
+              ],
+            ))
+        : scanType == ServiceType.receive
+            ? SizedBox(
+                height: 160,
+                child: Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: true,
+                    child: ListView.builder(
+                        controller: scrollController,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: list.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            TruckerDeviceWidget(scanType, index))))
+            : SingleChildScrollView(
+                child: Wrap(
+                    children: List.generate(list.length,
+                        (index) => TruckerDeviceWidget(scanType, index))));
   }
 }
 
@@ -84,7 +76,9 @@ class TruckerDeviceWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final allDevices = ref.watch(truckerDevicesProvider);
+    final list = scanType == ServiceType.send
+        ? ref.watch(tSendDevicesProvider)
+        : ref.watch(tReceiveDevicesProvider);
 
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10),
@@ -97,6 +91,10 @@ class TruckerDeviceWidget extends ConsumerWidget {
             children: [
               IconButton(
                 onPressed: () async {
+                  final listw = scanType == ServiceType.send
+                      ? ref.watch(tSendDevicesProvider.notifier)
+                      : ref.watch(tReceiveDevicesProvider.notifier);
+
                   if (scanType == ServiceType.receive &&
                       !ref.watch(serverStateProvider)) {
                     BotToast.showSimpleNotification(
@@ -106,44 +104,40 @@ class TruckerDeviceWidget extends ConsumerWidget {
                   }
 
                   // progressをnullにして、ローディングをくるくるさせる
-                  allDevices[index].progress = null;
-                  ref.read(truckerDevicesProvider.notifier).state = [
-                    ...allDevices
-                  ];
+                  list[index].progress = null;
+                  listw.state = [...list];
 
-                  final remote = allDevices[index].host;
+                  final remote = list[index].host;
 
                   if (scanType == ServiceType.receive) {
                     // サービス経由で通信しているデバイスリストに追加
-                    viaServiceDevice.addEntries(
-                        {MapEntry(allDevices[index].uuid, allDevices[index])});
+                    viaServiceDevice
+                        .addEntries({MapEntry(list[index].uuid, list[index])});
 
                     // サーバー側にリクエストを送信
                     final res =
                         await sendRequest(remote, Platform.localHostname);
                     if (!res) {
-                      allDevices[index].progress = 1;
-                      allDevices[index].status = TruckerStatus.rejected;
+                      list[index].progress = 1;
+                      list[index].status = TruckerStatus.rejected;
                       BotToast.showSimpleNotification(
                           title: "リクエストが拒否されました",
-                          subTitle: "拒否された端末: ${allDevices[index].name}",
+                          subTitle: "拒否された端末: ${list[index].name}",
                           backgroundColor: colorScheme.onError);
                       return;
                     }
 
                     // プログレスが更新された時の動作
                     refreshUserInfo = () {
-                      allDevices[index].progress =
-                          viaServiceDevice[allDevices[index].uuid]?.progress;
-                      ref.read(truckerDevicesProvider.notifier).state = [
-                        ...allDevices
-                      ];
+                      list[index].progress =
+                          viaServiceDevice[list[index].uuid]?.progress;
+                      listw.state = [...list];
                     };
                   } else {
-                    startReceive(allDevices[index], ref);
+                    startReceive(list[index], ref);
                   }
 
-                  allDevices[index].status = scanType == ServiceType.send
+                  list[index].status = scanType == ServiceType.send
                       ? TruckerStatus.receiving
                       : TruckerStatus.sending;
                 },
@@ -158,15 +152,15 @@ class TruckerDeviceWidget extends ConsumerWidget {
                 height: 120,
                 width: 120,
                 child: CircularProgressIndicator(
-                    value: allDevices[index].progress,
-                    valueColor: _setLoadingColor(allDevices[index].status,
-                        Theme.of(context).colorScheme),
+                    value: list[index].progress,
+                    valueColor: _setLoadingColor(
+                        list[index].status, Theme.of(context).colorScheme),
                     strokeWidth: 3.0),
               )),
             ],
           ),
           Text(
-            allDevices[index].name,
+            list[index].name,
             textAlign: TextAlign.center,
           )
         ],

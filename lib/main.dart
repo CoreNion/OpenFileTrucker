@@ -16,6 +16,7 @@ import 'page/receive.dart';
 import 'page/send.dart';
 import 'provider/receive_provider.dart';
 import 'provider/send_provider.dart';
+import 'provider/service_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,9 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // デバイスのスキャン開始
+    ref.watch(scanDeviceProvider);
+
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       ColorScheme lightColorScheme;
       ColorScheme darkColorScheme;

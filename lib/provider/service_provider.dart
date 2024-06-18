@@ -3,30 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../class/trucker_device.dart';
 import '../helper/service.dart';
 
-/// すべてのTruckerデバイスを管理するプロバイダー
-final truckerDevicesProvider = StateProvider<List<TruckerDevice>>((ref) {
-  return const [];
-});
+final tSendDevicesProvider =
+    StateProvider<List<TruckerDevice>>((ref) => const []);
 
-/// 送受信待機中のデバイスをスキャンするプロバイダー
-final scanDeviceProvider =
-    StreamProvider.family<List<TruckerDevice>, ServiceType>(
-  (ref, serviceType) async* {
-    final allDevices = ref.read(truckerDevicesProvider.notifier);
-    final scanStream = await scanTruckerService(serviceType);
+final tReceiveDevicesProvider =
+    StateProvider<List<TruckerDevice>>((ref) => const []);
+
+/// 送受信待機中のデバイスをスキャンを開始するプロバイダー
+final scanDeviceProvider = StreamProvider(
+  (ref) async* {
+    final tSendDevices = ref.read(tSendDevicesProvider.notifier);
+    final tReceiveDevices = ref.read(tReceiveDevicesProvider.notifier);
+
+    final scanStream = await scanTruckerService();
 
     await for (final device in scanStream) {
-      if (allDevices.state.map((e) => e.uuid).contains(device.uuid) &&
-          allDevices.state.firstWhere((e) => e.uuid == device.uuid).status ==
-              device.status) {
-        continue;
+      if (device.status == TruckerStatus.receiveReady) {
+        // 受信待機中のデバイスを見つけた場合、ダブってない場合送信可能リストに追加
+        if (tSendDevices.state.map((e) => e.uuid).contains(device.uuid)) {
+          continue;
+        } else {
+          tSendDevices.state = [
+            ...tSendDevices.state,
+            device,
+          ];
+        }
+      } else if (device.status == TruckerStatus.sendReady) {
+        // 送信待機中のデバイスを見つけた場合、ダブってない場合受信可能デバイスリストに追加
+        if (tReceiveDevices.state.map((e) => e.uuid).contains(device.uuid)) {
+          continue;
+        } else {
+          tReceiveDevices.state = [
+            ...tReceiveDevices.state,
+            device,
+          ];
+        }
       }
-
-      allDevices.state = [
-        ...allDevices.state,
-        device,
-      ];
-      yield allDevices.state;
     }
   },
 );
