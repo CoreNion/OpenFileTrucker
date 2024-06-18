@@ -105,11 +105,6 @@ class ServerStateListener extends ProviderObserver {
         SendFiles.serverClose();
         container.read(sendQRData.notifier).state = null;
 
-        // キャッシュ削除
-        if (Platform.isIOS || Platform.isAndroid) {
-          await FilePicker.platform.clearTemporaryFiles();
-        }
-
         WakelockPlus.disable();
       }
     } else if (provider == selectedNetworkProvider &&

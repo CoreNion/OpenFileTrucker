@@ -60,10 +60,6 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   void endProcess() {
     // 画面ロック防止を解除
     WakelockPlus.disable();
-    // キャッシュ削除
-    if (Platform.isIOS || Platform.isAndroid) {
-      FilePicker.platform.clearTemporaryFiles();
-    }
 
     BotToast.showSimpleNotification(
         title: "ファイルの受信が完了しました！", backgroundColor: colorScheme.onPrimary);

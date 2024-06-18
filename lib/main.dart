@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
@@ -20,6 +22,11 @@ import 'provider/service_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ファイルのキャッシュ削除
+  if (Platform.isIOS || Platform.isAndroid) {
+    await FilePicker.platform.clearTemporaryFiles();
+  }
 
   // パッケージ情報を取得 / 記録
   MyApp.packageInfo = await PackageInfo.fromPlatform();
