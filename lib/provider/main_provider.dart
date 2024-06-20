@@ -2,6 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// prefsのProvider (起動時に初期化)
+final prefsProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError();
+});
 
 /// ダークモードの切り替え / 判定
 final isDarkProvider = StateProvider<bool>((ref) {

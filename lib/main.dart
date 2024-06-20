@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
@@ -38,8 +39,13 @@ void main() async {
     ]);
   });
 
+  // 設定の読み込み、prefeProviderを上書きする形で読み込む
+  final prefs = await SharedPreferences.getInstance();
   runApp(ProviderScope(
     observers: [ServerStateListener(), SelectedFilesListener()],
+    overrides: [
+      prefsProvider.overrideWithValue(prefs),
+    ],
     child: const MyApp(),
   ));
 }
