@@ -17,6 +17,9 @@ class SendSettings {
   /// デバイス名
   String name = Platform.localHostname;
 
+  SendSettings(this.checkFileHash, this.encryptMode, this.deviceDetection,
+      this.bindAdress, this.name);
+
   SendSettings copyWith({
     bool? checkFileHash,
     bool? encryptMode,
@@ -24,11 +27,12 @@ class SendSettings {
     String? bindAdress,
     String? name,
   }) {
-    return SendSettings()
-      ..checkFileHash = checkFileHash ?? this.checkFileHash
-      ..encryptMode = encryptMode ?? this.encryptMode
-      ..deviceDetection = deviceDetection ?? this.deviceDetection
-      ..bindAdress = bindAdress ?? this.bindAdress
-      ..name = name ?? this.name;
+    return SendSettings(
+      checkFileHash ?? this.checkFileHash,
+      encryptMode ?? this.encryptMode,
+      deviceDetection ?? this.deviceDetection,
+      bindAdress ?? this.bindAdress,
+      name ?? this.name,
+    );
   }
 }

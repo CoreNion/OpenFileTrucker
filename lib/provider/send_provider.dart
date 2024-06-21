@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:cross_file/cross_file.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:file_sizes/file_sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +10,7 @@ import '../class/qr_data.dart';
 import '../class/send_settings.dart';
 import '../send.dart';
 import 'main_provider.dart';
+import 'setting_provider.dart';
 
 /// 選択されたファイルのリスト
 final selectedFilesProvider = StateProvider<List<XFile>>((ref) => []);
@@ -63,8 +61,12 @@ final totalSizeProvider = FutureProvider<String>((ref) async {
 });
 
 /// 送信設定
-final sendSettingsProvider =
-    StateProvider<SendSettings>((ref) => SendSettings());
+final sendSettingsProvider = StateProvider<SendSettings>((ref) => SendSettings(
+    ref.watch(checkFileHashProvider),
+    ref.watch(encryptModeProvider),
+    ref.watch(deviceDetectionProvider),
+    ref.watch(bindAdressProvider),
+    ref.watch(nameProvider)));
 
 /// QRコードのデータ
 final sendQRData = StateProvider<QRCodeData?>((ref) => null);

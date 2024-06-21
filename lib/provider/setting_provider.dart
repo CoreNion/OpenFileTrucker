@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../helper/service.dart';
 import 'main_provider.dart';
+import 'send_provider.dart';
 
 enum _SettingsType {
   checkFileHash,
@@ -24,8 +26,27 @@ final deviceDetectionProvider = StateProvider<bool>(
 final bindAdressProvider = StateProvider<String>(
     (ref) => _prefProviderFn(_SettingsType.bindAdress, "0.0.0.0", ref));
 
-final nameProvider = StateProvider<String>(
-    (ref) => _prefProviderFn(_SettingsType.name, Platform.localHostname, ref));
+final nameProvider = StateProvider<String>((ref) {
+  // サービス名を更新
+  ref.listenSelf(
+    (prev, curr) async {
+      if (prev == curr) return;
+
+      // 初回ロード時は更新しない (初期化と重複する)
+      if (prev != null) {
+        if (ref.read(serverStateProvider) == true) {
+          await unregisterNsd(ServiceType.send);
+          await registerNsd(ServiceType.send, curr);
+        }
+
+        await unregisterNsd(ServiceType.receive);
+        await registerNsd(ServiceType.receive, curr);
+      }
+    },
+  );
+
+  return _prefProviderFn(_SettingsType.name, Platform.localHostname, ref);
+});
 
 /// Providerと設定を同期する関数
 dynamic _prefProviderFn(
@@ -51,7 +72,18 @@ dynamic _prefProviderFn(
       prefs.setDouble(settingType.name, curr);
     }
 
-    // TO Do:送信設定を更新
+    if (prev == null) return;
+
+    // 送信設定を更新
+    ref.read(sendSettingsProvider.notifier).update((state) => state.copyWith(
+          checkFileHash:
+              settingType == _SettingsType.checkFileHash ? curr : null,
+          encryptMode: settingType == _SettingsType.encryptMode ? curr : null,
+          deviceDetection:
+              settingType == _SettingsType.deviceDetection ? curr : null,
+          bindAdress: settingType == _SettingsType.bindAdress ? curr : null,
+          name: settingType == _SettingsType.name ? curr : null,
+        ));
   });
 
   return current;
