@@ -10,11 +10,9 @@ Socket? _socket;
 
 /// ファイルの送信リクエストを受け付けるサーバーを起動
 Future<void> startIncomingServer(Future<bool> Function(String name) incoming,
-    Future<void> Function(String remote) onAccept) async {
+    Future<void> Function(String remote) onAccept, String deviceName) async {
   // 受信用のmDNSサービスを登録
-  if (!Platform.isLinux) {
-    await registerNsd(ServiceType.receive, Platform.localHostname);
-  }
+  await registerNsd(ServiceType.receive, deviceName);
 
   _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, 4783);
   _serverSocket!.listen((socket) {

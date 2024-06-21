@@ -20,6 +20,7 @@ import 'page/send.dart';
 import 'provider/receive_provider.dart';
 import 'provider/send_provider.dart';
 import 'provider/service_provider.dart';
+import 'provider/setting_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,7 +85,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       ref.read(currentPageIndexProvider.notifier).state = 1;
       // 受信リストに追加
       await startManualReceive(remote, ref);
-    }));
+    }), ref.read(nameProvider));
   }
 
   @override
