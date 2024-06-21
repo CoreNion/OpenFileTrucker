@@ -10,7 +10,7 @@ import '../widget/service.dart';
 import '../widget/receive_qr.dart';
 
 class ReceivePage extends ConsumerWidget {
-  const ReceivePage({Key? key}) : super(key: key);
+  const ReceivePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -7,7 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../class/qr_data.dart';
 
 class ScanQRCodePage extends StatefulWidget {
-  const ScanQRCodePage({Key? key}) : super(key: key);
+  const ScanQRCodePage({super.key});
 
   @override
   State<ScanQRCodePage> createState() => _ScanQRCodePageState();
@@ -34,7 +34,7 @@ class _ScanQRCodePageState extends State<ScanQRCodePage> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: BoxDecoration(
-          color: colorScheme.background,
+          color: colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(25))),
       child: SizedBox(
         height: 600,

@@ -11,7 +11,7 @@ import '../widget/send_select.dart';
 import 'sender.dart';
 
 class SendPage extends ConsumerStatefulWidget {
-  const SendPage({Key? key}) : super(key: key);
+  const SendPage({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _SendPageState();

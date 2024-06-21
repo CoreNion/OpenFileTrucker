@@ -10,7 +10,7 @@ import '../send.dart';
 import '../widget/service.dart';
 
 class SenderConfigPage extends ConsumerWidget {
-  const SenderConfigPage({Key? key}) : super(key: key);
+  const SenderConfigPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

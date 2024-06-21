@@ -6,7 +6,7 @@ import '../send.dart';
 import 'dialog.dart';
 
 class SendSettingsDialog extends ConsumerWidget {
-  const SendSettingsDialog({Key? key}) : super(key: key);
+  const SendSettingsDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

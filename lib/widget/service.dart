@@ -15,7 +15,7 @@ import '../provider/service_provider.dart';
 class TruckerDevicesList extends ConsumerWidget {
   final ServiceType scanType;
 
-  TruckerDevicesList(this.scanType, {Key? key}) : super(key: key);
+  TruckerDevicesList(this.scanType, {super.key});
 
   final scrollController = ScrollController();
 
@@ -67,8 +67,7 @@ class TruckerDevicesList extends ConsumerWidget {
 }
 
 class TruckerDeviceWidget extends ConsumerWidget {
-  const TruckerDeviceWidget(this.scanType, this.index, {Key? key})
-      : super(key: key);
+  const TruckerDeviceWidget(this.scanType, this.index, {super.key});
 
   final ServiceType scanType;
   final int index;

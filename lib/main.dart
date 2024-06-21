@@ -52,7 +52,7 @@ void main() async {
 }
 
 class MyApp extends ConsumerStatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   static late PackageInfo packageInfo;
 
@@ -119,8 +119,8 @@ class _MyAppState extends ConsumerState<MyApp> {
         theme: ThemeData(
           colorScheme: lightColorScheme,
           fontFamily: 'Noto Sans JP',
-          appBarTheme: AppBarTheme.of(context)
-              .copyWith(backgroundColor: lightColorScheme.surfaceVariant),
+          appBarTheme: AppBarTheme.of(context).copyWith(
+              backgroundColor: lightColorScheme.surfaceContainerHighest),
           useMaterial3: true,
         ),
         darkTheme: ThemeData(

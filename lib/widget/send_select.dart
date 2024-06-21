@@ -19,7 +19,7 @@ import 'dialog.dart';
 import 'send_settings.dart';
 
 class SelectFiles extends ConsumerWidget {
-  const SelectFiles({Key? key}) : super(key: key);
+  const SelectFiles({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +38,7 @@ class SelectFiles extends ConsumerWidget {
 
     return Column(children: <Widget>[
       Container(
-        color: colorScheme.background,
+        color: colorScheme.surface,
         padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -214,7 +214,7 @@ class SelectFiles extends ConsumerWidget {
                                       MediaQuery.of(context).viewInsets.bottom,
                                 ),
                                 decoration: BoxDecoration(
-                                    color: colorScheme.background,
+                                    color: colorScheme.surface,
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(25))),
                                 child: SizedBox(
