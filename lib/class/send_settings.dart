@@ -3,7 +3,7 @@ import 'dart:io';
 /// 送信設定
 class SendSettings {
   /// ファイルのハッシュ値をチェックするかどうか
-  bool checkFileHash = true;
+  bool checkFileHash = false;
 
   /// 暗号化モードで送信するかどうか
   bool encryptMode = true;

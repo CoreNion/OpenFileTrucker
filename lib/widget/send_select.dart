@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cross_file/cross_file.dart';
@@ -11,7 +10,6 @@ import 'package:open_file_trucker/provider/send_provider.dart';
 import 'package:path/path.dart' as p;
 
 import '../class/file_info.dart';
-import '../helper/hash.dart';
 import '../page/sender.dart';
 import '../provider/main_provider.dart';
 import '../send.dart';
@@ -28,7 +26,6 @@ class SelectFiles extends ConsumerWidget {
 
     final selectedFiles = ref.watch(selectedFilesProvider);
     final totalSize = ref.watch(totalSizeProvider);
-    final settings = ref.watch(sendSettingsProvider);
     final serverListen = ref.watch(serverStateProvider);
 
     /// ファイル選択リストのUIを更新
@@ -167,33 +164,13 @@ class SelectFiles extends ConsumerWidget {
                         return;
                       }
 
-                      List<Uint8List>? hashs;
-                      if (settings.checkFileHash) {
-                        // トーストでで通知
-                        BotToast.showNotification(
-                          leading: (cancelFunc) =>
-                              const CircularProgressIndicator(),
-                          title: (_) => const Text("ファイルのハッシュを計算中です..."),
-                          subtitle: (cancelFunc) {
-                            return const Text("ファイルの大きさなどによっては、時間がかかる場合があります。");
-                          },
-                          duration: const Duration(days: 99999999),
-                        );
-                        hashs = await calcFileHash(selectedFiles);
-
-                        // トーストを消す
-                        BotToast.cleanAll();
-                      }
-
                       // サーバーの開始
                       SendFiles.fileInfo =
                           await Future.wait(selectedFiles.map((e) async {
-                        final index = selectedFiles.indexOf(e);
                         return FileInfo(
                             name: p.basename(e.path),
                             size: await e.length(),
-                            hash:
-                                settings.checkFileHash ? hashs![index] : null);
+                            hash: null);
                       }));
                       SendFiles.files = selectedFiles;
 

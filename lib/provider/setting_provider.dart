@@ -15,7 +15,7 @@ enum _SettingsType {
 }
 
 final checkFileHashProvider = StateProvider<bool>(
-    (ref) => _prefProviderFn(_SettingsType.checkFileHash, true, ref));
+    (ref) => _prefProviderFn(_SettingsType.checkFileHash, false, ref));
 
 final encryptModeProvider = StateProvider<bool>(
     (ref) => _prefProviderFn(_SettingsType.encryptMode, true, ref));

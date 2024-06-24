@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../provider/setting_provider.dart';
-import '../send.dart';
-import 'dialog.dart';
 
 class SendSettingsDialog extends ConsumerWidget {
   const SendSettingsDialog({super.key});
@@ -16,13 +14,6 @@ class SendSettingsDialog extends ConsumerWidget {
           child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          SwitchListTile(
-            value: ref.watch(checkFileHashProvider),
-            title: const Text('受信時にファイルの整合性を確認する'),
-            subtitle: const Text("ファイルのハッシュ値を確認し、送信元と同じファイルを受信したかどうかを確認します。"),
-            onChanged: (bool value) =>
-                ref.read(checkFileHashProvider.notifier).state = value,
-          ),
           SwitchListTile(
             value: ref.watch(encryptModeProvider),
             title: const Text('暗号化モードで送信する (推奨)'),
@@ -39,47 +30,6 @@ class SendSettingsDialog extends ConsumerWidget {
             onChanged: (bool value) =>
                 ref.read(deviceDetectionProvider.notifier).state = value,
           ),
-          ListTile(
-              title: const Text("Bindアドレス"),
-              trailing: Text(ref.watch(bindAdressProvider),
-                  style: const TextStyle(fontSize: 18)),
-              onTap: () async {
-                final nets = await SendFiles.getAvailableNetworks();
-                if (nets == null || nets.isEmpty) {
-                  EasyDialog.showSmallToast(
-                      ref, "エラー", "WiFiやイーサーネットなどに接続してください。");
-                  return;
-                }
-
-                // 選択肢のDialogOptionに追加する
-                List<SimpleDialogOption> dialogOptions = [
-                  SimpleDialogOption(
-                    onPressed: () => Navigator.pop(context, "0.0.0.0"),
-                    child: const Text("0.0.0.0"),
-                  )
-                ];
-                for (var network in nets) {
-                  dialogOptions.add(SimpleDialogOption(
-                    onPressed: () => Navigator.pop(context, network.ip),
-                    child: Text("${network.interfaceName} ${network.ip}"),
-                  ));
-                }
-
-                if (!context.mounted) return;
-                final res = await showDialog<String>(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return SimpleDialog(
-                      title: const Text("利用するネットワークを選択してください。"),
-                      children: dialogOptions,
-                    );
-                  },
-                );
-
-                if (res != null) {
-                  ref.read(bindAdressProvider.notifier).state = res;
-                }
-              }),
           ListTile(
             title: const Text("デバイス名"),
             trailing: Text(ref.watch(nameProvider),
