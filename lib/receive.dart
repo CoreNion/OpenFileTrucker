@@ -12,17 +12,18 @@ import 'package:webcrypto/webcrypto.dart';
 import 'dart:io';
 
 import 'class/file_info.dart';
+import 'helper/gcm.dart';
 import 'helper/service.dart';
 
 class ReceiveFile {
   static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
-  static AesCbcSecretKey? _aesCbcSecretKey;
+  static AesGcmSecretKey? _aesGcmSecretKey;
 
   /// ファイルの受信の処理をする関数
   static Future<StreamController<ReceiveProgress>> receiveFile(
       String ip, int fileIndex, File saveFile, FileInfo fileInfo) async {
-    if (_aesCbcSecretKey == null) {
-      throw Exception("AES-CBC暗号化用の鍵が設定されていません");
+    if (_aesGcmSecretKey == null) {
+      throw Exception("AES暗号化用の鍵が設定されていません");
     }
 
     StreamController<ReceiveProgress> controller = StreamController();
@@ -35,7 +36,7 @@ class ReceiveFile {
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
     socket.add([
       ...sendIV,
-      ...await _aesCbcSecretKey!
+      ...await _aesGcmSecretKey!
           .encryptBytes(utf8.encode("$uuid${fileIndex.toString()}"), sendIV)
     ]);
 
@@ -67,7 +68,7 @@ class ReceiveFile {
     };
 
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(_aesCbcSecretKey!.decryptStream(socket, sendIV))
+    receiveSink.addStream(decryptGcmStream(socket, _aesGcmSecretKey!, sendIV))
       ..then((v) async {
         /* 書き込み終了時の処理 (キャンセル関係なく実行) */
         timer.cancel();
@@ -217,10 +218,10 @@ class ReceiveFile {
     socket.add(
         [...plainTextHeader, ...await _pubKeyPair!.publicKey.exportSpkiKey()]);
 
-    // AES-CBC暗号化用の鍵を受信
+    // AES暗号化用の鍵を受信
     Completer completer = Completer();
     await socket.listen((event) async {
-      _aesCbcSecretKey = await AesCbcSecretKey.importRawKey(
+      _aesGcmSecretKey = await AesGcmSecretKey.importRawKey(
           await _pubKeyPair!.privateKey.decryptBytes(event));
 
       completer.complete();
@@ -233,7 +234,7 @@ class ReceiveFile {
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
     socket.add([
       ...iv,
-      ...await _aesCbcSecretKey!.encryptBytes(utf8.encode("${uuid}second"), iv),
+      ...await _aesGcmSecretKey!.encryptBytes(utf8.encode("${uuid}second"), iv),
     ]);
 
     // ファイル情報を受信
@@ -243,7 +244,7 @@ class ReceiveFile {
       final data = event.sublist(16);
 
       final js = json.decode(
-              utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV)))
+              utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, recIV)))
           as List<dynamic>;
       for (var element in js) {
         final map = element as Map<String, dynamic>;

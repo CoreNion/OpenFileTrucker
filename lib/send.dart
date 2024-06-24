@@ -9,6 +9,7 @@ import 'package:webcrypto/webcrypto.dart';
 import 'class/file_info.dart';
 import 'class/send_settings.dart';
 import 'class/trucker_device.dart';
+import 'helper/gcm.dart';
 import 'helper/incoming.dart';
 import 'helper/service.dart';
 
@@ -91,7 +92,7 @@ class SendFiles {
 
   static ServerSocket? _server;
   static RsaOaepPublicKey? pubKey;
-  static AesCbcSecretKey? _aesCbcSecretKey;
+  static AesGcmSecretKey? _aesGcmSecretKey;
 
   static List<FileInfo>? fileInfo;
   static List<XFile> files = [];
@@ -108,7 +109,7 @@ class SendFiles {
     }
 
     // AES-CBC暗号化用の鍵を生成
-    _aesCbcSecretKey = await AesCbcSecretKey.generateKey(256);
+    _aesGcmSecretKey = await AesGcmSecretKey.generateKey(256);
 
     _server = await ServerSocket.bind(settings.bindAdress, 4782);
     _server?.listen((event) => _serverListen(event));
@@ -126,9 +127,9 @@ class SendFiles {
         final data = event.sublist(5);
         pubKey = await RsaOaepPublicKey.importSpkiKey(data, Hash.sha512);
 
-        // AES-CBC暗号化用の鍵を公開鍵で暗号化し、送信
+        // AES暗号化用の鍵を公開鍵で暗号化し、送信
         socket.add(
-            await pubKey!.encryptBytes(await _aesCbcSecretKey!.exportRawKey()));
+            await pubKey!.encryptBytes(await _aesGcmSecretKey!.exportRawKey()));
       } else {
         // IVを作成/取得
         final sendIV = Uint8List(16);
@@ -137,7 +138,7 @@ class SendFiles {
         final data = event.sublist(16);
 
         final decryptMesg =
-            utf8.decode(await _aesCbcSecretKey!.decryptBytes(data, recIV));
+            utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, recIV));
 
         // UUIDを取得
         final uuid = decryptMesg.substring(0, 36);
@@ -147,7 +148,7 @@ class SendFiles {
           // クライアント側にファイル情報を送信
           socket.add([
             ...sendIV,
-            ...await _aesCbcSecretKey!
+            ...await _aesGcmSecretKey!
                 .encryptBytes(utf8.encode(json.encode(fileInfo)), sendIV)
           ]);
           socket.destroy();
@@ -157,7 +158,7 @@ class SendFiles {
           // n番目のファイルを送信
           int? fileNumber = int.tryParse(mesg);
           if (fileNumber != null) {
-            await socket.addStream(_aesCbcSecretKey!.encryptStream(
+            await socket.addStream(encryptGcmStream(
                 files[fileNumber].openRead().transform(
                   StreamTransformer.fromHandlers(handleData: (data, sink) {
                     if (byRequest) {
@@ -168,6 +169,7 @@ class SendFiles {
                     sink.add(data);
                   }),
                 ),
+                _aesGcmSecretKey!,
                 recIV));
             socket.destroy();
 
@@ -192,7 +194,7 @@ class SendFiles {
   static void serverClose() {
     _server?.close();
     pubKey = null;
-    _aesCbcSecretKey = null;
+    _aesGcmSecretKey = null;
 
     unregisterNsd(ServiceType.send);
   }
