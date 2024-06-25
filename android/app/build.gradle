@@ -55,8 +55,3 @@ android {
 flutter {
     source '../..'
 }
-
-dependencies {
-    implementation "androidx.activity:activity:1.4.0"
-    implementation "androidx.fragment:fragment:1.4.1"
-}
