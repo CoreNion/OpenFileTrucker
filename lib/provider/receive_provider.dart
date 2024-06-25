@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mime/mime.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
@@ -53,6 +59,44 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
     return;
   }
 
+  // iOSで画像/動画ファイルが含まれている場合は、写真ライブラリに保存するか尋ねる
+  bool saveMediaFile = false;
+  if (Platform.isIOS &&
+      fileInfos.any((e) =>
+          lookupMimeType(e.name)?.contains(RegExp(r"image|video")) ?? false)) {
+    final resultCompleter = Completer<bool>();
+    BotToast.showWidget(toastBuilder: (cancelFunc) {
+      return AlertDialog(
+        title: const Text("写真ライブラリに保存しますか？"),
+        content: const Text("受信した画像/動画ファイルを、写真ライブラリに保存しますか？"),
+        actions: [
+          TextButton(
+              onPressed: () {
+                cancelFunc();
+                resultCompleter.complete(false);
+              },
+              child: const Text("保存しない (フォルダーに保存)")),
+          TextButton(
+              onPressed: () async {
+                cancelFunc();
+                if (await Permission.photosAddOnly.request().isDenied) {
+                  BotToast.showSimpleNotification(
+                      title: "写真ライブラリにアクセスできません",
+                      subTitle: "今回はファイルとして保存します。ライブラリに保存するには、設定から権限を変更してください。",
+                      duration: const Duration(seconds: 10),
+                      backgroundColor: colorScheme.onError);
+                  resultCompleter.complete(false);
+                  return;
+                }
+                resultCompleter.complete(true);
+              },
+              child: const Text("保存する")),
+        ],
+      );
+    });
+    saveMediaFile = await resultCompleter.future;
+  }
+
   // 全ファイルの受信の終了時の処理(異常終了関係なし)
   void endProcess() {
     // 画面ロック防止を解除
@@ -66,8 +110,8 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   }
 
   // 各ファイルを受信する
-  final controller =
-      await ReceiveFile.receiveAllFiles(device.host, fileInfos, dirPath);
+  final controller = await ReceiveFile.receiveAllFiles(
+      device.host, fileInfos, dirPath, saveMediaFile);
 
   // 進捗を適宜更新する
   final stream = controller.stream;

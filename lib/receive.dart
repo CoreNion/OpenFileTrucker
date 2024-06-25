@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:mime/mime.dart';
 import 'package:webcrypto/webcrypto.dart';
 import 'dart:io';
@@ -22,7 +21,11 @@ class ReceiveFile {
 
   /// ファイルの受信の処理をする関数
   static Future<StreamController<ReceiveProgress>> receiveFile(
-      String ip, int fileIndex, File saveFile, FileInfo fileInfo) async {
+      String ip,
+      int fileIndex,
+      File saveFile,
+      FileInfo fileInfo,
+      bool saveMediaFile) async {
     if (_aesGcmSecretKey == null) {
       throw Exception("AES暗号化用の鍵が設定されていません");
     }
@@ -91,8 +94,10 @@ class ReceiveFile {
           }
         }
 
-        // MediaStoreにファイル情報を登録 (Androidのみ)
-        await _registerMediaStore(saveFile.path);
+        // MediaStore/写真ライブラリにファイル情報を保存 (Android/iOSのみ)
+        if (saveMediaFile || Platform.isAndroid) {
+          await _saveMediaStore(saveFile);
+        }
 
         await controller.close();
       })
@@ -121,8 +126,8 @@ class ReceiveFile {
   }
 
   /// FileInfoにあるファイルを全て受信する関数
-  static Future<StreamController<ReceiveProgress>> receiveAllFiles(
-      String ip, List<FileInfo> fileInfos, String dirPath) async {
+  static Future<StreamController<ReceiveProgress>> receiveAllFiles(String ip,
+      List<FileInfo> fileInfos, String dirPath, bool saveMediaFile) async {
     StreamController<ReceiveProgress> controller = StreamController();
     late StreamController<ReceiveProgress> singleController;
 
@@ -142,7 +147,11 @@ class ReceiveFile {
       // 各ファイルを受信
       for (var i = 0; i < fileInfos.length; i++) {
         singleController = await ReceiveFile.receiveFile(
-            ip, i, File(p.join(dirPath, fileInfos[i].name)), fileInfos[i]);
+            ip,
+            i,
+            File(p.join(dirPath, fileInfos[i].name)),
+            fileInfos[i],
+            saveMediaFile);
 
         singleController.stream.listen((progress) {
           // 各値を最新の値に更新
@@ -299,27 +308,15 @@ class ReceiveFile {
     return true;
   }
 
-  /// 画像ライブラリに保存する関数
-  static Future<bool> savePhotoLibrary(
-      String dirPath, List<FileInfo> fileInfos) async {
-    if (await Permission.photosAddOnly.request().isDenied) {
-      return false;
-    }
-
-    for (var i = 0; i < fileInfos.length; i++) {
-      final XFile file = XFile(p.join(dirPath, fileInfos[i].name));
-
-      await ImageGallerySaver.saveFile(file.path);
-    }
-
-    return true;
-  }
-
-  /// AndroidでMediaStoreにファイルを登録する関数
-  static Future<void> _registerMediaStore(String path) async {
+  /// (Android/iOSのみ) MediaStore/写真ライブラリにファイル情報を保存する関数
+  static Future<void> _saveMediaStore(File file) async {
     if (Platform.isAndroid) {
       const platform = MethodChannel('dev.cnion.filetrucker/mediastore');
-      await platform.invokeMethod('registerMediaStore', {"path": path});
+      await platform.invokeMethod('registerMediaStore', {"path": file.path});
+    } else if (Platform.isIOS) {
+      // 写真ライブラリに保存し、ファイルは削除
+      await ImageGallerySaver.saveFile(file.path);
+      file.deleteSync();
     }
   }
 }
