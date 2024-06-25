@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -89,6 +90,10 @@ class ReceiveFile {
             saveFile.deleteSync();
           }
         }
+
+        // MediaStoreにファイル情報を登録 (Androidのみ)
+        await _registerMediaStore(saveFile.path);
+
         await controller.close();
       })
       ..catchError((error) {
@@ -308,6 +313,14 @@ class ReceiveFile {
     }
 
     return true;
+  }
+
+  /// AndroidでMediaStoreにファイルを登録する関数
+  static Future<void> _registerMediaStore(String path) async {
+    if (Platform.isAndroid) {
+      const platform = MethodChannel('dev.cnion.filetrucker/mediastore');
+      await platform.invokeMethod('registerMediaStore', {"path": path});
+    }
   }
 }
 
