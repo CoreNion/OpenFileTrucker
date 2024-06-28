@@ -1,4 +1,4 @@
-package com.corenion.filetrucker;
+package dev.cnion.trucker;
 
 import android.media.MediaScannerConnection
 import io.flutter.embedding.android.FlutterActivity

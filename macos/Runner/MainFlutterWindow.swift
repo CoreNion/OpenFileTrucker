@@ -6,7 +6,7 @@ class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController.init()
     
-    let permissionChannel = FlutterMethodChannel(name: "com.corenion.filetrucker/permission", binaryMessenger: flutterViewController.engine.binaryMessenger)
+    let permissionChannel = FlutterMethodChannel(name: "dev.cnion.trucker/permission", binaryMessenger: flutterViewController.engine.binaryMessenger)
       permissionChannel.setMethodCallHandler({
           [weak self] (call:  FlutterMethodCall, result: @escaping FlutterResult) -> Void in
           

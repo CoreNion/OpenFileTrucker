@@ -31,8 +31,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.corenion.filetrucker"
+        applicationId "dev.cnion.trucker"
         minSdkVersion 27
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
@@ -48,6 +47,21 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+        }
+    }
+
+    flavorDimensions "default"
+
+    productFlavors {
+        dev {
+            dimension "default"
+            resValue "string", "app_name", "DevTrucker"
+            applicationIdSuffix ".dev"
+        }
+        prod {
+            isDefault = true
+            dimension "default"
+            resValue "string", "app_name", "FileTrucker"
         }
     }
 }

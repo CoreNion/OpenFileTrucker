@@ -8,7 +8,7 @@ Future<bool?> checkCamPermission() async {
     return Permission.camera.request().isGranted;
   } else if (Platform.isMacOS) {
     // 権限の取得などに独自実装が必要なOS向け処理
-    const platform = MethodChannel('com.corenion.filetrucker/permission');
+    const platform = MethodChannel('dev.cnion.trucker/permission');
     final request = await platform.invokeMethod("requestCameraPermission");
 
     if (request == null) {
