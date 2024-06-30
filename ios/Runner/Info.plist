@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -20,12 +22,51 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ShareMedia-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_trucker-send._tcp</string>
+		<string>_trucker-receive._tcp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>QRコードを読み取るために、カメラへのアクセスが必要です。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ファイル共有を行うには、ローカルネットワークへのアクセスが必要です。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>画像や動画を写真ライブラリに保存するには、写真ライブラリへのアクセスの許可が必要です。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>画像や動画を利用するには、写真ライブラリへのアクセスの許可が必要です。</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -45,53 +86,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-   <string>fetch</string>
-   <string>remote-notification</string>
-	</array>
 	<key>UISupportsDocumentBrowser</key>
 	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>画像や動画を利用するには、写真ライブラリへのアクセスの許可が必要です。</string>
-		<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>画像や動画を写真ライブラリに保存するには、写真ライブラリへのアクセスの許可が必要です。</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>ファイル共有を行うには、ローカルネットワークへのアクセスが必要です。</string>
-	<key>NSBonjourServices</key>
-	<array>
-	  <string>_trucker-send._tcp</string>
-		<string>_trucker-receive._tcp</string>
-	</array>
-
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>LSApplicationQueriesSchemes</key>
-  <array>
-        <string>https</string>
-  </array>
 	<key>io.flutter.embedded_views_preview</key>
-	<true/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>NSUserActivityTypes</key>
-	<array>
-  <string>INSendMessageIntent</string>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>ShareMedia-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-			</array>
-		</dict>
-	</array>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>
 </plist>

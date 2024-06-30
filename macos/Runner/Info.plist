@@ -24,17 +24,17 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>QRコードを読み取るために、カメラへのアクセスが必要です。</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>ファイル共有を行うには、ローカルネットワークへのアクセスが必要です。</string>
 	<key>NSBonjourServices</key>
 	<array>
-	  <string>_trucker-send._tcp</string>
+		<string>_trucker-send._tcp</string>
 		<string>_trucker-receive._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>QRコードを読み取るために、カメラへのアクセスが必要です。</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>$(PRODUCT_COPYRIGHT)</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ファイル共有を行うには、ローカルネットワークへのアクセスが必要です。</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
