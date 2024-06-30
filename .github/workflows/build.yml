@@ -21,6 +21,8 @@ jobs:
           cache: true
           cache-key: flutter_mac
           cache-path: ${{ runner.tool_cache }}/flutter_mac
+          pub-cache-key: flutter_mac_pubcache
+          pub-cache-path: ${{ runner.tool_cache }}/flutter_mac_pubcache
 
       - name: Install dependencies
         run: flutter pub get
@@ -31,7 +33,7 @@ jobs:
       - name: mkdir payload and copy .app to Payload/
         run: |
           mkdir Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          cp -r build/ios/iphoneos/FileTrucker.app Payload/
       - name: Compress to zip(ipa)
         run: zip -r app-release.ipa Payload
       
@@ -50,7 +52,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
       
       - uses: subosito/flutter-action@v2
         with:
@@ -59,6 +61,8 @@ jobs:
           cache: true
           cache-key: flutter_linux
           cache-path: ${{ runner.tool_cache }}/flutter_linux
+          pub-cache-key: flutter_linux_pubcache
+          pub-cache-path: ${{ runner.tool_cache }}/flutter_linux_pubcache
 
       - name: Install dependencies
         run: flutter pub get
@@ -85,6 +89,8 @@ jobs:
           cache: true
           cache-key: flutter_mac
           cache-path: ${{ runner.tool_cache }}/flutter_mac
+          pub-cache-key: flutter_mac_pubcache
+          pub-cache-path: ${{ runner.tool_cache }}/flutter_mac_pubcache
 
       - name: Install dependencies
         run: |
@@ -118,6 +124,8 @@ jobs:
           cache: true
           cache-key: flutter_win
           cache-path: ${{ runner.tool_cache }}/flutter_win
+          pub-cache-key: flutter_win_pubcache
+          pub-cache-path: ${{ runner.tool_cache }}/flutter_win_pubcache
 
       - uses: crazy-max/ghaction-chocolatey@v2
         with:
@@ -131,7 +139,7 @@ jobs:
           flutter pub get
 
       - name: build
-        run: flutter build windows --flavor prod --release
+        run: flutter build windows --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -152,6 +160,8 @@ jobs:
           cache: true
           cache-key: flutter_linux
           cache-path: ${{ runner.tool_cache }}/flutter_linux
+          pub-cache-key: flutter_linux_pubcache
+          pub-cache-path: ${{ runner.tool_cache }}/flutter_linux_pubcache
 
       - name: Install dependencies
         run: |
@@ -161,7 +171,7 @@ jobs:
           flutter pub get
 
       - name: build bundle
-        run: flutter build linux --flavor prod --release
+        run: flutter build linux --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
