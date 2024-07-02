@@ -74,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: android
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-prod-release.apk
           
   build_macos:
     runs-on: macos-latest
@@ -101,14 +101,14 @@ jobs:
         run: |
           flutter build macos --flavor prod --release
           mkdir output
-          cd build/macos/Build/Products/Release/
+          cd build/macos/Build/Products/Release-prod/
           cp -r FileTrucker.app ../../../../../output/
           cd ../../../../../
         
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: macos
+          name: macos-arm64
           path: output
   
   build_windows:
@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows-x64
-          path: build\windows\runner\Release
+          path: build\windows\x64\runner\Release
 
   build_linux:
     runs-on: ubuntu-latest
