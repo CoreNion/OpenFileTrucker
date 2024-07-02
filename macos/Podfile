@@ -40,4 +40,9 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
   end
+
+  # Only build for arm64 because truble with universal binary
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings["ARCHS"] = "arm64"
+  end
 end
