@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId "dev.cnion.trucker"
-        minSdkVersion 27
+        minSdkVersion 30
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

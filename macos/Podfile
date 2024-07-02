@@ -1,4 +1,4 @@
-platform :osx, '10.15'
+platform :osx, '12.4'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -44,5 +44,6 @@ post_install do |installer|
   # Only build for arm64 because truble with universal binary
   installer.pods_project.build_configurations.each do |config|
     config.build_settings["ARCHS"] = "arm64"
+    config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
   end
 end
