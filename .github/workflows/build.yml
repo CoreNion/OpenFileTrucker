@@ -28,7 +28,7 @@ jobs:
         run: flutter pub get
 
       - name: build ipa
-        run: flutter build ios --flavor prod --release --no-codesign
+        run: flutter build ios -v --flavor prod --release --no-codesign
       
       - name: mkdir payload and copy .app to Payload/
         run: |
@@ -68,7 +68,7 @@ jobs:
         run: flutter pub get
 
       - name: build apk
-        run: flutter build apk --flavor prod --release
+        run: flutter build apk -v --flavor prod --release
         
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -99,7 +99,7 @@ jobs:
 
       - name: build app
         run: |
-          flutter build macos --flavor prod --release
+          flutter build macos -v --flavor prod --release
           mkdir output
           cd build/macos/Build/Products/Release-prod/
           cp -r FileTrucker.app ../../../../../output/
@@ -139,7 +139,7 @@ jobs:
           flutter pub get
 
       - name: build
-        run: flutter build windows --release
+        run: flutter build windows -v --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -171,7 +171,7 @@ jobs:
           flutter pub get
 
       - name: build bundle
-        run: flutter build linux --release
+        run: flutter build linux -v --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
