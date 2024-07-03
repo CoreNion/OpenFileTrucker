@@ -164,7 +164,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                             applicationVersion:
                                 "Version:${MyApp.packageInfo.version}",
                             applicationLegalese:
-                                'Copyright (c) 2023 CoreNion\n',
+                                'Copyright (c) 2024 CoreNion\n',
                             children: <Widget>[
                               if (await canLaunchUrl(siteUri)) ...{
                                 TextButton(
