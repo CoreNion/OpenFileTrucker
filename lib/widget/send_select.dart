@@ -240,7 +240,7 @@ class SelectFiles extends ConsumerWidget {
 
   /// ファイル選択ダイアログ経由でのファイル選択を行う
   Future<Iterable<XFile>?> selectViaDialog(BuildContext context) async {
-    late FileType fileType;
+    late FileType? fileType;
 
     // iOSでは写真ライブラリからの選択かも確認する
     if (Platform.isIOS) {
@@ -269,6 +269,7 @@ class SelectFiles extends ConsumerWidget {
           ],
         ),
       );
+      if (fileType == null) return null;
     } else {
       fileType = FileType.any;
     }
