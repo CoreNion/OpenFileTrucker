@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mime/mime.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../class/file_info.dart';
@@ -98,15 +99,44 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   }
 
   // 全ファイルの受信の終了時の処理(異常終了関係なし)
-  void endProcess() {
+  void endProcess(bool sucess) {
     // 画面ロック防止を解除
     WakelockPlus.disable();
 
-    BotToast.showSimpleNotification(
-        title: "ファイルの受信が完了しました！", backgroundColor: colorScheme.onPrimary);
     sendDevices[index].progress = 1;
     sendDevices[index].status = TruckerStatus.received;
     ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
+
+    if (!sucess) {
+      return;
+    }
+    BotToast.showNotification(
+      leading: (_) => SizedBox.fromSize(
+          size: const Size(40, 40),
+          child: const Icon(Icons.check, color: Colors.green)),
+      title: (_) => const Text("ファイルの受信が完了しました！"),
+      subtitle: (_) => const Text("ディレクトリを開くには、ここをタップしてください。"),
+      trailing: (_) => const Icon(Icons.folder_open),
+      duration: const Duration(seconds: 10),
+      backgroundColor: colorScheme.onPrimary,
+      onTap: () {
+        if (Platform.isWindows) {
+          Process.run("explorer", [dirPath]);
+        } else if (Platform.isMacOS) {
+          Process.run("open", [dirPath]);
+        } else if (Platform.isLinux) {
+          Process.run("xdg-open", [dirPath]);
+        } else if (Platform.isIOS) {
+          if (saveMediaFile) {
+            launchUrlString("photos-redirect://");
+          } else {
+            launchUrlString("shareddocuments://$dirPath");
+          }
+        } else if (Platform.isAndroid) {
+          launchUrlString("file://$dirPath");
+        }
+      },
+    );
   }
 
   // 各ファイルを受信する
@@ -119,7 +149,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
     sendDevices[index].progress = newProgress.totalProgress;
     ref.read(tSendDevicesProvider.notifier).state = [...sendDevices];
   }, onError: (e) {
-    endProcess();
+    endProcess(false);
 
     BotToast.showSimpleNotification(
         title: "ファイルの受信に失敗しました",
@@ -128,6 +158,6 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   });
 
   controller.done.then((_) {
-    endProcess();
+    endProcess(true);
   });
 }
