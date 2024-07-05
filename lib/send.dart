@@ -74,11 +74,12 @@ class SendFiles {
   static Future<List<File>?> pickFiles({FileType type = FileType.any}) async {
     List<File> files = <File>[];
 
+    // TODO: Live Photo(ディレクトリ)の対応
     var res = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         dialogTitle: "送信するファイルを選択",
         type: type,
-        allowCompression: false);
+        allowCompression: true);
     if (!(res == null)) {
       // 選択されたファイルの情報をFile形式で記録
       for (var i = 0; i < res.files.length; i++) {

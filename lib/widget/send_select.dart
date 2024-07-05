@@ -41,7 +41,7 @@ class SelectFiles extends ConsumerWidget {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           IconButton.filled(
               onPressed: () async {
-                final files = await selectViaDialog(context);
+                final files = await selectViaDialog(context, ref);
                 if (files == null) return;
                 selectedFiles.addAll(files);
 
@@ -70,6 +70,20 @@ class SelectFiles extends ConsumerWidget {
         flex: 8,
         child: DropTarget(
             onDragDone: (detail) {
+              // ディレクトリを除外する
+              bool dirIncluded = false;
+              detail.files.removeWhere((xfile) {
+                final test = File(xfile.path).statSync().type ==
+                    FileSystemEntityType.directory;
+                if (test) dirIncluded = true;
+                return test;
+              });
+
+              if (dirIncluded) {
+                EasyDialog.showSmallToast(ref, "ディレクトリ(フォルダー)は除外されます",
+                    "ディレクトリはそのままでは送信できません。圧縮するなどの対応をしてください。");
+              }
+
               selectedFiles.addAll(detail.files);
               refleshFilesList();
             },
@@ -79,7 +93,7 @@ class SelectFiles extends ConsumerWidget {
                       margin: const EdgeInsets.all(20),
                       child: ElevatedButton(
                         onPressed: () async {
-                          final files = await selectViaDialog(context);
+                          final files = await selectViaDialog(context, ref);
                           if (files == null) return;
                           selectedFiles.addAll(files);
 
@@ -239,7 +253,8 @@ class SelectFiles extends ConsumerWidget {
   }
 
   /// ファイル選択ダイアログ経由でのファイル選択を行う
-  Future<Iterable<XFile>?> selectViaDialog(BuildContext context) async {
+  Future<Iterable<XFile>?> selectViaDialog(
+      BuildContext context, WidgetRef ref) async {
     late FileType? fileType;
 
     // iOSでは写真ライブラリからの選択かも確認する
@@ -275,6 +290,19 @@ class SelectFiles extends ConsumerWidget {
     }
     final files = await SendFiles.pickFiles(type: fileType);
     if (files == null || files.isEmpty) return null;
+
+    // ディレクトリを除外する
+    bool dirIncluded = false;
+    files.removeWhere((xfile) {
+      final test =
+          File(xfile.path).statSync().type == FileSystemEntityType.directory;
+      if (test) dirIncluded = true;
+      return test;
+    });
+    if (dirIncluded) {
+      EasyDialog.showSmallToast(ref, "ディレクトリ(フォルダー)は除外されます",
+          "ディレクトリはそのままでは送信できません。圧縮するなどの対応をしてください。");
+    }
 
     // XFileに変換
     return files.map((e) => XFile(e.path));
