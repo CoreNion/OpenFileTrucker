@@ -6,6 +6,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:open_file_trucker/provider/send_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -25,6 +26,7 @@ class SelectFiles extends ConsumerWidget {
     final isSmallUi = ref.watch(isSmallUIProvider);
 
     final selectedFiles = ref.watch(selectedFilesProvider);
+    final isFileSelecting = ref.watch(isFileSelectingProvider);
     final totalSize = ref.watch(totalSizeProvider);
     final serverListen = ref.watch(serverStateProvider);
 
@@ -91,35 +93,53 @@ class SelectFiles extends ConsumerWidget {
                 ? Center(
                     child: Container(
                       margin: const EdgeInsets.all(20),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final files = await selectViaDialog(context, ref);
-                          if (files == null) return;
-                          selectedFiles.addAll(files);
+                      child: !isFileSelecting
+                          ? ElevatedButton(
+                              onPressed: () async {
+                                final files =
+                                    await selectViaDialog(context, ref);
+                                if (files == null) return;
+                                selectedFiles.addAll(files);
 
-                          refleshFilesList();
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.surface,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            )),
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          child: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.file_open, size: 100),
-                              Text(
-                                "タップでファイルを追加\nまたはドラック＆ドロップ",
+                                refleshFilesList();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.surface,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  )),
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                child: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.file_open, size: 100),
+                                    Text(
+                                      "タップでファイルを追加\nまたはドラック＆ドロップ",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 20),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Column(mainAxisSize: MainAxisSize.min, children: [
+                              const Text(
+                                "ファイルを読み込み中...",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 20),
+                              ),
+                              SizedBox(
+                                height: 170,
+                                child: LoadingIndicator(
+                                  indicatorType: Indicator.ballBeat,
+                                  colors: [
+                                    colorScheme.primary.withOpacity(1.0)
+                                  ],
+                                ),
                               )
-                            ],
-                          ),
-                        ),
-                      ),
+                            ]),
                     ),
                   )
                 : ListView.builder(
@@ -255,8 +275,9 @@ class SelectFiles extends ConsumerWidget {
   /// ファイル選択ダイアログ経由でのファイル選択を行う
   Future<Iterable<XFile>?> selectViaDialog(
       BuildContext context, WidgetRef ref) async {
-    late FileType? fileType;
+    ref.read(isFileSelectingProvider.notifier).state = true;
 
+    late FileType? fileType;
     // iOSでは写真ライブラリからの選択かも確認する
     if (Platform.isIOS) {
       fileType = await showDialog(
@@ -289,7 +310,10 @@ class SelectFiles extends ConsumerWidget {
       fileType = FileType.any;
     }
     final files = await SendFiles.pickFiles(type: fileType);
-    if (files == null || files.isEmpty) return null;
+    if (files == null || files.isEmpty) {
+      ref.read(isFileSelectingProvider.notifier).state = false;
+      return null;
+    }
 
     // ディレクトリを除外する
     bool dirIncluded = false;
@@ -303,6 +327,8 @@ class SelectFiles extends ConsumerWidget {
       EasyDialog.showSmallToast(ref, "ディレクトリ(フォルダー)は除外されます",
           "ディレクトリはそのままでは送信できません。圧縮するなどの対応をしてください。");
     }
+
+    ref.read(isFileSelectingProvider.notifier).state = false;
 
     // XFileに変換
     return files.map((e) => XFile(e.path));

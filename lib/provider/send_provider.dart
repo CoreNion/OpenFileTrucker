@@ -134,3 +134,6 @@ final actionButtonProvider = Provider<FloatingActionButton?>((ref) {
     return null;
   }
 });
+
+/// ファイル選択が準備中かどうか
+final isFileSelectingProvider = StateProvider<bool>((ref) => false);
