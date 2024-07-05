@@ -115,7 +115,7 @@ class SendFiles {
     _server = await ServerSocket.bind(settings.bindAdress, 4782);
     _server?.listen((event) => _serverListen(event));
 
-    if (settings.deviceDetection && !Platform.isLinux) {
+    if (settings.deviceDetection) {
       await registerNsd(ServiceType.send, settings.name);
     }
   }
