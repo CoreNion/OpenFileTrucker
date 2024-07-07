@@ -49,18 +49,25 @@ class SenderConfigPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  DropdownButton(
-                      value: qrIP,
-                      items: availableNetworks.value!
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text("${e.interfaceName} ${e.ip}"),
-                              ))
-                          .toList(),
-                      onChanged: (TruckerNetworkInfo? value) {
-                        ref.read(selectedNetworkProvider.notifier).state =
-                            value!;
-                      }),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 15),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: DropdownButton(
+                          isExpanded: true,
+                          value: qrIP,
+                          items: availableNetworks.value!
+                              .map((e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text("${e.interfaceName} ${e.ip}"),
+                                  ))
+                              .toList(),
+                          onChanged: (TruckerNetworkInfo? value) {
+                            ref.read(selectedNetworkProvider.notifier).state =
+                                value!;
+                          }),
+                    ),
+                  ),
                 ],
               )
             : Container(),

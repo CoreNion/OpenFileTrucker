@@ -42,7 +42,7 @@ class SendFiles {
           } else if (interfaceName.contains(RegExp("eth|en"))) {
             userInterfaceName = "ネットワーク ($interfaceName)";
           } else if (interfaceName.contains(RegExp("bridge|ap"))) {
-            userInterfaceName = "テザリング(アクセスポイント)/インターネット共有 ($interfaceName)";
+            userInterfaceName = "インターネット共有 ($interfaceName)";
           } else {
             userInterfaceName = interfaceName;
           }
