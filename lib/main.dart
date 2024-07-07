@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -23,7 +24,11 @@ import 'provider/service_provider.dart';
 import 'provider/setting_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // スプラッシュスクリーンの設定
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb || Platform.isIOS || Platform.isAndroid) {
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  }
 
   // ファイルのキャッシュ削除
   if (Platform.isIOS || Platform.isAndroid) {
@@ -86,6 +91,10 @@ class _MyAppState extends ConsumerState<MyApp> {
       // 受信リストに追加
       await startManualReceive(remote, ref);
     }), ref.read(nameProvider));
+
+    if (kIsWeb || Platform.isIOS || Platform.isAndroid) {
+      FlutterNativeSplash.remove();
+    }
   }
 
   @override

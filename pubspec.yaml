@@ -67,6 +67,18 @@ dependencies:
   bonsoir: ^5.1.9
   async: ^2.11.0
   shared_preferences: ^2.2.3
+  flutter_native_splash: ^2.4.0
+
+flutter_native_splash:
+  color: '#89ff00'
+  image: 'assets/splash/splash_light.png'
+  color_dark: '#0c1135'
+  image_dark: 'assets/splash/splash_dark.png'
+  android_12:
+    image: 'assets/splash/splash_light.png'
+    color: '#d7edd7'
+    image_dark: 'assets/splash/splash_dark.png'
+    color_dark: '#0c1135'
 
 dev_dependencies:
   flutter_test:
