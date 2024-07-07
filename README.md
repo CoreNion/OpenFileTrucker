@@ -3,7 +3,7 @@
 
 どんな端末でも使える、サーバーを介さないファイル共有アプリ。
 
-## **＊詳しい情報は、[公式サイト](https://corenion.github.io/file_trucker/)をご覧ください。**
+## **＊詳しい情報は、[公式サイト](https://cnion.dev/trucker/)をご覧ください。**
 
 # Features
 
@@ -20,7 +20,7 @@
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/CoreNion/OpenFileTrucker?include_prereleases)
 
 # Documents / Links
-- [公式サイト](https://corenion.github.io/file_trucker/)
+- [公式サイト](https://cnion.dev/trucker/)
 
 # LICENSE
 [MIT LICENSE](./LICENSE)

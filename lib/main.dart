@@ -105,7 +105,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       ColorScheme lightColorScheme;
       ColorScheme darkColorScheme;
-      Uri siteUri = Uri.https("corenion.github.io", "/file_trucker/");
+      Uri siteUri = Uri.https("cnion.dev", "/trucker/");
 
       // DynamicColorが設定されている場合、それを使う
       if (lightDynamic != null && darkDynamic != null) {
