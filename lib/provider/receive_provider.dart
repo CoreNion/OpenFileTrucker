@@ -80,7 +80,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
           TextButton(
               onPressed: () async {
                 cancelFunc();
-                if (await Permission.photosAddOnly.request().isDenied) {
+                if (await Permission.photos.request().isDenied) {
                   BotToast.showSimpleNotification(
                       title: "写真ライブラリにアクセスできません",
                       subTitle: "今回はファイルとして保存します。ライブラリに保存するには、設定から権限を変更してください。",

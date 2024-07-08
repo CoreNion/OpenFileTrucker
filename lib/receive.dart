@@ -4,7 +4,6 @@ import 'package:cross_file/cross_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:mime/mime.dart';
@@ -310,13 +309,9 @@ class ReceiveFile {
 
   /// (Android/iOSのみ) MediaStore/写真ライブラリにファイル情報を保存する関数
   static Future<void> _saveMediaStore(File file) async {
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || Platform.isIOS) {
       const platform = MethodChannel('dev.cnion.filetrucker/mediastore');
       await platform.invokeMethod('registerMediaStore', {"path": file.path});
-    } else if (Platform.isIOS) {
-      // 写真ライブラリに保存し、ファイルは削除
-      await ImageGallerySaver.saveFile(file.path);
-      file.deleteSync();
     }
   }
 }
