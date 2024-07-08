@@ -133,11 +133,11 @@ jobs:
           pub-cache-key: flutter_win_pubcache
           pub-cache-path: ${{ runner.tool_cache }}/flutter_win_pubcache
 
-      - uses: crazy-max/ghaction-chocolatey@v2
+      - uses: crazy-max/ghaction-chocolatey@v3
         with:
           args: install minisign -y
           
-      - uses: ilammy/setup-nasm@v1.4.0
+      - uses: ilammy/setup-nasm@v1
 
       - name: Install dependencies
         run: | 
