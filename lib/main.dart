@@ -100,6 +100,9 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // UI更新時に画面サイズを判定
+    Future(() => ref.read(isSmallUIProvider.notifier).state =
+        MediaQuery.of(context).size.width < 800);
     // デバイスのスキャン開始
     ref.watch(scanDeviceProvider);
 
@@ -142,13 +145,6 @@ class _MyAppState extends ConsumerState<MyApp> {
         themeMode: ref.watch(isDarkProvider) ? ThemeMode.dark : ThemeMode.light,
         home: LayoutBuilder(
           builder: (context, constraints) {
-            // 小さい画面かどうかを判定
-            Future(() => ref.read(isSmallUIProvider.notifier).state =
-                constraints.maxWidth < 800);
-            // ColorSchemeを更新
-            Future(() => ref.read(colorSchemeProvider.notifier).state =
-                ref.watch(isDarkProvider) ? darkColorScheme : lightColorScheme);
-
             return Scaffold(
               appBar: AppBar(
                 title: const Text("Open FileTrucker"),
