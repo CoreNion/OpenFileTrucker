@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,6 +74,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     startIncomingServer((name) async {
       final completer = Completer<bool>();
 
+      HapticFeedback.vibrate();
       BotToast.showNotification(
         title: (_) => Text("$nameからの受信リクエスト"),
         subtitle: (_) => const Text("許諾するにはタップ"),

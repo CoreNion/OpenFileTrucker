@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mime/mime.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -110,6 +111,8 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
     if (!sucess) {
       return;
     }
+
+    HapticFeedback.heavyImpact();
     BotToast.showNotification(
       leading: (_) => SizedBox.fromSize(
           size: const Size(40, 40),
