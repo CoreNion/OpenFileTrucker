@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_file_trucker/helper/permission.dart';
@@ -8,6 +10,8 @@ import '../provider/receive_provider.dart';
 import '../widget/dialog.dart';
 import '../widget/service.dart';
 import '../widget/receive_qr.dart';
+
+final _qrButtonPressedProvider = StateProvider<bool>((ref) => false);
 
 class ReceivePage extends ConsumerWidget {
   const ReceivePage({super.key});
@@ -56,34 +60,50 @@ class ReceivePage extends ConsumerWidget {
                 ],
               )),
           const SizedBox(height: 10),
-          SizedBox(
-              height: 50,
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final pCheck = await checkCamPermission();
-                    switch (pCheck) {
-                      case null:
-                        EasyDialog.showErrorNoti("カメラへのアクセス権限の取得に失敗しました。", ref);
-                        return;
-                      case false:
-                        EasyDialog.showSmallToast(ref, "権限が必要です",
-                            "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。");
-                        return;
-                    }
+          Platform.isIOS || Platform.isAndroid || Platform.isMacOS
+              ? SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                      onPressed: !ref.watch(_qrButtonPressedProvider)
+                          ? () async {
+                              ref
+                                  .read(_qrButtonPressedProvider.notifier)
+                                  .state = true;
 
-                    final res = await showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        useSafeArea: true,
-                        builder: ((context) => const ScanQRCodePage()));
-                    if (res is QRCodeData) {
-                      startManualReceive(res.ip, ref);
-                    }
-                  },
-                  icon: const Icon(Icons.qr_code),
-                  label: const Text("QRコードで接続"))),
+                              final pCheck = await checkCamPermission();
+                              switch (pCheck) {
+                                case null:
+                                  EasyDialog.showErrorNoti(
+                                      "カメラへのアクセス権限の取得に失敗しました。", ref);
+                                  return;
+                                case false:
+                                  EasyDialog.showSmallToast(ref, "権限が必要です",
+                                      "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。");
+                                  return;
+                              }
+
+                              final res = await showModalBottomSheet(
+                                  // ignore: use_build_context_synchronously
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  useSafeArea: true,
+                                  builder: ((context) =>
+                                      const ScanQRCodePage()));
+                              ref
+                                  .read(_qrButtonPressedProvider.notifier)
+                                  .state = false;
+                              if (res is QRCodeData) {
+                                startManualReceive(res.ip, ref);
+                              }
+                            }
+                          : null,
+                      icon: !ref.watch(_qrButtonPressedProvider)
+                          ? const Icon(Icons.qr_code)
+                          : const CircularProgressIndicator(),
+                      label: const Text("QRコードで接続")))
+              : Container(),
           const SizedBox(height: 10),
           const Text("付近のデバイス",
               textAlign: TextAlign.center,
