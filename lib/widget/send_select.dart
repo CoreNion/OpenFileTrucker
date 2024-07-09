@@ -41,15 +41,34 @@ class SelectFiles extends ConsumerWidget {
         padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          IconButton.filled(
-              onPressed: () async {
-                final files = await selectViaDialog(context, ref);
-                if (files == null) return;
-                selectedFiles.addAll(files);
+          Row(
+            children: [
+              IconButton.filled(
+                  onPressed: () async {
+                    final files = await selectViaDialog(context, ref);
+                    if (files == null) return;
+                    selectedFiles.addAll(files);
 
-                refleshFilesList();
-              },
-              icon: const Icon(Icons.add)),
+                    refleshFilesList();
+                  },
+                  icon: const Icon(Icons.add)),
+              const SizedBox(width: 10),
+              Ink(
+                  decoration: ShapeDecoration(
+                    color: colorScheme.error,
+                    shape: const CircleBorder(),
+                  ),
+                  child: IconButton(
+                      color: colorScheme.error,
+                      onPressed: () {
+                        selectedFiles.clear();
+                        refleshFilesList();
+                      },
+                      style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.onError),
+                      icon: const Icon(Icons.delete))),
+            ],
+          ),
           Row(
             children: [
               Text(
