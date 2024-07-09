@@ -305,7 +305,10 @@ class SelectFiles extends ConsumerWidget {
           ],
         ),
       );
-      if (fileType == null) return null;
+      if (fileType == null) {
+        ref.read(isFileSelectingProvider.notifier).state = false;
+        return null;
+      }
     } else {
       fileType = FileType.any;
     }
