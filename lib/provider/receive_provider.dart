@@ -118,7 +118,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
           size: const Size(40, 40),
           child: const Icon(Icons.check, color: Colors.green)),
       title: (_) => const Text("ファイルの受信が完了しました！"),
-      subtitle: (_) => const Text("ディレクトリを開くには、ここをタップしてください。"),
+      subtitle: (_) => const Text("ファイルを開くには、ここをタップしてください。"),
       trailing: (_) => const Icon(Icons.folder_open),
       duration: const Duration(seconds: 10),
       onTap: () {
@@ -137,8 +137,38 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
         } else if (Platform.isAndroid) {
           // PATHを送っているが、デフォルトアプリへの受け渡しは厳しそうなので保留中
           const platform = MethodChannel('dev.cnion.filetrucker/mediastore');
-          platform.invokeMethod(
-              'openFileManager', {"path": dirPath, "media": false});
+          BotToast.showWidget(toastBuilder: (cancelFunc) {
+            return AlertDialog(
+              title: const Text("開くアプリの種類を選択...", textAlign: TextAlign.center),
+              actions: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Column(children: [
+                      IconButton(
+                          onPressed: () {
+                            cancelFunc();
+                            platform.invokeMethod("openFileManager",
+                                {"path": dirPath, "media": true});
+                          },
+                          icon: const Icon(Icons.perm_media, size: 70)),
+                      const Text("写真アプリ")
+                    ]),
+                    Column(children: <Widget>[
+                      IconButton(
+                          onPressed: () {
+                            cancelFunc();
+                            platform.invokeMethod("openFileManager",
+                                {"path": dirPath, "media": false});
+                          },
+                          icon: const Icon(Icons.file_copy, size: 70)),
+                      const Text("ファイル管理アプリ")
+                    ])
+                  ],
+                ),
+              ],
+            );
+          });
         }
       },
     );

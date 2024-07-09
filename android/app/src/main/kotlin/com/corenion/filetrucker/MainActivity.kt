@@ -30,11 +30,20 @@ class MainActivity: FlutterActivity() {
                 result.success(null)
             } else if (call.method == "openFileManager")
             {
-                // PATHを送っているが、デフォルトアプリへの受け渡しは厳しそうなので保留中
-                // val path = call.argument<String>("path")
+                val openMediaApp = call.argument<Boolean>("media")
+                val path = call.argument<String>("path")
+                if (path == null || openMediaApp == null) {
+                    result.error("NEED_ARGS", null, null)
+                    return@setMethodCallHandler
+                }
 
+                // PATHのデフォルトアプリへの受け渡しは厳しそうなので保留中
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.setType("resource/folder")
+                if (openMediaApp) {
+                    intent.setType("image/*")
+                } else {
+                    intent.setType("resource/folder")
+                }
                 startActivity(intent);
             } else {
                 result.notImplemented()
