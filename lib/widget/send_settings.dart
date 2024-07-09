@@ -6,6 +6,8 @@ import '../provider/setting_provider.dart';
 class SendSettingsDialog extends ConsumerWidget {
   const SendSettingsDialog({super.key});
 
+  static final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
@@ -38,50 +40,43 @@ class SendSettingsDialog extends ConsumerWidget {
               await showDialog(
                 context: context,
                 builder: (context) {
-                  final formKey = GlobalKey<FormState>();
-
                   return Container(
                     margin: const EdgeInsets.all(10),
-                    child: SimpleDialog(
+                    child: AlertDialog(
                       title: const Text("デバイス名を入力してください。"),
-                      children: [
-                        Form(
-                          key: formKey,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextFormField(
-                              initialValue: ref.watch(nameProvider),
-                              decoration: const InputDecoration(
-                                labelText: 'デバイス名',
-                              ),
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return 'デバイス名を入力してください。';
-                                }
-                                ref.read(nameProvider.notifier).state = value!;
-                                return null;
-                              },
+                      content: Form(
+                        key: _formKey,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextFormField(
+                            initialValue: ref.watch(nameProvider),
+                            decoration: const InputDecoration(
+                              labelText: 'デバイス名',
                             ),
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'デバイス名を入力してください。';
+                              }
+                              ref.read(nameProvider.notifier).state = value!;
+                              return null;
+                            },
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("キャンセル"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                if (formKey.currentState!.validate()) {
-                                  formKey.currentState!.save();
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: const Text("決定"),
-                            ),
-                          ],
-                        )
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("キャンセル"),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _formKey.currentState!.save();
+                              Navigator.pop(context);
+                            }
+                          },
+                          child: const Text("決定"),
+                        ),
                       ],
                     ),
                   );
