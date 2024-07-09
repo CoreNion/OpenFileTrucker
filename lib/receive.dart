@@ -251,23 +251,18 @@ class ReceiveFile {
     ]);
 
     // ファイル情報を受信
-    completer = Completer();
-    await socket.listen((event) async {
-      final data = event.sublist(16);
+    List<int> decData = [];
+    await for (var data in decryptGcmStream(socket, _aesGcmSecretKey!, iv)) {
+      decData.addAll(data);
+    }
 
-      final js = json.decode(
-              utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, iv)))
-          as List<dynamic>;
-      for (var element in js) {
-        final map = element as Map<String, dynamic>;
-        result.add(FileInfo.mapToInfo(map));
-      }
-
-      completer.complete();
-      socket.destroy();
-    }).asFuture<void>();
-
-    await completer.future;
+    // ファイル情報をJSONにデコード
+    final js = json.decode(utf8.decode(decData)) as List<dynamic>;
+    // ファイル情報をList<FileInfo>に変換
+    for (var element in js) {
+      final map = element as Map<String, dynamic>;
+      result.add(FileInfo.mapToInfo(map));
+    }
     return result;
   }
 

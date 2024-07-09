@@ -145,11 +145,10 @@ class SendFiles {
 
         if (mesg.contains("second")) {
           // クライアント側にファイル情報を送信
-          socket.add([
-            ...iv,
-            ...await _aesGcmSecretKey!
-                .encryptBytes(utf8.encode(json.encode(fileInfo)), iv)
-          ]);
+          await socket.addStream(encryptGcmStream(
+              Stream.value(utf8.encode(json.encode(fileInfo))),
+              _aesGcmSecretKey!,
+              iv));
           socket.destroy();
         } else {
           final byRequest = viaServiceDevice.keys.contains(uuid);
