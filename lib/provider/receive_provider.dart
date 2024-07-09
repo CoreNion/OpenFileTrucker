@@ -121,7 +121,6 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
       subtitle: (_) => const Text("ディレクトリを開くには、ここをタップしてください。"),
       trailing: (_) => const Icon(Icons.folder_open),
       duration: const Duration(seconds: 10),
-      backgroundColor: colorScheme.onPrimary,
       onTap: () {
         if (Platform.isWindows) {
           Process.run("explorer", [dirPath]);
@@ -136,7 +135,10 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
             launchUrlString("shareddocuments://$dirPath");
           }
         } else if (Platform.isAndroid) {
-          launchUrlString("file://$dirPath");
+          // PATHを送っているが、デフォルトアプリへの受け渡しは厳しそうなので保留中
+          const platform = MethodChannel('dev.cnion.filetrucker/mediastore');
+          platform.invokeMethod(
+              'openFileManager', {"path": dirPath, "media": false});
         }
       },
     );

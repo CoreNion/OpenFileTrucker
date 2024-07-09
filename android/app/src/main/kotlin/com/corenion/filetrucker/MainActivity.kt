@@ -1,12 +1,14 @@
 package dev.cnion.trucker;
 
+import android.content.Intent
 import android.media.MediaScannerConnection
+import android.net.Uri
+import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-
-import androidx.annotation.NonNull
 import java.io.File
+
 
 class MainActivity: FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -26,6 +28,14 @@ class MainActivity: FlutterActivity() {
                     null, null)
 
                 result.success(null)
+            } else if (call.method == "openFileManager")
+            {
+                // PATHを送っているが、デフォルトアプリへの受け渡しは厳しそうなので保留中
+                // val path = call.argument<String>("path")
+
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setType("resource/folder")
+                startActivity(intent);
             } else {
                 result.notImplemented()
             }
