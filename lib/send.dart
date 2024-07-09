@@ -109,66 +109,87 @@ class SendFiles {
       _totalSize += element.size;
     }
 
-    // AES-CBC暗号化用の鍵を生成
-    _aesGcmSecretKey = await AesGcmSecretKey.generateKey(256);
+    if (settings.encryptMode) {
+      // AES-CBC暗号化用の鍵を生成
+      _aesGcmSecretKey = await AesGcmSecretKey.generateKey(256);
+    }
 
     _server = await ServerSocket.bind(settings.bindAdress, 4782);
-    _server?.listen((event) => _serverListen(event));
+    _server?.listen((event) => _serverListen(event, settings));
 
     if (settings.deviceDetection) {
       await registerNsd(ServiceType.send, settings.name);
     }
   }
 
-  static void _serverListen(Socket socket) async {
+  static void _serverListen(Socket socket, SendSettings settings) async {
     int byteCount = 0;
+    final bool encrypt = settings.encryptMode;
+
     socket.listen((event) async {
       if (listEquals(event.sublist(0, 5), plainTextHeader)) {
-        // 公開鍵を記録
-        final data = event.sublist(5);
-        pubKey = await RsaOaepPublicKey.importSpkiKey(data, Hash.sha512);
+        if (encrypt) {
+          // 公開鍵を記録
+          final data = event.sublist(5);
+          pubKey = await RsaOaepPublicKey.importSpkiKey(data, Hash.sha512);
 
-        // AES暗号化用の鍵を公開鍵で暗号化し、送信
-        socket.add(
-            await pubKey!.encryptBytes(await _aesGcmSecretKey!.exportRawKey()));
+          // AES暗号化用の鍵を公開鍵で暗号化し、送信
+          socket.add(await pubKey!
+              .encryptBytes(await _aesGcmSecretKey!.exportRawKey()));
+        } else {
+          // 暗号化モードが無効であることを知らせる
+          socket.add(plainTextHeader);
+        }
       } else {
-        // IVを取得
-        final iv = event.sublist(0, 16);
-        final data = event.sublist(16);
+        late String strData;
 
-        final decryptMesg =
-            utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, iv));
+        // IVを取得
+        late Uint8List iv;
+        if (encrypt) {
+          iv = event.sublist(0, 16);
+          final rawData = event.sublist(16);
+          strData =
+              utf8.decode(await _aesGcmSecretKey!.decryptBytes(rawData, iv));
+        } else {
+          strData = utf8.decode(event);
+        }
 
         // UUIDを取得
-        final uuid = decryptMesg.substring(0, 36);
-        final mesg = decryptMesg.substring(36);
+        final uuid = strData.substring(0, 36);
+        final mesg = strData.substring(36);
 
         if (mesg.contains("second")) {
           // クライアント側にファイル情報を送信
-          await socket.addStream(encryptGcmStream(
-              Stream.value(utf8.encode(json.encode(fileInfo))),
-              _aesGcmSecretKey!,
-              iv));
+          final rawFileInfo = Stream.value(utf8.encode(json.encode(fileInfo)));
+          await socket.addStream(encrypt
+              ? encryptGcmStream(rawFileInfo, _aesGcmSecretKey!, iv)
+              : rawFileInfo);
           socket.destroy();
         } else {
-          final byRequest = viaServiceDevice.keys.contains(uuid);
-
-          // n番目のファイルを送信
+          // 指定されたn番目のファイルを送信
           int? fileNumber = int.tryParse(mesg);
+
+          // リクエストからの場合は進捗を更新
+          final byRequest = viaServiceDevice.keys.contains(uuid);
+          final StreamTransformer<Uint8List, Uint8List> progTransformer =
+              StreamTransformer.fromHandlers(handleData: (data, sink) {
+            if (byRequest) {
+              byteCount += data.length;
+              viaServiceDevice[uuid]?.progress = byteCount / _totalSize;
+              refreshUserInfo();
+            }
+            sink.add(data);
+          });
+
           if (fileNumber != null) {
-            await socket.addStream(encryptGcmStream(
-                files[fileNumber].openRead().transform(
-                  StreamTransformer.fromHandlers(handleData: (data, sink) {
-                    if (byRequest) {
-                      byteCount += data.length;
-                      viaServiceDevice[uuid]?.progress = byteCount / _totalSize;
-                      refreshUserInfo();
-                    }
-                    sink.add(data);
-                  }),
-                ),
-                _aesGcmSecretKey!,
-                iv));
+            // ファイル読み込みStream
+            final readFileStream = files[fileNumber].openRead().transform(
+                  progTransformer,
+                );
+            // 暗号化Streamまたは生Streamを送信
+            await socket.addStream(encrypt
+                ? encryptGcmStream(readFileStream, _aesGcmSecretKey!, iv)
+                : readFileStream);
             socket.destroy();
 
             if (fileNumber == files.length - 1) {

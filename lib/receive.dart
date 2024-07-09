@@ -16,6 +16,7 @@ import 'helper/service.dart';
 
 class ReceiveFile {
   static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
+  static bool _encrypt = true;
   static AesGcmSecretKey? _aesGcmSecretKey;
 
   /// ファイルの受信の処理をする関数
@@ -25,7 +26,7 @@ class ReceiveFile {
       File saveFile,
       FileInfo fileInfo,
       bool saveMediaFile) async {
-    if (_aesGcmSecretKey == null) {
+    if (_encrypt && _aesGcmSecretKey == null) {
       throw Exception("AES暗号化用の鍵が設定されていません");
     }
 
@@ -34,14 +35,15 @@ class ReceiveFile {
     final sendIV = Uint8List(16);
     fillRandomBytes(sendIV);
 
-    // サーバーにi個目のファイルをファイルを要求
+    // 送信側に接続
     final socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add([
-      ...sendIV,
-      ...await _aesGcmSecretKey!
-          .encryptBytes(utf8.encode("$uuid${fileIndex.toString()}"), sendIV)
-    ]);
+    // サーバーにUUIDを伝え, i個目のファイルをファイルを要求
+    final mesg = utf8.encode("$uuid${fileIndex.toString()}");
+    final sendRawData = _encrypt
+        ? [...sendIV, ...await _aesGcmSecretKey!.encryptBytes(mesg, sendIV)]
+        : mesg;
+    socket.add(sendRawData);
 
     // ファイル受信が完了するまで、進捗を定期的にStreamで流す
     ReceiveProgress latestProg =
@@ -71,7 +73,8 @@ class ReceiveFile {
     };
 
     // 流れてきたデータをファイルに書き込む
-    receiveSink.addStream(decryptGcmStream(socket, _aesGcmSecretKey!, sendIV))
+    receiveSink.addStream(
+        _encrypt ? decryptGcmStream(socket, _aesGcmSecretKey!, sendIV) : socket)
       ..then((v) async {
         /* 書き込み終了時の処理 (キャンセル関係なく実行) */
         timer.cancel();
@@ -234,8 +237,14 @@ class ReceiveFile {
     // AES暗号化用の鍵を受信
     Completer completer = Completer();
     await socket.listen((event) async {
-      _aesGcmSecretKey = await AesGcmSecretKey.importRawKey(
-          await _pubKeyPair!.privateKey.decryptBytes(event));
+      // 暗号化モードが無効の場合は暗号化を無効にする
+      if (listEquals(event, plainTextHeader)) {
+        _encrypt = false;
+      } else {
+        _encrypt = true;
+        _aesGcmSecretKey = await AesGcmSecretKey.importRawKey(
+            await _pubKeyPair!.privateKey.decryptBytes(event));
+      }
 
       completer.complete();
       socket.destroy();
@@ -245,14 +254,17 @@ class ReceiveFile {
     // ファイル情報を要求する
     socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    socket.add([
-      ...iv,
-      ...await _aesGcmSecretKey!.encryptBytes(utf8.encode("${uuid}second"), iv),
-    ]);
+    final mesg = utf8.encode("${uuid}second");
+    final sendRawData = _encrypt
+        ? [...iv, ...await _aesGcmSecretKey!.encryptBytes(mesg, iv)]
+        : mesg;
+    socket.add(sendRawData);
 
     // ファイル情報を受信
     List<int> decData = [];
-    await for (var data in decryptGcmStream(socket, _aesGcmSecretKey!, iv)) {
+    await for (var data in _encrypt
+        ? decryptGcmStream(socket, _aesGcmSecretKey!, iv)
+        : socket) {
       decData.addAll(data);
     }
 
