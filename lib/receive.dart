@@ -253,11 +253,10 @@ class ReceiveFile {
     // ファイル情報を受信
     completer = Completer();
     await socket.listen((event) async {
-      final recIV = event.sublist(0, 16);
       final data = event.sublist(16);
 
       final js = json.decode(
-              utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, recIV)))
+              utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, iv)))
           as List<dynamic>;
       for (var element in js) {
         final map = element as Map<String, dynamic>;

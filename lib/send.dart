@@ -132,14 +132,12 @@ class SendFiles {
         socket.add(
             await pubKey!.encryptBytes(await _aesGcmSecretKey!.exportRawKey()));
       } else {
-        // IVを作成/取得
-        final sendIV = Uint8List(16);
-        fillRandomBytes(sendIV);
-        final recIV = event.sublist(0, 16);
+        // IVを取得
+        final iv = event.sublist(0, 16);
         final data = event.sublist(16);
 
         final decryptMesg =
-            utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, recIV));
+            utf8.decode(await _aesGcmSecretKey!.decryptBytes(data, iv));
 
         // UUIDを取得
         final uuid = decryptMesg.substring(0, 36);
@@ -148,9 +146,9 @@ class SendFiles {
         if (mesg.contains("second")) {
           // クライアント側にファイル情報を送信
           socket.add([
-            ...sendIV,
+            ...iv,
             ...await _aesGcmSecretKey!
-                .encryptBytes(utf8.encode(json.encode(fileInfo)), sendIV)
+                .encryptBytes(utf8.encode(json.encode(fileInfo)), iv)
           ]);
           socket.destroy();
         } else {
@@ -171,7 +169,7 @@ class SendFiles {
                   }),
                 ),
                 _aesGcmSecretKey!,
-                recIV));
+                iv));
             socket.destroy();
 
             if (fileNumber == files.length - 1) {
