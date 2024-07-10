@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../class/trucker_device.dart';
 import '../helper/service.dart';
+import '../main.dart';
 
 final tSendDevicesProvider =
     StateProvider<List<TruckerDevice>>((ref) => const []);
@@ -20,7 +21,8 @@ final scanDeviceProvider = StreamProvider(
     await for (final device in scanStream) {
       if (device.status == TruckerStatus.receiveReady) {
         // 受信待機中のデバイスを見つけた場合、ダブってない場合送信可能リストに追加
-        if (tSendDevices.state.map((e) => e.uuid).contains(device.uuid)) {
+        final uuidIter = tSendDevices.state.map((e) => e.uuid).toList();
+        if (uuidIter.contains(device.uuid) || device.uuid == myUUID) {
           continue;
         } else {
           tSendDevices.state = [
@@ -30,7 +32,8 @@ final scanDeviceProvider = StreamProvider(
         }
       } else if (device.status == TruckerStatus.sendReady) {
         // 送信待機中のデバイスを見つけた場合、ダブってない場合受信可能デバイスリストに追加
-        if (tReceiveDevices.state.map((e) => e.uuid).contains(device.uuid)) {
+        final uuidIter = tReceiveDevices.state.map((e) => e.uuid).toList();
+        if (uuidIter.contains(device.uuid) || device.uuid == myUUID) {
           continue;
         } else {
           tReceiveDevices.state = [
