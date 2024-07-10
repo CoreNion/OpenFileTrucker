@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:open_file_trucker/provider/setting_provider.dart';
 
 import '../class/trucker_device.dart';
 import '../helper/incoming.dart';
@@ -121,7 +120,7 @@ class TruckerDeviceWidget extends ConsumerWidget {
 
                     // サーバー側にリクエストを送信
                     final res =
-                        await sendRequest(remote!, Platform.localHostname);
+                        await sendRequest(remote!, ref.read(nameProvider));
                     if (!res) {
                       list[index].progress = 1;
                       list[index].status = TruckerStatus.rejected;
