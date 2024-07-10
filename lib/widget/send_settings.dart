@@ -18,17 +18,16 @@ class SendSettingsDialog extends ConsumerWidget {
         children: <Widget>[
           SwitchListTile(
             value: ref.watch(encryptModeProvider),
-            title: const Text('暗号化モードで送信する (推奨)'),
+            title: const Text('暗号化モードで送信する'),
             subtitle: const Text(
-                "鍵は全て端末側で生成され、安全に共有されます。\n暗号化しない場合、通信内容が盗聴されたり改竄される可能性があります。"),
+                "外部からは通信内容が全く分からないようにしますが、接続パフォーマンスは低くなります。\n公共無線LANなど、不特定多数が使用するネットワークに接続している場合はオンにすることを強く推奨します。"),
             onChanged: (bool value) =>
                 ref.read(encryptModeProvider.notifier).state = value,
           ),
           SwitchListTile(
             value: ref.watch(deviceDetectionProvider),
             title: const Text('デバイス検知を有効化'),
-            subtitle: const Text(
-                "他の端末に、この端末がファイルの送信待機状態であることを知らせます。\n待機状態を隠したい場合は無効化してください。"),
+            subtitle: const Text("他の端末に、この端末がファイルの送信待機状態であることを知らせます。"),
             onChanged: (bool value) =>
                 ref.read(deviceDetectionProvider.notifier).state = value,
           ),
@@ -43,7 +42,7 @@ class SendSettingsDialog extends ConsumerWidget {
                   return Container(
                     margin: const EdgeInsets.all(10),
                     child: AlertDialog(
-                      title: const Text("デバイス名を入力してください。"),
+                      title: const Text("通信相手の端末に表示される名前を設定..."),
                       content: Form(
                         key: _formKey,
                         child: Padding(
