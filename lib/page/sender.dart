@@ -18,16 +18,19 @@ class SenderConfigPage extends ConsumerWidget {
     final qrIP = ref.watch(selectedNetworkProvider);
     final availableNetworks = ref.watch(availableNetworksProvider);
 
-    return Column(
+    return ListView(
+      shrinkWrap: true,
       children: [
         const SizedBox(height: 15),
         const Text(
           "送信可能なデバイス...",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
         TruckerDevicesList(
           ServiceType.receive,
         ),
+        const Divider(),
         ref.watch(sendQRData) != null
             ? Column(
                 children: [
@@ -68,6 +71,7 @@ class SenderConfigPage extends ConsumerWidget {
                           }),
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               )
             : Container(),

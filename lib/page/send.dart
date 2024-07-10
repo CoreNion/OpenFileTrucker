@@ -63,14 +63,16 @@ class _SendPageState extends ConsumerState<SendPage> {
         // サイズごとにUIを変える
         ? Row(
             mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Expanded(flex: 6, child: SelectFiles()),
               Expanded(
-                  flex: 4,
+                  flex: 6,
                   child: Container(
                       decoration: const BoxDecoration(
-                          border: Border(left: BorderSide(color: Colors.grey))),
-                      child: const SenderConfigPage()))
+                          border:
+                              Border(right: BorderSide(color: Colors.grey))),
+                      child: const SelectFiles())),
+              const Expanded(flex: 4, child: SenderConfigPage())
             ],
           )
         : const SelectFiles();

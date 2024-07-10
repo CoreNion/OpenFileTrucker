@@ -239,16 +239,15 @@ class SelectFiles extends ConsumerWidget {
                             context: context,
                             builder: (context) {
                               return Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                decoration: BoxDecoration(
-                                    color: colorScheme.surface,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(25))),
-                                child: SizedBox(
-                                  height: 600,
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom,
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: colorScheme.surface,
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(25))),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -266,11 +265,9 @@ class SelectFiles extends ConsumerWidget {
                                             icon:
                                                 const Icon(Icons.expand_more)),
                                       ),
-                                      const SenderConfigPage(),
+                                      const Flexible(child: SenderConfigPage()),
                                     ],
-                                  ),
-                                ),
-                              );
+                                  ));
                             });
 
                         ref.watch(serverStateProvider.notifier).state = false;
