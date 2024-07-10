@@ -13,6 +13,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:uuid/uuid.dart';
 
 import 'helper/incoming.dart';
 import 'provider/main_provider.dart';
@@ -22,6 +23,9 @@ import 'provider/receive_provider.dart';
 import 'provider/send_provider.dart';
 import 'provider/service_provider.dart';
 import 'provider/setting_provider.dart';
+
+/// この端末のUUID
+late String myUUID;
 
 void main() async {
   // スプラッシュスクリーンの設定
@@ -47,6 +51,10 @@ void main() async {
 
   // 設定の読み込み、prefeProviderを上書きする形で読み込む
   final prefs = await SharedPreferences.getInstance();
+
+  // UUIDを設定
+  myUUID = const Uuid().v4();
+
   runApp(ProviderScope(
     observers: [ServerStateListener(), SelectedFilesListener()],
     overrides: [

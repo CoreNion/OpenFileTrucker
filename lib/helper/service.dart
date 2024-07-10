@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:bonsoir/bonsoir.dart';
-import 'package:uuid/uuid.dart';
 
 import '../class/trucker_device.dart';
+import '../main.dart';
 
 enum ServiceType { send, receive }
 
@@ -13,8 +13,6 @@ BonsoirBroadcast? sendBroadcast;
 BonsoirDiscovery? sendDiscovery;
 BonsoirBroadcast? receiveBroadcast;
 BonsoirDiscovery? receiveDiscovery;
-
-final uuid = const Uuid().v4();
 
 void Function() refreshUserInfo = () {};
 
@@ -123,7 +121,7 @@ void stopDetectService(ServiceType mode) {
 /// [name] 端末名
 Future<String> registerNsd(ServiceType mode, String name) async {
   // 名前にUUIDを追加
-  final mName = "$uuid:$name";
+  final mName = "$myUUID:$name";
 
   // 送信/受信のタイプを指定
   late String type;
@@ -151,7 +149,7 @@ Future<String> registerNsd(ServiceType mode, String name) async {
     await receiveBroadcast!.start();
   }
 
-  return uuid;
+  return myUUID;
 }
 
 /// 名前解決サービスの登録を解除

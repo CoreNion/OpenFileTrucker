@@ -12,7 +12,7 @@ import 'dart:io';
 
 import 'class/file_info.dart';
 import 'helper/gcm.dart';
-import 'helper/service.dart';
+import 'main.dart';
 
 class ReceiveFile {
   static KeyPair<RsaOaepPrivateKey, RsaOaepPublicKey>? _pubKeyPair;
@@ -39,7 +39,7 @@ class ReceiveFile {
     final socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
     // サーバーにUUIDを伝え, i個目のファイルをファイルを要求
-    final mesg = utf8.encode("$uuid${fileIndex.toString()}");
+    final mesg = utf8.encode("$myUUID${fileIndex.toString()}");
     final sendRawData = _encrypt
         ? [...sendIV, ...await _aesGcmSecretKey!.encryptBytes(mesg, sendIV)]
         : mesg;
@@ -254,7 +254,7 @@ class ReceiveFile {
     // ファイル情報を要求する
     socket =
         await Socket.connect(ip, 4782, timeout: const Duration(seconds: 10));
-    final mesg = utf8.encode("${uuid}second");
+    final mesg = utf8.encode("${myUUID}second");
     final sendRawData = _encrypt
         ? [...iv, ...await _aesGcmSecretKey!.encryptBytes(mesg, iv)]
         : mesg;

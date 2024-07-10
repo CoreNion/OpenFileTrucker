@@ -13,7 +13,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../class/file_info.dart';
 import '../class/trucker_device.dart';
 
-import '../helper/service.dart';
+import '../main.dart';
 import '../receive.dart';
 import 'main_provider.dart';
 import 'service_provider.dart';
@@ -22,7 +22,7 @@ import 'service_provider.dart';
 Future<void> startManualReceive(String ip, WidgetRef ref) async {
   final sendDevices = ref.watch(tSendDevicesProvider);
   final device =
-      TruckerDevice(ip, ip, null, null, TruckerStatus.sendReady, uuid);
+      TruckerDevice(ip, ip, null, null, TruckerStatus.sendReady, myUUID);
 
   // 受信リストに追加
   ref.read(tSendDevicesProvider.notifier).state = [...sendDevices, device];
