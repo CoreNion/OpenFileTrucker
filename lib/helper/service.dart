@@ -8,6 +8,7 @@ import '../class/trucker_device.dart';
 
 enum ServiceType { send, receive }
 
+// Bonsoirの各種インスタンス
 BonsoirBroadcast? sendBroadcast;
 BonsoirDiscovery? sendDiscovery;
 BonsoirBroadcast? receiveBroadcast;
@@ -16,6 +17,9 @@ BonsoirDiscovery? receiveDiscovery;
 final uuid = const Uuid().v4();
 
 void Function() refreshUserInfo = () {};
+
+// ホスト名リクエストのデータ保持
+Map<String, Completer<String?>> _requestHostList = {};
 
 /// Truckerな端末をスキャンし、発見次第Streamで流す
 Future<Stream<TruckerDevice>> scanTruckerService() async {
@@ -53,28 +57,26 @@ Future<Stream<TruckerDevice>> scanTruckerService() async {
         final type = event.service!.type == '_trucker-send._tcp'
             ? ServiceType.send
             : ServiceType.receive;
-        // それぞれのDiscoveryを取得
-        final discovery =
-            type == ServiceType.send ? sendDiscovery! : receiveDiscovery!;
-
-        if (event.type == BonsoirDiscoveryEventType.discoveryServiceFound) {
-          // 名前解決
-          event.service!.resolve(discovery.serviceResolver);
-        } else if (event.type ==
-            BonsoirDiscoveryEventType.discoveryServiceResolved) {
-          // 解決済みサービスとみなす
-          final service = event.service! as ResolvedBonsoirService;
-          // 万が一ホスト名がnullの場合は無視
-          if (service.host == null) return;
-
+        if (!(event.type == BonsoirDiscoveryEventType.discoveryServiceLost)) {
           // [UUID]:[端末名]から端末名を取得
-          final serviceName = service.name;
+          final serviceName = event.service!.name;
           final infos = serviceName.split(':');
+
+          // 名前解決が検知されたら、リクエスト待ちのCompleterを完了させる
+          String? host;
+          if (event.type ==
+              BonsoirDiscoveryEventType.discoveryServiceResolved) {
+            host = (event.service! as ResolvedBonsoirService).host;
+            if (_requestHostList.containsKey(infos[1])) {
+              _requestHostList[infos[1]]!.complete(host);
+            }
+          }
 
           // 発見した端末をTruckerDeviceに変換
           final device = TruckerDevice(
             infos[1],
-            service.host!,
+            host,
+            event.service!,
             0,
             type == ServiceType.send
                 ? TruckerStatus.receiveReady
@@ -88,6 +90,24 @@ Future<Stream<TruckerDevice>> scanTruckerService() async {
       },
     ),
   );
+}
+
+/// ホスト名をリクエストする
+Future<String?> requestHostName(
+    BonsoirService service, ServiceType type) async {
+  final hostUUID = service.name.split(":")[1];
+  // リクエスト待ちのCompleterを作成
+  _requestHostList[hostUUID] = Completer<String?>();
+
+  // 名前解決をリクエスト
+  await service.resolve(
+      (type == ServiceType.send ? sendDiscovery! : receiveDiscovery!)
+          .serviceResolver);
+  // ブロードキャストが名前解決を検知するので、そこからホスト名を取得してcompleteする
+  final host = await _requestHostList[hostUUID]!.future;
+
+  _requestHostList.remove(hostUUID);
+  return host;
 }
 
 void stopDetectService(ServiceType mode) {

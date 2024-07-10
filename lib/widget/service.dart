@@ -106,6 +106,12 @@ class TruckerDeviceWidget extends ConsumerWidget {
                   list[index].progress = null;
                   listw.state = [...list];
 
+                  if (list[index].host == null) {
+                    // 名前解決
+                    list[index].host = await requestHostName(
+                        list[index].bonsoirService!, scanType);
+                  }
+
                   final remote = list[index].host;
 
                   if (scanType == ServiceType.receive) {
@@ -115,7 +121,7 @@ class TruckerDeviceWidget extends ConsumerWidget {
 
                     // サーバー側にリクエストを送信
                     final res =
-                        await sendRequest(remote, Platform.localHostname);
+                        await sendRequest(remote!, Platform.localHostname);
                     if (!res) {
                       list[index].progress = 1;
                       list[index].status = TruckerStatus.rejected;

@@ -21,7 +21,8 @@ import 'service_provider.dart';
 /// 指定されたIPアドレスからファイルを受信する
 Future<void> startManualReceive(String ip, WidgetRef ref) async {
   final sendDevices = ref.watch(tSendDevicesProvider);
-  final device = TruckerDevice(ip, ip, null, TruckerStatus.sendReady, uuid);
+  final device =
+      TruckerDevice(ip, ip, null, null, TruckerStatus.sendReady, uuid);
 
   // 受信リストに追加
   ref.read(tSendDevicesProvider.notifier).state = [...sendDevices, device];
@@ -37,7 +38,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   // ファイル情報を取得
   List<FileInfo> fileInfos;
   try {
-    fileInfos = await ReceiveFile.getServerFileInfo(device.host);
+    fileInfos = await ReceiveFile.getServerFileInfo(device.host!);
   } catch (e) {
     BotToast.showSimpleNotification(
         title: "送信元に接続できませんでした。",
@@ -176,7 +177,7 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
 
   // 各ファイルを受信する
   final controller = await ReceiveFile.receiveAllFiles(
-      device.host, fileInfos, dirPath, saveMediaFile);
+      device.host!, fileInfos, dirPath, saveMediaFile);
 
   // 進捗を適宜更新する
   final stream = controller.stream;

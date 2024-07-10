@@ -1,3 +1,5 @@
+import 'package:bonsoir/bonsoir.dart';
+
 enum TruckerStatus {
   /// 受信待機中
   receiveReady,
@@ -33,7 +35,10 @@ class TruckerDevice {
   final String uuid;
 
   /// ホスト名
-  final String host;
+  String? host;
+
+  /// mDNS / bonsoirサービス
+  BonsoirService? bonsoirService;
 
   /// 進捗
   double? progress;
@@ -41,10 +46,11 @@ class TruckerDevice {
   /// 状態
   TruckerStatus status;
 
-  TruckerDevice(this.name, this.host, this.progress, this.status, this.uuid);
+  TruckerDevice(this.name, this.host, this.bonsoirService, this.progress,
+      this.status, this.uuid);
 
   @override
   String toString() {
-    return 'ReceiveReadyDevice{name: $name, host: $host, progress: $progress, status: $status}';
+    return 'ReceiveReadyDevice{name: $name, host: $host, bonsoir: $bonsoirService progress: $progress, status: $status}';
   }
 }
