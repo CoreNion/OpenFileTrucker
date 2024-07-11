@@ -124,6 +124,8 @@ class TruckerDeviceWidget extends ConsumerWidget {
                     if (!res) {
                       list[index].progress = 1;
                       list[index].status = TruckerStatus.rejected;
+                      listw.state = [...list];
+
                       BotToast.showSimpleNotification(
                           title: "リクエストが拒否されました",
                           subTitle: "拒否された端末: ${list[index].name}",

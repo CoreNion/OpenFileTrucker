@@ -92,6 +92,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           BotToast.cleanAll();
           completer.complete(true);
         },
+        onClose: () => completer.complete(false),
       );
       return await completer.future;
     }, ((remote) async {
