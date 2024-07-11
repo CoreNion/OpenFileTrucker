@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:open_file_trucker/provider/setting_provider.dart';
@@ -106,9 +107,22 @@ class TruckerDeviceWidget extends ConsumerWidget {
                   listw.state = [...list];
 
                   if (list[index].host == null) {
-                    // 名前解決
-                    list[index].host = await requestHostName(
-                        list[index].bonsoirService!, scanType);
+                    try {
+                      // 名前解決
+                      list[index].host = await requestHostName(
+                          list[index].bonsoirService!, scanType);
+                    } catch (e) {
+                      list[index].progress = 1;
+                      list[index].status = TruckerStatus.failed;
+                      listw.state = [...list];
+
+                      HapticFeedback.vibrate();
+                      BotToast.showSimpleNotification(
+                          title: "ホスト名の取得に失敗しました。QRコードやIPアドレスの方式を試してください。",
+                          subTitle: "エラー: $e",
+                          backgroundColor: colorScheme.onError);
+                      return;
+                    }
                   }
 
                   final remote = list[index].host;
@@ -126,7 +140,9 @@ class TruckerDeviceWidget extends ConsumerWidget {
                       list[index].status = TruckerStatus.rejected;
                       listw.state = [...list];
 
+                      HapticFeedback.vibrate();
                       BotToast.showSimpleNotification(
+                          duration: const Duration(seconds: 6),
                           title: "リクエストが拒否されました",
                           subTitle: "拒否された端末: ${list[index].name}",
                           backgroundColor: colorScheme.onError);

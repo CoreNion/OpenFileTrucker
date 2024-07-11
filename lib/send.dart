@@ -187,9 +187,17 @@ class SendFiles {
                   progTransformer,
                 );
             // 暗号化Streamまたは生Streamを送信
-            await socket.addStream(encrypt
-                ? encryptGcmStream(readFileStream, _aesGcmSecretKey!, iv)
-                : readFileStream);
+            await socket
+                .addStream(encrypt
+                    ? encryptGcmStream(readFileStream, _aesGcmSecretKey!, iv)
+                    : readFileStream)
+                .catchError((e) {
+              if (byRequest) {
+                viaServiceDevice[uuid]?.progress = 1;
+                viaServiceDevice[uuid]?.status = TruckerStatus.failed;
+                refreshUserInfo();
+              }
+            });
             socket.destroy();
 
             if (fileNumber == files.length - 1) {

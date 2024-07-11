@@ -40,7 +40,9 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   try {
     fileInfos = await ReceiveFile.getServerFileInfo(device.host!);
   } catch (e) {
+    HapticFeedback.vibrate();
     BotToast.showSimpleNotification(
+        duration: const Duration(seconds: 6),
         title: "送信元に接続できませんでした。",
         subTitle: e.toString(),
         backgroundColor: colorScheme.onError);
@@ -187,7 +189,9 @@ Future<void> startReceive(TruckerDevice device, WidgetRef ref) async {
   }, onError: (e) {
     endProcess(false);
 
+    HapticFeedback.vibrate();
     BotToast.showSimpleNotification(
+        duration: const Duration(seconds: 10),
         title: "ファイルの受信に失敗しました",
         subTitle: e,
         backgroundColor: colorScheme.onError);
