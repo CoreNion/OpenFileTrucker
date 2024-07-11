@@ -51,7 +51,7 @@ dependencies:
   webcrypto:
     git:
       url: https://github.com/CoreNion/webcrypto.dart.git
-      ref: 3f32708f46b09266f32e09bc76371f9f050ad244
+      ref: ac8b30f88217b1368086dc42a6f1beeddfcbbc3c
   responsive_grid: ^2.4.4
   bot_toast: ^4.1.1
   loading_indicator: ^3.1.1
