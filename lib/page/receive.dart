@@ -71,7 +71,7 @@ class ReceivePage extends ConsumerWidget {
                                   .read(_qrButtonPressedProvider.notifier)
                                   .state = true;
 
-                              final pCheck = await checkCamPermission();
+                              final pCheck = await requestCamPermission();
                               switch (pCheck) {
                                 case null:
                                   EasyDialog.showErrorNoti(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_file_trucker/page/setup.dart';
 import 'package:share_handler/share_handler.dart';
 
 import '../provider/main_provider.dart';
@@ -18,8 +19,6 @@ class SendPage extends ConsumerStatefulWidget {
 }
 
 class _SendPageState extends ConsumerState<SendPage> {
-  late ColorScheme colorScheme;
-
   @override
   void initState() {
     super.initState();
@@ -28,6 +27,39 @@ class _SendPageState extends ConsumerState<SendPage> {
       // ファイル共有APIからの処理のInit
       initShareHandlerPlatformState();
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 初回起動の場合はセットアップページを表示
+      if (!(ref.read(prefsProvider).getBool('firstRun') ?? false)) {
+        if (MediaQuery.of(context).size.width < 800) {
+          showModalBottomSheet(
+              isDismissible: false,
+              context: context,
+              isScrollControlled: true,
+              enableDrag: false,
+              backgroundColor: Colors.transparent,
+              useSafeArea: true,
+              builder: (builder) => const PopScope(
+                  canPop: false,
+                  child: SizedBox(height: 650, child: SetupPage())));
+        } else {
+          showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (builder) {
+                return const PopScope(
+                    canPop: false,
+                    child: Dialog(
+                      child: SizedBox(
+                        height: 600,
+                        width: 700,
+                        child: SetupPage(),
+                      ),
+                    ));
+              });
+        }
+      }
+    });
   }
 
   /// ファイル共有API関連の処理
@@ -57,8 +89,6 @@ class _SendPageState extends ConsumerState<SendPage> {
 
   @override
   Widget build(BuildContext context) {
-    colorScheme = Theme.of(context).colorScheme;
-
     return !(ref.watch(isSmallUIProvider))
         // サイズごとにUIを変える
         ? Row(
