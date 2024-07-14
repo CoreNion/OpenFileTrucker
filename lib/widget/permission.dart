@@ -3,21 +3,22 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../helper/permission.dart';
 
-final didLocalnetProvider = StateProvider<bool>((ref) => false);
-final checkLocalnetProvider = FutureProvider<void>((ref) async {
-  ref.read(didLocalnetProvider.notifier).state =
+final _didLocalnetProvider = StateProvider<bool>((ref) => false);
+final _checkLocalnetProvider = FutureProvider<void>((ref) async {
+  ref.read(_didLocalnetProvider.notifier).state =
       await checkLocalnetPermission() ?? false;
 });
 
-final checkPhotosProvider = FutureProvider<bool>((ref) async {
+final _checkPhotosProvider = FutureProvider<bool>((ref) async {
   return await checkPhotosPermission() ?? false;
 });
 
-final checkCameraProvider = FutureProvider<bool>((ref) async {
-  return await checkCamPermission() ?? false;
+final _checkCameraProvider = FutureProvider<bool>((ref) async {
+  return await checkCamPermission();
 });
 
 class CheckPermissionWidget extends ConsumerWidget {
@@ -27,15 +28,16 @@ class CheckPermissionWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final localnetProvider = ref.watch(checkLocalnetProvider);
-    final photosProvider = ref.watch(checkPhotosProvider);
-    final cameraProvider = ref.watch(checkCameraProvider);
+    final localnetProvider = ref.watch(_checkLocalnetProvider);
+    final photosProvider = ref.watch(_checkPhotosProvider);
+    final cameraProvider = ref.watch(_checkCameraProvider);
 
-    return Column(
+    return SafeArea(
+        child: Column(
       children: [
         ListTile(
           trailing: localnetProvider.when(
-            data: (_) => ref.watch(didLocalnetProvider)
+            data: (_) => ref.watch(_didLocalnetProvider)
                 ? Icon(Icons.check, color: colorScheme.primary)
                 : Icon(Icons.error, color: colorScheme.error),
             loading: () => const CircularProgressIndicator(),
@@ -44,7 +46,7 @@ class CheckPermissionWidget extends ConsumerWidget {
           title: const Text('ローカルネットワークへのアクセス (必須)'),
           subtitle: const Text(
               "デバイス間でファイルを送受信するために必要です。\n4782番と4783番のポートでの送受信が許可されている必要があります。"),
-          onTap: localnetProvider.hasValue && !(ref.watch(didLocalnetProvider))
+          onTap: localnetProvider.hasValue && !(ref.watch(_didLocalnetProvider))
               ? () async {
                   if (!(await requestLocalnetPermission() ?? false)) {
                     BotToast.showSimpleNotification(
@@ -53,7 +55,7 @@ class CheckPermissionWidget extends ConsumerWidget {
                         title: "設定に失敗した可能性があります。\n必要な権限が無い場合、管理者に相談してください。",
                         backgroundColor: colorScheme.onSecondary);
                   }
-                  ref.invalidate(checkLocalnetProvider);
+                  ref.invalidate(_checkLocalnetProvider);
                 }
               : null,
         ),
@@ -67,12 +69,34 @@ class CheckPermissionWidget extends ConsumerWidget {
                   error: (error, _) => const Icon(Icons.error),
                 ),
                 title: const Text('写真ライブラリへのアクセス'),
-                subtitle: const Text("写真を写真ライブラリに保存するために必要です。"),
+                subtitle:
+                    const Text("完全な状態の写真データを送信したり、写真を写真ライブラリに保存するために必要です。"),
                 onTap: photosProvider.hasValue
                     ? () async {
-                        if (await requestPhotosPermission() ?? false) {
-                          ref.invalidate(checkPhotosProvider);
+                        if (!(await requestPhotosPermission())) {
+                          await showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: const Text('権限が拒否されました'),
+                                    content: const Text(
+                                        '写真ライブラリへのアクセスが拒否されました。\n設定から写真ライブラリへのフルアクセスを許可してください。'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('キャンセル')),
+                                      TextButton(
+                                        onPressed: () {
+                                          openAppSettings();
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('設定'),
+                                      ),
+                                    ],
+                                  ));
                         }
+                        ref.invalidate(_checkPhotosProvider);
                       }
                     : null,
               )
@@ -90,14 +114,36 @@ class CheckPermissionWidget extends ConsumerWidget {
                 subtitle: const Text("QRコードをスキャンするために必要です。"),
                 onTap: cameraProvider.hasValue
                     ? () async {
-                        if (await requestCamPermission() ?? false) {
-                          ref.invalidate(checkCameraProvider);
+                        if (!(await requestCamPermission())) {
+                          await showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: const Text('権限が拒否されました'),
+                                    content: const Text(
+                                        'カメラへのアクセスが拒否されました。\n設定からカメラへのアクセスを許可してください。'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('キャンセル')),
+                                      TextButton(
+                                        onPressed: () {
+                                          openAppSettings();
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('設定'),
+                                      ),
+                                    ],
+                                  ));
                         }
+                        ref.invalidate(_checkCameraProvider);
                       }
                     : null,
               )
             : const SizedBox(),
+        const SizedBox(height: 10)
       ],
-    );
+    ));
   }
 }

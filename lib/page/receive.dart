@@ -73,10 +73,6 @@ class ReceivePage extends ConsumerWidget {
 
                               final pCheck = await requestCamPermission();
                               switch (pCheck) {
-                                case null:
-                                  EasyDialog.showErrorNoti(
-                                      "カメラへのアクセス権限の取得に失敗しました。", ref);
-                                  return;
                                 case false:
                                   EasyDialog.showSmallToast(ref, "権限が必要です",
                                       "QRコードを読み取るためには、カメラへのアクセスの許可が必要です。");

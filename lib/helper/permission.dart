@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:open_file_trucker/helper/service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<bool?> checkLocalnetPermission() async {
@@ -14,15 +16,35 @@ Future<bool?> checkLocalnetPermission() async {
       "rule",
       "name=FileTrucker"
     ]);
-    return res.exitCode == 0;
+    if (res.exitCode != 0) {
+      return false;
+    }
   }
 
-  // ダミーのサーバーを立てて接続を試みる
   try {
+    // ダミーのサーバーを立てて接続を試みる
     final sendSocket = await ServerSocket.bind(InternetAddress.anyIPv4, 4782);
+    await Future.delayed(const Duration(seconds: 2));
     await sendSocket.close();
+
+    final receiveSocket =
+        await ServerSocket.bind(InternetAddress.anyIPv4, 4783);
+    await Future.delayed(const Duration(seconds: 2));
+    await receiveSocket.close();
+
+    // iOS/macOSでローカルネットワークの権限ダイアログを出したり確認するテクニック
+    // mDNSを立てて、自分自身を検知できるか確認して許可されたかを判断
+    if (Platform.isMacOS || Platform.isIOS) {
+      await registerNsd(ServiceType.send, "dummy");
+      // 時間内に検知するか確認、しなかった場合はエラー
+      await (await scanTruckerService())
+          .firstWhere((element) => element.name.contains("dummy"))
+          .timeout(const Duration(seconds: 5));
+      await unregisterNsd(ServiceType.send);
+    }
     return true;
   } catch (e) {
+    await unregisterNsd(ServiceType.send);
     return false;
   }
 }
@@ -69,7 +91,7 @@ Future<bool?> checkPhotosPermission() async {
   }
 }
 
-Future<bool?> requestPhotosPermission() async {
+Future<bool> requestPhotosPermission() async {
   if (Platform.isIOS) {
     return Permission.photos.request().isGranted;
   } else {
@@ -77,7 +99,7 @@ Future<bool?> requestPhotosPermission() async {
   }
 }
 
-Future<bool?> checkCamPermission() async {
+Future<bool> checkCamPermission() async {
   if (Platform.isIOS || Platform.isAndroid) {
     return Permission.camera.isGranted;
   } else if (Platform.isMacOS) {
@@ -86,16 +108,16 @@ Future<bool?> checkCamPermission() async {
     final status = await platform.invokeMethod("checkCameraPermission");
 
     if (status == null) {
-      return null;
+      return false;
     } else {
       return status;
     }
   } else {
-    return null;
+    return true;
   }
 }
 
-Future<bool?> requestCamPermission() async {
+Future<bool> requestCamPermission() async {
   if (Platform.isIOS || Platform.isAndroid) {
     return Permission.camera.request().isGranted;
   } else if (Platform.isMacOS) {
@@ -104,11 +126,11 @@ Future<bool?> requestCamPermission() async {
     final request = await platform.invokeMethod("requestCameraPermission");
 
     if (request == null) {
-      return null;
+      return false;
     } else {
       return request;
     }
   } else {
-    return null;
+    return true;
   }
 }
