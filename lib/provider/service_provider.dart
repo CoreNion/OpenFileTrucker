@@ -1,14 +1,49 @@
+import 'dart:async';
+
+import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../class/trucker_device.dart';
+import '../helper/incoming.dart';
 import '../helper/service.dart';
 import '../main.dart';
+import 'main_provider.dart';
+import 'receive_provider.dart';
+import 'setting_provider.dart';
 
 final tSendDevicesProvider =
     StateProvider<List<TruckerDevice>>((ref) => const []);
 
 final tReceiveDevicesProvider =
     StateProvider<List<TruckerDevice>>((ref) => const []);
+
+/// 受信リクエスト関連の処理
+void initIncomingProcess(WidgetRef ref) {
+  startIncomingServer((name) async {
+    final completer = Completer<bool>();
+
+    HapticFeedback.vibrate();
+    BotToast.showNotification(
+      title: (_) => Text("$nameからの受信リクエスト"),
+      subtitle: (_) => const Text("許諾するにはタップ"),
+      leading: (_) => const Icon(Icons.file_download),
+      duration: const Duration(days: 999),
+      onTap: () {
+        BotToast.cleanAll();
+        completer.complete(true);
+      },
+      onClose: () => completer.complete(false),
+    );
+    return await completer.future;
+  }, ((remote) async {
+    // 受信ページに移動
+    ref.read(currentPageIndexProvider.notifier).state = 1;
+    // 受信リストに追加
+    await startManualReceive(remote, ref);
+  }), ref.read(nameProvider));
+}
 
 /// 送受信待機中のデバイスをスキャンを開始するプロバイダー
 final scanDeviceProvider = StreamProvider(

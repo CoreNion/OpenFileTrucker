@@ -15,14 +15,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:uuid/uuid.dart';
 
-import 'helper/incoming.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
-import 'provider/receive_provider.dart';
 import 'provider/send_provider.dart';
 import 'provider/service_provider.dart';
-import 'provider/setting_provider.dart';
 
 /// この端末のUUID
 late String myUUID;
@@ -60,7 +57,7 @@ void main() async {
     overrides: [
       prefsProvider.overrideWithValue(prefs),
     ],
-    child: const MyApp(),
+    child: const MaterialApp(home: MyApp()),
   ));
 }
 
@@ -78,29 +75,13 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
 
-    // スキャン経由の受信用のサービスを登録
-    startIncomingServer((name) async {
-      final completer = Completer<bool>();
+    if (ref.read(prefsProvider).getBool('firstRun') ?? false) {
+      // スキャン経由の受信用のサービスを登録
+      initIncomingProcess(ref);
 
-      HapticFeedback.vibrate();
-      BotToast.showNotification(
-        title: (_) => Text("$nameからの受信リクエスト"),
-        subtitle: (_) => const Text("許諾するにはタップ"),
-        leading: (_) => const Icon(Icons.file_download),
-        duration: const Duration(days: 999),
-        onTap: () {
-          BotToast.cleanAll();
-          completer.complete(true);
-        },
-        onClose: () => completer.complete(false),
-      );
-      return await completer.future;
-    }, ((remote) async {
-      // 受信ページに移動
-      ref.read(currentPageIndexProvider.notifier).state = 1;
-      // 受信リストに追加
-      await startManualReceive(remote, ref);
-    }), ref.read(nameProvider));
+      // デバイスのスキャン開始
+      Future(() => ref.watch(scanDeviceProvider));
+    }
 
     if (kIsWeb || Platform.isIOS || Platform.isAndroid) {
       FlutterNativeSplash.remove();
@@ -112,8 +93,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     // UI更新時に画面サイズを判定
     Future(() => ref.read(isSmallUIProvider.notifier).state =
         MediaQuery.of(context).size.width < 800);
-    // デバイスのスキャン開始
-    ref.watch(scanDeviceProvider);
 
     return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
       ColorScheme lightColorScheme;
@@ -133,6 +112,9 @@ class _MyAppState extends ConsumerState<MyApp> {
           brightness: Brightness.dark,
         );
       }
+
+      Future(() => ref.watch(colorSchemeProvider.notifier).state =
+          ref.watch(isDarkProvider) ? darkColorScheme : lightColorScheme);
 
       return MaterialApp(
         title: 'Open FileTrucker',
