@@ -59,6 +59,15 @@ class CheckPermissionWidget extends ConsumerWidget {
                 }
               : null,
         ),
+        Platform.isWindows
+            ? ListTile(
+                trailing:
+                    Icon(Icons.auto_fix_high, color: colorScheme.onSurface),
+                title: const Text('Windowsのファイヤーウォールに許可設定を追加 (要管理者権限)'),
+                subtitle: const Text("端末にアクセスできない時にお試しください。"),
+                onTap: () => requestLocalnetPermission(),
+              )
+            : const SizedBox(),
         Platform.isIOS
             ? ListTile(
                 trailing: photosProvider.when(
