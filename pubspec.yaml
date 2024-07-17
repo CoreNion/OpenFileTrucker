@@ -1,5 +1,5 @@
 name: open_file_trucker
-description: Open-sourced Simple file sharing app.
+description: どんな端末でも使える、サーバーを介さないファイル共有アプリ。
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -90,6 +90,7 @@ dev_dependencies:
   build_runner: ^2.4.6
   custom_lint: ^0.6.4
   riverpod_lint: ^2.1.0
+  msix: ^3.16.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -129,3 +130,15 @@ flutter:
        - asset: assets/fonts/NotoSansJP-Regular.otf
        - asset: assets/fonts/NotoSansJP-Bold.otf
          weight: 700
+
+msix_config:
+  display_name: Open FileTrucker
+  publisher_display_name: CoreNion
+  identity_name: 41388CoreNion.OpenFileTrucker
+  publisher: CN=1E4E404D-97AD-4BCA-8E50-EEC713FDB586
+  msix_version: 2.0.0.0
+  os_min_version: 10.0.18362.1
+  logo_path: assets\icon_700h.png
+  trim_logo: false
+  capabilities: InternetClientServer,privateNetworkClientServer 
+  languages: ja-jp
