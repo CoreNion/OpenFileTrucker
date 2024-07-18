@@ -18,7 +18,7 @@ final checkFileHashProvider = StateProvider<bool>(
     (ref) => _prefProviderFn(_SettingsType.checkFileHash, false, ref));
 
 final encryptModeProvider = StateProvider<bool>(
-    (ref) => _prefProviderFn(_SettingsType.encryptMode, true, ref));
+    (ref) => _prefProviderFn(_SettingsType.encryptMode, false, ref));
 
 final deviceDetectionProvider = StateProvider<bool>(
     (ref) => _prefProviderFn(_SettingsType.deviceDetection, true, ref));
