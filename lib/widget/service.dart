@@ -120,6 +120,7 @@ class TruckerDeviceWidget extends ConsumerWidget {
                       BotToast.showSimpleNotification(
                           title: "ホスト名の取得に失敗しました。QRコードやIPアドレスの方式を試してください。",
                           subTitle: "エラー: $e",
+                          duration: const Duration(seconds: 6),
                           backgroundColor: colorScheme.onError);
                       return;
                     }
@@ -132,10 +133,26 @@ class TruckerDeviceWidget extends ConsumerWidget {
                     viaServiceDevice
                         .addEntries({MapEntry(list[index].uuid, list[index])});
 
-                    // サーバー側にリクエストを送信
-                    final res =
-                        await sendRequest(remote!, ref.read(nameProvider));
-                    if (!res) {
+                    // 受信側にリクエストを送信
+                    late bool accept;
+                    try {
+                      accept =
+                          await sendRequest(remote!, ref.read(nameProvider));
+                    } catch (e) {
+                      list[index].progress = 1;
+                      list[index].status = TruckerStatus.failed;
+                      listw.state = [...list];
+
+                      HapticFeedback.vibrate();
+                      BotToast.showSimpleNotification(
+                          title: "リクエストの送信に失敗しました",
+                          subTitle: "エラー: $e",
+                          duration: const Duration(seconds: 6),
+                          backgroundColor: colorScheme.onError);
+                      return;
+                    }
+
+                    if (!accept) {
                       list[index].progress = 1;
                       list[index].status = TruckerStatus.rejected;
                       listw.state = [...list];
@@ -143,7 +160,7 @@ class TruckerDeviceWidget extends ConsumerWidget {
                       HapticFeedback.vibrate();
                       BotToast.showSimpleNotification(
                           duration: const Duration(seconds: 6),
-                          title: "リクエストが拒否されました",
+                          title: "リクエストが相手により拒否されました",
                           subTitle: "拒否された端末: ${list[index].name}",
                           backgroundColor: colorScheme.onError);
                       return;

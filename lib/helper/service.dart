@@ -102,7 +102,9 @@ Future<String?> requestHostName(
       (type == ServiceType.send ? sendDiscovery! : receiveDiscovery!)
           .serviceResolver);
   // ブロードキャストが名前解決を検知するので、そこからホスト名を取得してcompleteする
-  final host = await _requestHostList[hostUUID]!.future;
+  final host = await _requestHostList[hostUUID]!
+      .future
+      .timeout(const Duration(seconds: 10));
 
   _requestHostList.remove(hostUUID);
   return host;

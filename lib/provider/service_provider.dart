@@ -31,10 +31,13 @@ void initIncomingProcess(WidgetRef ref) {
       leading: (_) => const Icon(Icons.file_download),
       duration: const Duration(days: 999),
       onTap: () {
-        BotToast.cleanAll();
         completer.complete(true);
+        BotToast.cleanAll();
       },
-      onClose: () => completer.complete(false),
+      onClose: () {
+        if (completer.isCompleted) return;
+        completer.complete(false);
+      },
     );
     return await completer.future;
   }, ((remote) async {
