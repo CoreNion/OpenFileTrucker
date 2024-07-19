@@ -174,8 +174,8 @@ class _MyAppState extends ConsumerState<MyApp> {
                                         foregroundColor: Colors.blue),
                                     onPressed: () async => await launchUrl(
                                         Uri.parse(
-                                            "https://github.com/CoreNion/OpenFileTrucker")),
-                                    child: const Text('GitHub')),
+                                            "https://github.com/CoreNion/OpenFileTrucker/wiki")),
+                                    child: const Text('使い方 / GitHub')),
                               }
                             ]);
                       }),
