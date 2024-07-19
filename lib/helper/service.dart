@@ -125,18 +125,20 @@ Future<String> registerNsd(ServiceType mode, String name) async {
 
   // 送信/受信のタイプを指定
   late String type;
+  late int port;
   if (mode == ServiceType.send) {
     type = '_trucker-send._tcp';
+    port = 4782;
   } else {
     type = '_trucker-receive._tcp';
+    port = 4783;
   }
 
   // BonsoirServiceを作成
+  // iOS17のデバイスで登録端末の検知率が低い問題を回避するため、pathのTXTレコードを追加
+  // https://github.com/esp8266/Arduino/issues/9046
   BonsoirService service = BonsoirService(
-    name: mName,
-    port: 4782,
-    type: type,
-  );
+      name: mName, port: port, type: type, attributes: {"path": "/"});
 
   // タイプに応じて、BonsoirBroadcastを作成
   if (mode == ServiceType.send) {
