@@ -57,7 +57,7 @@ void main() async {
     overrides: [
       prefsProvider.overrideWithValue(prefs),
     ],
-    child: const MaterialApp(home: MyApp()),
+    child: const MyApp(),
   ));
 }
 
@@ -119,6 +119,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       return MaterialApp(
         title: 'Open FileTrucker',
         builder: BotToastInit(),
+        debugShowCheckedModeBanner: false,
         navigatorObservers: [BotToastNavigatorObserver()],
         theme: ThemeData(
           colorScheme: lightColorScheme,
