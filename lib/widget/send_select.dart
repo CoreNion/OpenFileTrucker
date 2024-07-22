@@ -52,7 +52,6 @@ class SelectFiles extends ConsumerWidget {
                     refleshFilesList();
                   },
                   icon: const Icon(Icons.add)),
-              const SizedBox(width: 10),
               Ink(
                   decoration: ShapeDecoration(
                     color: colorScheme.error,

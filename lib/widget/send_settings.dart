@@ -33,7 +33,7 @@ class SendSettingsDialog extends ConsumerWidget {
           ),
           ListTile(
             title: const Text("デバイス名"),
-            trailing: Text(ref.watch(nameProvider),
+            subtitle: Text(ref.watch(nameProvider),
                 style: const TextStyle(fontSize: 18)),
             onTap: () async {
               await showDialog(
