@@ -7,6 +7,10 @@ cmake_policy(SET CMP0063 NEW)
 
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
 
+# Avoiding crashes caused by msvcp140!mtx_do_lock
+# reference: https://github.com/microsoft/STL/wiki/Changelog#vs-2022-1710
+add_compile_definitions(_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+
 # Configure build options.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)
