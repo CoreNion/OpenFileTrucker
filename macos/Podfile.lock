@@ -7,7 +7,7 @@ PODS:
   - dynamic_color (0.0.2):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - mobile_scanner (5.1.1):
+  - mobile_scanner (5.2.3):
     - FlutterMacOS
   - package_info_plus (0.0.1):
     - FlutterMacOS
@@ -67,13 +67,13 @@ SPEC CHECKSUMS:
   desktop_drop: 69eeff437544aa619c8db7f4481b3a65f7696898
   dynamic_color: 2eaa27267de1ca20d879fbd6e01259773fb1670f
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  mobile_scanner: 1efac1e53c294b24e3bb55bcc7f4deee0233a86b
+  mobile_scanner: 0a05256215b047af27b9495db3b77640055e8824
   package_info_plus: fa739dd842b393193c5ca93c26798dff6e3d0e0c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
-  url_launcher_macos: 5f437abeda8c85500ceb03f5c1938a8c5a705399
+  url_launcher_macos: c82c93949963e55b228a30115bd219499a6fe404
   wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
-  webcrypto: 53dcd22dc6135dd9417ba913c775a298bb1a9f22
+  webcrypto: 04a7c3f7e06d2e6c55e436212fd0317d97ef1961
 
 PODFILE CHECKSUM: 3dd9d7b4b462197101d95545da103ea9f81f8c53
 
