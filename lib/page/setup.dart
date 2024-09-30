@@ -14,10 +14,16 @@ class SetupPage extends ConsumerWidget {
     final colorScheme = ref.watch(colorSchemeProvider);
 
     return Container(
+        height: 650 + MediaQuery.of(context).viewInsets.bottom,
         decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(20))),
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
@@ -32,7 +38,8 @@ class SetupPage extends ConsumerWidget {
               ),
             ),
             const Expanded(
-                child: Column(
+                child: SingleChildScrollView(
+                    child: Column(
               children: [
                 Text(
                   "FileTruckerを使い始める前に、必要な権限を許可してください。",
@@ -49,7 +56,7 @@ class SetupPage extends ConsumerWidget {
                 ),
                 SettingDeviceName(),
               ],
-            )),
+            ))),
             const SizedBox(height: 10),
             const Text("＊一部機能(デバイス検知や暗号化)は、環境によっては利用できない場合があります。\nご了承ください。",
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 15)),

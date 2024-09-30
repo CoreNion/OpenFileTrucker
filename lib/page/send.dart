@@ -39,9 +39,8 @@ class _SendPageState extends ConsumerState<SendPage> {
               enableDrag: false,
               backgroundColor: Colors.transparent,
               useSafeArea: true,
-              builder: (builder) => const PopScope(
-                  canPop: false,
-                  child: SizedBox(height: 650, child: SetupPage())));
+              builder: (builder) =>
+                  const PopScope(canPop: false, child: SetupPage()));
         } else {
           showDialog(
               barrierDismissible: false,
