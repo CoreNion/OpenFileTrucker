@@ -15,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:uuid/uuid.dart';
 
+import 'helper/service.dart';
 import 'provider/main_provider.dart';
 import 'page/receive.dart';
 import 'page/send.dart';
@@ -23,6 +24,9 @@ import 'provider/service_provider.dart';
 
 /// この端末のUUID
 late String myUUID;
+
+/// ユーザー設定のデバイス名
+late String userDeviceName;
 
 void main() async {
   // スプラッシュスクリーンの設定
@@ -51,6 +55,9 @@ void main() async {
 
   // UUIDを設定
   myUUID = const Uuid().v4();
+
+  // デバイス名を取得
+  userDeviceName = await getUserDeviceName();
 
   runApp(ProviderScope(
     observers: [ServerStateListener(), SelectedFilesListener()],

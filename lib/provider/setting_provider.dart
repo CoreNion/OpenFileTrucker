@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../helper/service.dart';
+import '../main.dart';
 import 'main_provider.dart';
 import 'send_provider.dart';
 
@@ -43,7 +44,7 @@ final nameProvider = StateProvider<String>((ref) {
     },
   );
 
-  return _prefProviderFn(_SettingsType.name, "", ref);
+  return _prefProviderFn(_SettingsType.name, userDeviceName, ref);
 });
 
 /// Providerと設定を同期する関数

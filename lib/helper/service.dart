@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:bonsoir/bonsoir.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import '../class/trucker_device.dart';
 import '../main.dart';
@@ -162,5 +164,22 @@ Future<void> unregisterNsd(ServiceType mode) async {
     await sendBroadcast?.stop();
   } else {
     await receiveBroadcast?.stop();
+  }
+}
+
+/// ユーザーが設定した端末名を取得
+Future<String> getUserDeviceName() async {
+  if (Platform.isIOS) {
+    return (await DeviceInfoPlugin().iosInfo).name;
+  } else if (Platform.isAndroid) {
+    return (await DeviceInfoPlugin().androidInfo).model;
+  } else if (Platform.isWindows) {
+    return (await DeviceInfoPlugin().windowsInfo).computerName;
+  } else if (Platform.isLinux) {
+    return (await DeviceInfoPlugin().linuxInfo).prettyName;
+  } else if (Platform.isMacOS) {
+    return (await DeviceInfoPlugin().macOsInfo).computerName;
+  } else {
+    return "Unknown Device";
   }
 }
