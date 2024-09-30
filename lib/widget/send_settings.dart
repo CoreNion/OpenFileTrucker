@@ -6,8 +6,6 @@ import '../provider/setting_provider.dart';
 class SendSettingsDialog extends ConsumerWidget {
   const SendSettingsDialog({super.key});
 
-  static final _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
@@ -31,58 +29,7 @@ class SendSettingsDialog extends ConsumerWidget {
             onChanged: (bool value) =>
                 ref.read(deviceDetectionProvider.notifier).state = value,
           ),
-          ListTile(
-            title: const Text("デバイス名"),
-            subtitle: Text(ref.watch(nameProvider),
-                style: const TextStyle(fontSize: 18)),
-            onTap: () async {
-              await showDialog(
-                context: context,
-                builder: (context) {
-                  return Container(
-                    margin: const EdgeInsets.all(10),
-                    child: AlertDialog(
-                      title: const Text("通信相手の端末に表示される名前を設定..."),
-                      content: Form(
-                        key: _formKey,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            initialValue: ref.watch(nameProvider),
-                            decoration: const InputDecoration(
-                              labelText: 'デバイス名',
-                            ),
-                            validator: (value) {
-                              if (value?.isEmpty ?? true) {
-                                return 'デバイス名を入力してください。';
-                              }
-                              ref.read(nameProvider.notifier).state = value!;
-                              return null;
-                            },
-                          ),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("キャンセル"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: const Text("決定"),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          )
+          const SettingDeviceName(),
         ],
       )),
       actions: <Widget>[
@@ -92,5 +39,48 @@ class SendSettingsDialog extends ConsumerWidget {
         )
       ],
     );
+  }
+}
+
+class SettingDeviceName extends ConsumerWidget {
+  const SettingDeviceName({super.key});
+
+  static final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+        margin: const EdgeInsets.all(10),
+        child: Form(
+          key: _formKey,
+          child: TextFormField(
+            decoration: const InputDecoration(
+              labelText: '相手に表示される端末名',
+              prefixIcon: Icon(Icons.title),
+            ),
+            initialValue: ref.watch(nameProvider),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: (value) {
+              if (value?.isEmpty ?? true) {
+                return 'デバイス名を入力してください。';
+              }
+              return null;
+            },
+            onFieldSubmitted: (value) {
+              if (_formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+              }
+            },
+            onTapOutside: (event) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              if (_formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+              }
+            },
+            onSaved: (newValue) {
+              ref.read(nameProvider.notifier).state = newValue!;
+            },
+          ),
+        ));
   }
 }
