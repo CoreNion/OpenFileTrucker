@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/main_provider.dart';
 import '../provider/service_provider.dart';
 import '../widget/permission.dart';
+import '../widget/send_settings.dart';
 
 class SetupPage extends ConsumerWidget {
   const SetupPage({super.key});
@@ -39,6 +40,14 @@ class SetupPage extends ConsumerWidget {
                 ),
                 SizedBox(height: 10),
                 CheckPermissionWidget(),
+                SizedBox(height: 10),
+                Divider(),
+                SizedBox(height: 10),
+                Text(
+                  "相手に表示される端末名を設定",
+                  style: TextStyle(fontSize: 18),
+                ),
+                SettingDeviceName(),
               ],
             )),
             const SizedBox(height: 10),

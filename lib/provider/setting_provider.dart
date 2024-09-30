@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../helper/service.dart';
@@ -45,7 +43,7 @@ final nameProvider = StateProvider<String>((ref) {
     },
   );
 
-  return _prefProviderFn(_SettingsType.name, Platform.localHostname, ref);
+  return _prefProviderFn(_SettingsType.name, "", ref);
 });
 
 /// Providerと設定を同期する関数
