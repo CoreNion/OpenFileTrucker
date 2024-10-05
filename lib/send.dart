@@ -122,8 +122,9 @@ class SendFiles {
     }
   }
 
+  static int _byteCount = 0;
+
   static void _serverListen(Socket socket, SendSettings settings) async {
-    int byteCount = 0;
     final bool encrypt = settings.encryptMode;
 
     socket.listen((event) async {
@@ -174,8 +175,8 @@ class SendFiles {
           final StreamTransformer<Uint8List, Uint8List> progTransformer =
               StreamTransformer.fromHandlers(handleData: (data, sink) {
             if (byRequest) {
-              byteCount += data.length;
-              viaServiceDevice[uuid]?.progress = byteCount / _totalSize;
+              _byteCount += data.length;
+              viaServiceDevice[uuid]?.progress = _byteCount / _totalSize;
               refreshUserInfo();
             }
             sink.add(data);
@@ -203,6 +204,8 @@ class SendFiles {
             if (fileNumber == files.length - 1) {
               // 全ファイルの送信が完了した場合
               if (byRequest) {
+                _byteCount = 0;
+                
                 viaServiceDevice[uuid]?.progress = 1;
                 viaServiceDevice[uuid]?.status = TruckerStatus.sendReady;
                 refreshUserInfo();
